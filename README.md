@@ -16,7 +16,7 @@ you can fetch the XDwsjtFT8SDk-<version-number>.7z already built.
 </ul>
 To get all the sources, you must, in addition to git pull of this repo, also pull
 its submodules:
-<p>git submodule update --init --recursive</p>
+<p><code>git submodule update --init --recursive</code></p>
 
 After the above are complete, Visual Studio should build the DigiRite.sln here.
 
