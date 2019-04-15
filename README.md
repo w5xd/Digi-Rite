@@ -20,7 +20,7 @@ If you want to build DigiRite from these sources, its prerequisites are:
 <li>Use VS to build the solution in submodule Digi-XDft/XDft.sln. Build all the configurations and platforms that you also want for this DigiRite build. That XDft solution, in turn, requires the next item on this list:
 <li>A build of the git repo at https://github.com/w5xd/Digi-XDwsjt. 
   That repo needs various third party components to build (see its <a href='https://github.com/w5xd/Digi-XDwsjt'>git repo</a>), or, alternatively,
-  you can fetch the XDwsjtFT8SDk-<version-number>.7z already built. (Again, see that <a href='https://github.com/w5xd/Digi-XDwsjt'>same repo</a>.)
+  you can fetch the XDwsjtFT8SDk-&lt;version-number&gt;.7z already built. (Again, see that <a href='https://github.com/w5xd/Digi-XDwsjt'>same repo</a>.)
 </ul>
 To get all the sources, you must, in addition to git pull of this repo, also pull
 its submodules:
