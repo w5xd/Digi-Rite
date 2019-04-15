@@ -12,8 +12,8 @@ The algorithms, source code, look-and-feel of WSJT-X and related programs, and p
 If you want to build DigiRite from these sources the
 prerequisites are:
 <ul>
-<li>Visual Studio 2017. The Community Edition (free) or any other.
-<li>Use VS to build the solution in submodule Digi-XDft/XDft.sln. Build all the configurations and platforms thatyou also want for this DigiRite build. That XDft solution requires the next item on this list:
+<li>Visual Studio 2017. The Community Edition
+<li>Use VS to build the solution in submodule Digi-XDft/XDft.sln. Build all the configurations and platforms that you also want for this DigiRite build. That XDft solution, in turn, requires the next item on this list:
 <li>A build of the git repo at https://github.com/w5xd/Digi-XDwsjt. 
 That repo needs various third party components to build, or, alternatively,
 you can fetch the XDwsjtFT8SDk-<version-number>.7z already built.
