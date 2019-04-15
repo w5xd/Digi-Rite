@@ -124,9 +124,8 @@ namespace WriteLogDigiRite
         private bool amLeader = false;
         private bool haveSentReport = false;
         private IQsoSequencerCallbacks cb;
-        private bool lastSentAck = false;
-        private bool lastSentWasAckOnly = true;
-        private ExchangeTypes lastSentExchange = ExchangeTypes.GRID_SQUARE;
+        private delegate void ExchangeSent();
+        private ExchangeSent lastSent;
         public Qso2MessageSequencer(IQsoSequencerCallbacks cb)
         { this.cb = cb;   }
 
@@ -156,14 +155,16 @@ namespace WriteLogDigiRite
                 if (!String.IsNullOrEmpty(gs))
                 {   // received a grid
                     haveGrid = true;
+                    ExchangeSent es;
                     if (amLeader)
                     {
-                        cb.SendExchange(lastSentExchange = ExchangeTypes.DB_REPORT, lastSentAck = false);
+                        es = ()=> cb.SendExchange(ExchangeTypes.DB_REPORT, false); 
                         haveSentReport = true;
                     }
                     else
-                        cb.SendExchange(lastSentExchange = ExchangeTypes.GRID_SQUARE, lastSentAck = false);
-                    lastSentWasAckOnly = false;
+                        es = ()=>cb.SendExchange(ExchangeTypes.GRID_SQUARE, false);
+                    lastSent = es;
+                    es();
                     return;
                 }
                 else if (rp > XDpack77.Pack77Message.Message.NO_DB)
@@ -171,14 +172,15 @@ namespace WriteLogDigiRite
                     XDpack77.Pack77Message.Roger roger = msg as XDpack77.Pack77Message.Roger;
                     bool ack = (null != roger) && (roger.Roger);
                     haveReport = true;
-                    lastSentWasAckOnly = true;
+                    lastSent = null;
                     if (amLeader && ack && haveSentReport)
                         cb.SendAck();
                     else
                     {
                         haveSentReport = true;
-                        cb.SendExchange(lastSentExchange = ExchangeTypes.DB_REPORT, lastSentAck = true);
-                        lastSentWasAckOnly = false;
+                        ExchangeSent es = ()=>cb.SendExchange(ExchangeTypes.DB_REPORT,true);
+                        lastSent = es;
+                        es();
                     }
                     return;
                 }
@@ -189,7 +191,7 @@ namespace WriteLogDigiRite
                 if (!haveLogged && (haveReport || (directlyToMe && haveGrid)))
                 {
                     haveLogged = true;
-                    lastSentWasAckOnly = true;
+                    lastSent = null;
                     cb.SendAck();
                     cb.LogQso();
                     return;
@@ -200,8 +202,8 @@ namespace WriteLogDigiRite
 
         public void OnReceivedNothing()
         {
-            if (!lastSentWasAckOnly)
-                cb.SendExchange(lastSentExchange, lastSentAck);
+            if (null != lastSent)
+                lastSent();
         }
     }
 }

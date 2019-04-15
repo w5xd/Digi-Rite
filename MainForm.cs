@@ -506,7 +506,7 @@ namespace WriteLogDigiRite
             var inProgress = qsosPanel.QsosInProgress;
             for (int i = 0; i < inProgress.Count; i++)
             {   // first entries are highest priority
-                QsoInProgress q = inProgress[i] as QsoInProgress;
+                QsoInProgress q = inProgress[i];
                 if (null == q)
                     continue;   // manual entry goes this way
                 if (!q.Active)
@@ -711,7 +711,21 @@ namespace WriteLogDigiRite
                         XDft.Generator.Play(tones.ToArray(), deviceTx.GetRealTimeAudioSink())), TX_AFTER_ZERO_MSEC);
                 }
             }
-            checkedlbNextToSend.Items.Clear();
+
+            // clear out checkedlbNextToSend of anything from a QSO no longer in QSO(s) in Progress
+            for (int j = 0; j < checkedlbNextToSend.Items.Count; )
+            {
+                QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
+                QsoInProgress qp;
+                if (null != qli && (null != (qp = qli.q)) && inProgress.Any((q) => Object.ReferenceEquals(q, qp) && q.Active))
+                {   // if the QSO remains active in progress, but still in this list, it didn't get sent,
+                    // mark it unchecked so user can see that.
+                    checkedlbNextToSend.SetItemChecked(j, false);
+                    j += 1;
+                }
+                else
+                    checkedlbNextToSend.Items.RemoveAt(j);
+            }
         }
 
         private int RigVfoSplitForTx(int minAudioTx, int maxAudioTx, List<XDft.Tone> tones = null)
@@ -2057,7 +2071,7 @@ namespace WriteLogDigiRite
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {  new AboutForm().ShowDialog();    }
+        {  new AboutForm().ShowDialog(); }
 
         private void checkBoxCQboth_CheckedChanged(object sender, EventArgs e)
         {
