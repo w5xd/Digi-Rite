@@ -29,7 +29,7 @@ its submodules:
 After the above are complete, Visual Studio should build the DigiRite.sln in this repository.
 
 <h3>Software Architecture Overview</h3>
-There are three separate layers published separately.
+There are three separate layers, each published in its own repository.
 <ol>
 <li>The repo at <a href='https://github.com/w5xd/Digi-XDwsjt'>Digi-XDwsjt</a> is the only dependence from DigiRite on the WSJT-X sources. Outside of its dependence on the subset of WSJT-X sources and certain build tools, Digi-XDwsjt stands alone, architecture-wise. Digi-XDwsjt builds only the encoding and decoding FT8 algorithms. Specifically, none of the rig control, log-keeping, user interface, etc. of WSJT-X is incorporated in that project nor used in DigiRite. </li>
 <li>The repo at <a href='https://github.com/w5xd/Digi-XDft'>Digi-XDft</a> depends on Digi-XDwsjt and wraps the WSJT-X FT8 encode/decode in .NET callable wrappers. Digi-XDft also contains some (MIT-licensed) utilities for send/receiving sound on Window Sound Devices. This layer depends on the layer above, and also the Microsoft Visual Studio .NET build tools.</li>
