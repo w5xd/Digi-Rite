@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 
 namespace WriteLogDigiRite
 {
-    [ComVisible(true), 
-        Guid("00000000-0000-0000-0000-000000000000"), // FIXME! 
-        ProgId("YourApp.YourAuto")  // FIXME! 
-        ] 
+    [ComVisible(true),
+        Guid("4CC973B6-9BFB-3E4B-8157-E55774DD50C0"), 
+        ProgId("WriteLog.Ft8Auto")  
+        ]
     public class Ft8Auto
     {
         [ComVisible(true)]

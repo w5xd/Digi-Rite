@@ -93,9 +93,6 @@
       <HintPath>WriteLogApi\WriteLogClrTypes.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="WriteLogIWaterfall">
-      <HintPath>WriteLogApi\WriteLogIWaterfall.dll</HintPath>
-    </Reference>
     <Reference Include="XDft">
       <HintPath>$(XDftSdkDir)XDft.dll</HintPath>
     </Reference>
@@ -192,8 +189,15 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IWaterfall\WriteLogIWaterfall.csproj">
+      <Project>{f3b8edf1-17cb-4a4c-97c1-9d20ecc6137d}</Project>
+      <Name>WriteLogIWaterfall</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(ProjectDir)&amp;copy $(XDftSdkDir)*.* $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>copy $(XDftSdkDir)*.* $(TargetDir)
+    copy $(SolutionDir)DigiRiteInstaller\ReadMe.htm $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
 </Project>
