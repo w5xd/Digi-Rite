@@ -197,7 +197,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(XDftSdkDir)*.* $(TargetDir)
-    copy $(SolutionDir)DigiRiteInstaller\ReadMe.htm $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>copy $(SolutionDir)DigiRite\Digi-XDft\Win32\Release\*.* $(TargetDir)
+copy $(SolutionDir)DigiRiteInstaller\ReadMe.htm $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
 </Project>
