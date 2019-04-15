@@ -15,7 +15,7 @@ namespace WriteLogDigiRite
 
         private void startlog(String LogPath, bool append)
         {
-            logFile = new StreamWriter(LogPath, true);
+            logFile = new StreamWriter(LogPath, append);
             logFile.WriteLine(String.Format("{0:yyyy/MM/dd HH:mm:ss}", DateTime.UtcNow));
         }
 
