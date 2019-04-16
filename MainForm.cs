@@ -1565,7 +1565,7 @@ namespace WriteLogDigiRite
                     }
                     else
                     {
-                        MessageBox.Show("FtRite requires the Entry Window to be set to either L or R");
+                        MessageBox.Show("DigiRite requires the Entry Window to be set to either L or R");
                         return;
                     }
                 }
