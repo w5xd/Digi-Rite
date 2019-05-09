@@ -25,6 +25,7 @@ namespace WriteLogDigiRite
         public bool controlSplit;
         public int txHighLimit;
         public bool forceRigUsb;
+        public MainForm.DigiMode digiMode = MainForm.DigiMode.FT8;
 
  
         public SetupForm(int instanceNumber, bool maySelectDevices, bool maySelectLR, bool maySelectCallUsed)
@@ -115,6 +116,11 @@ namespace WriteLogDigiRite
                 txHighLimit <= numericUpDownTxMaxHz.Maximum)
                 numericUpDownTxMaxHz.Value = txHighLimit;
             checkBoxUSB.Checked = forceRigUsb;
+
+            if (digiMode == MainForm.DigiMode.FT8)
+                radioButtonFt8.Checked = true;
+            else 
+                radioButtonFt4.Checked = true;
         }
 
         // make the user type one in that can be parsed
@@ -186,6 +192,9 @@ namespace WriteLogDigiRite
             if (controlSplit)
                 txHighLimit = (int)numericUpDownTxMaxHz.Value;
             forceRigUsb = checkBoxUSB.Checked;
+
+            digiMode = radioButtonFt8.Checked ? MainForm.DigiMode.FT8 : MainForm.DigiMode.FT4;
+
             Close();
         }
 
