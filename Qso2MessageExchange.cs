@@ -188,6 +188,13 @@ namespace WriteLogDigiRite
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             if ((qsl != null) && String.Equals(qsl.CallQSLed, "ALL") || directlyToMe)
             {
+                if (!amLeader && !haveLogged && !haveGrid && !haveReport)
+                {
+                    ExchangeSent es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, false);
+                    lastSent = es;
+                    es();
+                    return;
+                }
                 if (!haveLogged && (haveReport || (directlyToMe && haveGrid)))
                 {
                     haveLogged = true;

@@ -24,7 +24,7 @@ namespace WriteLogDigiRite
                 Invalidate();
             }
         }
-        public const uint CYCLE = 15;
+        public uint CYCLE = 15;
         protected override void OnPaint(PaintEventArgs e)
         {
             Color fillColor = BackColor;
@@ -39,22 +39,17 @@ namespace WriteLogDigiRite
                 using (blackPen)
                 {
                     if (seconds < CYCLE)
-                        switch (seconds)
+                    {
+                        if (seconds == CYCLE - 1)
+                            e.Graphics.FillEllipse(circleBrush, clockRect);
+                        else if (seconds != 0)
                         {
-                            case 0:
-                                break;
-                            case 14:
-                                e.Graphics.FillEllipse(circleBrush, clockRect);
-                                break;
-                            default:
-                                {
-                                    float startAngle = 270;
-                                    float sweepAngle = (float)(360.0 * seconds / CYCLE);
-                                    e.Graphics.FillPie(circleBrush, clockRect, startAngle, sweepAngle);
-                                    e.Graphics.DrawPie(blackPen, clockRect, startAngle, sweepAngle);
-                                }
-                                break;
+                            float startAngle = 270;
+                            float sweepAngle = (float)(360.0 * seconds / CYCLE);
+                            e.Graphics.FillPie(circleBrush, clockRect, startAngle, sweepAngle);
+                            e.Graphics.DrawPie(blackPen, clockRect, startAngle, sweepAngle);
                         }
+                    }
                     e.Graphics.DrawEllipse(blackPen, clockRect);
                 }
             }

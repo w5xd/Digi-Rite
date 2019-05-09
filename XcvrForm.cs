@@ -26,6 +26,12 @@ namespace WriteLogDigiRite
         Control waterfall;
         WriteLog.IWaterfall iwaterfall;
 
+        public uint CYCLE { set {
+                ClockLabel cl = labelClockAnimation as ClockLabel;
+                if (null != cl)
+                    cl.CYCLE = value;
+                } }
+
         public LogFile logFile { set { logfile = value; } }
 
         private void XcvrForm_Load(object sender, EventArgs e)
