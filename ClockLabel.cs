@@ -31,6 +31,8 @@ namespace WriteLogDigiRite
             System.Drawing.Brush fb = new SolidBrush(fillColor);
             using (fb)
                 e.Graphics.FillRectangle(fb, ClientRectangle);
+            uint s = seconds;
+            s += 1; if (s >= CYCLE) s -= CYCLE;
             Brush circleBrush = new SolidBrush(amTransmit ? Color.Red : Color.Green);
             using (circleBrush)
             {
@@ -38,14 +40,14 @@ namespace WriteLogDigiRite
                 Pen blackPen = new Pen(Color.Black);
                 using (blackPen)
                 {
-                    if (seconds < CYCLE)
+                    if (s < CYCLE)
                     {
-                        if (seconds == CYCLE - 1)
+                        if (s == 0)
                             e.Graphics.FillEllipse(circleBrush, clockRect);
-                        else if (seconds != 0)
+                        else
                         {
                             float startAngle = 270;
-                            float sweepAngle = (float)(360.0 * seconds / CYCLE);
+                            float sweepAngle = (float)(360.0 * s / CYCLE);
                             e.Graphics.FillPie(circleBrush, clockRect, startAngle, sweepAngle);
                             e.Graphics.DrawPie(blackPen, clockRect, startAngle, sweepAngle);
                         }

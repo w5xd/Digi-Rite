@@ -26,7 +26,8 @@ namespace WriteLogDigiRite
         public int txHighLimit;
         public bool forceRigUsb;
         public MainForm.DigiMode digiMode = MainForm.DigiMode.FT8;
-
+        public int VfoSplitToPtt;
+        public int PttToSound;
  
         public SetupForm(int instanceNumber, bool maySelectDevices, bool maySelectLR, bool maySelectCallUsed)
         {
@@ -121,6 +122,13 @@ namespace WriteLogDigiRite
                 radioButtonFt8.Checked = true;
             else 
                 radioButtonFt4.Checked = true;
+
+            if ((PttToSound >= numericUpDownPttDelay.Minimum) &&
+                (PttToSound <= numericUpDownPttDelay.Maximum))
+                numericUpDownPttDelay.Value = PttToSound;
+            if ((VfoSplitToPtt >= numericUpDownVfoToPtt.Minimum) &&
+                (VfoSplitToPtt <= numericUpDownVfoToPtt.Maximum))
+                numericUpDownVfoToPtt.Value = VfoSplitToPtt;
         }
 
         // make the user type one in that can be parsed
@@ -194,6 +202,8 @@ namespace WriteLogDigiRite
             forceRigUsb = checkBoxUSB.Checked;
 
             digiMode = radioButtonFt8.Checked ? MainForm.DigiMode.FT8 : MainForm.DigiMode.FT4;
+            PttToSound = (int)numericUpDownPttDelay.Value;
+            VfoSplitToPtt = (int)numericUpDownVfoToPtt.Value;
 
             Close();
         }

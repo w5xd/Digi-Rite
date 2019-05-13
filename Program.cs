@@ -20,7 +20,7 @@ namespace WriteLogDigiRite
 #if DEBUG
             MessageBox.Show("Debug me", "DigiRite.exe");
 #endif
-            const int UpgradedVersion = 20;  // increment every release
+            const int UpgradedVersion = 21;  // increment every release
             int settingsVersion = Properties.Settings.Default.SavedVersion;
             if (settingsVersion < UpgradedVersion)
             {
