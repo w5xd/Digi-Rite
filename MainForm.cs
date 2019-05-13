@@ -225,6 +225,7 @@ namespace WriteLogDigiRite
                 Properties.Settings.Default.Decode_ndepth = 1;
             demodulator.ndepth = Properties.Settings.Default.Decode_ndepth;
             demodulator.lft8apon = Properties.Settings.Default.Decode_lft8apon;
+            demodulator.nQSOProgress = 5;
             demodulator.digiMode = digiMode == DigiMode.FT8 ? XDft.DigiMode.DIGI_FT8 : XDft.DigiMode.DIGI_FT4;
 
             // When the decoder finds an FT8 message, it calls us back...
@@ -312,7 +313,7 @@ namespace WriteLogDigiRite
             new List<XDpack77.Pack77Message.ReceivedMessage>();
 
         private DateTime watchDogTime; // the dog sleeps only for so long
-        private const int MAX_NUMBER_OF_FT8_CHARS = 37; // truncate decoder strings
+        private const int MAX_NUMBER_OF_PACK77_CHARS = 36; // truncate decoder strings
         private string DECODE_SEPARATOR = "~  ";
         private char MESSAGE_SEPARATOR;
         private void OnReceived(String s, int cycle)
@@ -330,8 +331,8 @@ namespace WriteLogDigiRite
                     {
                         logFile.SendToLog(s);
                         string msg = s.Substring(v + 3);
-                        if (msg.Length > MAX_NUMBER_OF_FT8_CHARS)
-                            msg = msg.Substring(0, MAX_NUMBER_OF_FT8_CHARS);
+                        if (msg.Length > MAX_NUMBER_OF_PACK77_CHARS)
+                            msg = msg.Substring(0, MAX_NUMBER_OF_PACK77_CHARS);
                         int i3 = 0; int n3 = 0;
                         bool[] c77 = null;
                         XDft.Generator.pack77(msg, ref i3, ref n3, ref c77);
@@ -342,13 +343,13 @@ namespace WriteLogDigiRite
                         {   // free text...see if removing <> makes it parse
                             string changedMessage = msg;
                             bool changed = false;
-                            for (;;)
+                            for (; ; )
                             {
                                 int idx = changedMessage.IndexOfAny(new char[] { '<', '>' });
                                 if (idx >= 0)
                                 {
                                     changed = true;
-                                    changedMessage = changedMessage.Substring(0, idx) 
+                                    changedMessage = changedMessage.Substring(0, idx)
                                         + changedMessage.Substring(idx + 1);
                                 }
                                 else
@@ -359,8 +360,11 @@ namespace WriteLogDigiRite
                             // END kludge.
                         }
                         // have a look at the packing type. i3 and n3
+                        float msecOffset = 0;
+                        if (digiMode == DigiMode.FT4)
+                            msecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[ft4DecodeOffsetIdx] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
                         XDpack77.Pack77Message.ReceivedMessage rm =
-                            XDpack77.Pack77Message.ReceivedMessage.CreateFromReceived(i3, n3, s.Substring(0, v), msg, cycle, MESSAGE_SEPARATOR);
+                            XDpack77.Pack77Message.ReceivedMessage.CreateFromReceived(i3, n3, s.Substring(0, v), msg, cycle, MESSAGE_SEPARATOR, msecOffset);
                         if (rm == null)
                             return; // FIXME. some messages we can't parse
 
@@ -386,12 +390,12 @@ namespace WriteLogDigiRite
                         short mult = 0;
                         int dupe = 0;
                         String fromCall = toFromCall?.FromCall;
-                        RecentMessage recentMessage; 
+                        RecentMessage recentMessage;
                         if (fromCall != null && null != iWlDupingEntry)
                         {   // dupe check if we can
                             iWlDupingEntry.ClearEntry();
                             if (DgtlFieldNumber > 0)
-                                iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode==DigiMode.FT8 ? "FT8" : "FT4");
+                                iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
                             iWlDupingEntry.Callsign = fromCall;
                             dupe = iWlDupingEntry.Dupe();
                             if (dupe == 0)
@@ -408,7 +412,7 @@ namespace WriteLogDigiRite
                                     new IsConversationMessage((origin) =>
                                         {   // qsoQueue liked this message. log it
                                             isConversation = true;
-                                            string toLog = s.Substring(0,v) + msg;
+                                            string toLog = s.Substring(0, v) + msg;
                                             listBoxConversation.Items.Add(new ListBoxConversationItem(toLog, origin));
                                             conversationLogFile.SendToLog(toLog);
                                             ScrollListBoxToBottom(listBoxConversation);
@@ -429,6 +433,17 @@ namespace WriteLogDigiRite
                     }
                 }));
             }
+            else
+            {
+                if (digiMode == DigiMode.FT4)
+                {
+                    ft4DecodeOffsetIdx += 1;
+                    if (ft4DecodeOffsetIdx < ft4DecodeOffsetMsec.Length)
+                    {
+                        bool started = demodulator.DecodeAgain(wsjtExe, cycleNumber, ft4DecodeOffsetMsec[ft4DecodeOffsetIdx]);
+                    }
+                }
+            }
         }
 
         private void ScrollListBoxToBottom(ListBox lb)
@@ -441,11 +456,20 @@ namespace WriteLogDigiRite
 
         #region transmit management
 
-        private int MAX_MESSAGES_PER_CYCLE {
-            get {  return (int)numericUpDownStreams.Value; }
-        }
+        private int MAX_MESSAGES_PER_CYCLE { get {  return (int)numericUpDownStreams.Value; } }
+
         // empirically determined to "center" in the time slot
-        private const int TX_AFTER_ZERO_MSEC = 550;
+        private const int FT8_TX_AFTER_ZERO_MSEC = 570;
+        private const int FT4_TX_AFTER_ZERO_MSEC = 200;
+        private const ushort FT4_MULTIPLE_DECODE_OFFSET_MSEC = 400;
+        private const int FT4_MULTIPLE_DECODE_COUNT = 1; // don't bother with sliding decode window with wsjtx-2.1.0-rc5
+        private const short DEFAULT_DECODER_LOOKBACK_MSEC = 100;
+        private const ushort FT4_DECODER_CENTER_OFFSET_MSEC = (FT4_MULTIPLE_DECODE_OFFSET_MSEC * (FT4_MULTIPLE_DECODE_COUNT / 2));
+        private int UserVfoSplitToPtt = 550;
+        private int UserPttToSound = 20;
+        private int VfoSetToTxMsec = 550;
+        private int FT_CYCLE_SECONDS = 15;
+        private int FT_GAP_HZ = 60;
 
         private void AfterNmsec(Action d, int msec)
         {
@@ -459,12 +483,11 @@ namespace WriteLogDigiRite
             timer.Enabled = true;
         }
 
-        private int FT_SEC = 15;
-        private int FT_GAP = 60;
         private delegate void GenMessage(string msg, ref string msgSent, ref int[] itone, ref bool[] ftbits);
         private GenMessage genMessage;
         private bool[] transmittedForQSOLastCycle = new bool[2];
         private delegate DateTime GetNowTime();
+        
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
             if ((digiMode == DigiMode.FT4) && allowLate)
@@ -473,11 +496,11 @@ namespace WriteLogDigiRite
                 return;
             DateTime toSend = getNowTime == null ? DateTime.UtcNow : getNowTime();
             int nowSecond = toSend.Second;
-            int cyclePos = nowSecond % FT_SEC; // 0 through 14
-            bool nowOdd = ((nowSecond / FT_SEC) & 1) != 0;
+            int cyclePos = nowSecond % FT_CYCLE_SECONDS; // 0 through 14
+            bool nowOdd = ((nowSecond / FT_CYCLE_SECONDS) & 1) != 0;
             int seconds = toSend.Second;
-            seconds /= FT_SEC;
-            seconds *= FT_SEC; // round back to nearest 15
+            seconds /= FT_CYCLE_SECONDS;
+            seconds *= FT_CYCLE_SECONDS; // round back to nearest 15
             int lastCycleIndex = nowOdd ? 0 : 1;
              // can't transmit two consecutive cycles, one odd and one even
              bool onUserSelectedCycle = nowOdd == radioButtonOdd.Checked;
@@ -585,7 +608,7 @@ namespace WriteLogDigiRite
 
             List<XDft.Tone> itonesToSend = new List<XDft.Tone>();
             List<int> freqsUsed = new List<int>();
-            int freqRange = FT_GAP + 1;
+            int freqRange = FT_GAP_HZ + 1;
             int freqIncrement = freqRange+1;
             foreach (var item in toSendList)
             {
@@ -627,7 +650,7 @@ namespace WriteLogDigiRite
                 bool[] ftbits = null;
                 genMessage(item.MessageText, ref asSent, ref itones, ref ftbits);
                 const float RELATIVE_POWER_THIS_QSO = 1.0f;
-                itonesToSend.Add(new XDft.Tone(itones, RELATIVE_POWER_THIS_QSO, freq));
+                itonesToSend.Add(new XDft.Tone(itones, RELATIVE_POWER_THIS_QSO, freq,0));
                 string conversationItem = String.Format("{2:00}{3:00}{4:00} transmit {1,4}    {0}",
                         asSent,
                         freq, toSend.Hour, toSend.Minute, seconds);
@@ -673,11 +696,11 @@ namespace WriteLogDigiRite
                         }
                     }
                     int freq = itonesToSend[0].frequency;
-                    freq = RigVfoSplitForTx(freq, freq + FT_GAP);
+                    freq = RigVfoSplitForTx(freq, freq + FT_GAP_HZ);
                     sendInProgress = true;
                     AfterNmsec(new Action(() =>
                         XDft.Generator.Play(genContext, itones,
-                            freq, deviceTx.GetRealTimeAudioSink())), TX_AFTER_ZERO_MSEC);
+                            freq, deviceTx.GetRealTimeAudioSink())), VfoSetToTxMsec);
                 }
                 else 
                 {   // multiple to send
@@ -693,8 +716,8 @@ namespace WriteLogDigiRite
                     int deltaFreq = 0;
                     if (minFreq < rxForm.MinDecodeFrequency)
                         deltaFreq = rxForm.MinDecodeFrequency - minFreq;
-                    else if (maxFreq > rxForm.MaxDecodeFrequency + FT_GAP)
-                        deltaFreq = rxForm.MaxDecodeFrequency + FT_GAP - maxFreq; // negative
+                    else if (maxFreq > rxForm.MaxDecodeFrequency + FT_GAP_HZ)
+                        deltaFreq = rxForm.MaxDecodeFrequency + FT_GAP_HZ - maxFreq; // negative
                     List<XDft.Tone> tones = new List<XDft.Tone>();
                     foreach (var itones in itonesToSend)
                     {
@@ -715,13 +738,13 @@ namespace WriteLogDigiRite
                             }
                         }
 
-                        XDft.Tone thisSignal = new XDft.Tone(nextTones, 1.0f, itones.frequency + deltaFreq);
+                        XDft.Tone thisSignal = new XDft.Tone(nextTones, 1.0f, itones.frequency + deltaFreq,0);
                         tones.Add(thisSignal);
                     }
-                    RigVfoSplitForTx(minFreq, maxFreq + FT_GAP, tones);
+                    RigVfoSplitForTx(minFreq, maxFreq + FT_GAP_HZ, tones);
                     sendInProgress = true;
                     AfterNmsec(new Action(() =>
-                        XDft.Generator.Play(genContext, tones.ToArray(), deviceTx.GetRealTimeAudioSink())), TX_AFTER_ZERO_MSEC);
+                        XDft.Generator.Play(genContext, tones.ToArray(), deviceTx.GetRealTimeAudioSink())), VfoSetToTxMsec);
                 }
             }
 
@@ -837,6 +860,7 @@ namespace WriteLogDigiRite
 
         #region IQsoQueueCallBacks
         private const string BracketFormat = "<{0}>";
+        
         private bool needBrackets(string call)
         {
             int n22=0;
@@ -1090,7 +1114,7 @@ namespace WriteLogDigiRite
                 if (GridSquareSentFieldNumber > 0)
                     iWlDupingEntry.SetFieldN((short)GridSquareSentFieldNumber, q.SentGrid);
                 if (DgtlFieldNumber > 0)
-                    iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, "FT8");
+                    iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
                 switch ((ExchangeTypes)excSet)
                 {
                     case ExchangeTypes.ARRL_FIELD_DAY:
@@ -1217,7 +1241,7 @@ namespace WriteLogDigiRite
             try
             {
                 int seconds = Int32.Parse(s.Substring(4, 2));
-                isOdd = 0 != (1 & (seconds / FT_SEC));
+                isOdd = 0 != (1 & (seconds / FT_CYCLE_SECONDS));
                 return seconds +
                     60 * Int32.Parse(s.Substring(2,2));
             }
@@ -1278,6 +1302,8 @@ namespace WriteLogDigiRite
                 sf.controlSplit = controlVFOsplit;
                 sf.forceRigUsb = forceRigUsb;
                 sf.txHighLimit = TxHighFreqLimit;
+                sf.PttToSound = UserPttToSound;
+                sf.VfoSplitToPtt = UserVfoSplitToPtt;
                 if (sf.ShowDialog() != DialogResult.OK)
                     {
                         Close();
@@ -1288,6 +1314,8 @@ namespace WriteLogDigiRite
                 TxHighFreqLimit = sf.txHighLimit;
                 digiMode = sf.digiMode;
                 MyCall = Properties.Settings.Default.CallUsed.ToUpper();
+                UserPttToSound = sf.PttToSound;
+                UserVfoSplitToPtt = sf.VfoSplitToPtt;
             }
 
             cqListEven = new CallPresentation(panelEvenCQs, labelCqTable, checkBoxCqTable);
@@ -1438,7 +1466,7 @@ namespace WriteLogDigiRite
                     if (decodeMax > 5000)
                         decodeMax = 5000;
                     if (decodeMax <= decodeMin)
-                        decodeMax = decodeMin + FT_GAP;
+                        decodeMax = decodeMin + FT_GAP_HZ;
                 }
 
                 if (fromRegistryValue(rk, "DigiMode", out temp))
@@ -1448,6 +1476,11 @@ namespace WriteLogDigiRite
                     else
                         digiMode = DigiMode.FT8;
                 }
+
+                if (fromRegistryValue(rk, "VfoSplitToPtt", out temp))
+                    UserVfoSplitToPtt = temp;
+                if (fromRegistryValue(rk, "PttToSound", out temp))
+                    UserPttToSound = temp;
             }
 
             changeDigiMode();
@@ -1500,33 +1533,52 @@ namespace WriteLogDigiRite
             switch (digiMode)
             {
                 case DigiMode.FT4:
-                    genContext = XDft.GeneratorContext.getFt4Context();
+                    genContext = XDft.GeneratorContext.getFt4Context((ushort)UserPttToSound);
                     genMessage = new GenMessage(XDft.Generator.genft4);
                     checkTransmitAtZero = new CheckTransmitAtZero(Ft4CheckTransmitAtZero);
                     demodulator.digiMode = XDft.DigiMode.DIGI_FT4;
+                    demodulator.DemodulateSoundPreUtcZeroMsec = (short)( DEFAULT_DECODER_LOOKBACK_MSEC + FT4_DECODER_CENTER_OFFSET_MSEC);
+                    demodulator.nzhsym = 18;
+#if DEBUG
+                    if ((1 & FT4_MULTIPLE_DECODE_COUNT) != 1)
+                        throw new System.Exception("FT4_MULTIPLE_DECODE_COUNT must be an odd number");
+                    if (demodulator.DemodulateSoundPreUtcZeroMsec > 1000)
+                        throw new System.Exception("Demodulator cannot look back further than 1000msec");
+#endif
+                    demodulator.DemodulateDefaultSoundShiftMsec = FT4_DECODER_CENTER_OFFSET_MSEC;
+                    ft4DecodeOffsetMsec = new ushort[FT4_MULTIPLE_DECODE_COUNT];
+                    ft4DecodeOffsetMsec[0] = FT4_DECODER_CENTER_OFFSET_MSEC; // zero idx is run by OnClock
+                    int middleIdx = FT4_MULTIPLE_DECODE_COUNT / 2;
+                    for (int i = 0; i < middleIdx; i++)
+                    {   // work the time shift outwards from the nominally correct one.
+                        ft4DecodeOffsetMsec[i * 2 + 1] = (ushort)(FT4_DECODER_CENTER_OFFSET_MSEC + (i + 1) * FT4_MULTIPLE_DECODE_OFFSET_MSEC);
+                        ft4DecodeOffsetMsec[i * 2 + 2] = (ushort)(FT4_DECODER_CENTER_OFFSET_MSEC - (i + 1) * FT4_MULTIPLE_DECODE_OFFSET_MSEC);
+                    }
                     TRIGGER_DECODE = 2;
                     CLEAR_OLD_MESSAGES_AT = 1;
                     cl.CYCLE = 6;
                     rxForm.CYCLE = 6;
-                    FT_SEC = 6;
+                    FT_CYCLE_SECONDS = 6;
                     SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT = 5;
-                    FT_GAP = 120;
+                    FT_GAP_HZ = 100;
                     MESSAGE_SEPARATOR = '+';
                     TUNE_LEN = 72;
                     break;
 
                 case DigiMode.FT8:
-                    genContext = XDft.GeneratorContext.getFt8Context();
+                    genContext = XDft.GeneratorContext.getFt8Context((ushort)UserPttToSound);
                     genMessage = new GenMessage(XDft.Generator.genft8);
-                    demodulator.digiMode = XDft.DigiMode.DIGI_FT8;
                     checkTransmitAtZero = new CheckTransmitAtZero(Ft8CheckTransmitAtZero);
+                    demodulator.digiMode = XDft.DigiMode.DIGI_FT8;
+                    demodulator.DemodulateSoundPreUtcZeroMsec = DEFAULT_DECODER_LOOKBACK_MSEC;
+                    demodulator.nzhsym = 50;
                     TRIGGER_DECODE = 5;
                     CLEAR_OLD_MESSAGES_AT = 5;
                     cl.CYCLE = 15;
-                    FT_SEC = 15;
+                    FT_CYCLE_SECONDS = 15;
                     rxForm.CYCLE = 15;
                     SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT = 13;
-                    FT_GAP = 60;
+                    FT_GAP_HZ = 60;
                     MESSAGE_SEPARATOR = '~';
                     TUNE_LEN =19;
                     break;
@@ -1578,6 +1630,8 @@ namespace WriteLogDigiRite
                 rk.SetValue("DecodeMinHz", rxForm.MinDecodeFrequency.ToString());
                 rk.SetValue("DecodeMaxHz", rxForm.MaxDecodeFrequency.ToString());
                 rk.SetValue("DigiMode", (digiMode==DigiMode.FT8 ? 0 : 1).ToString());
+                rk.SetValue("VfoSplitToPtt", UserVfoSplitToPtt.ToString());
+                rk.SetValue("PttToSound", UserPttToSound.ToString());
             }
             if (demodulator != null)
                 demodulator.Dispose();
@@ -1791,19 +1845,23 @@ namespace WriteLogDigiRite
         private uint interval = 0;
         private int cycleNumber = 0;
         uint CLEAR_OLD_MESSAGES_AT = 5;
-        const uint START_LATE_MESSAGES_THROUGH = 6;
         uint TRIGGER_DECODE = 5; // At this second and later, see if we see any messages
 
+        const uint START_LATE_MESSAGES_THROUGH = 6;
         private delegate void CheckTransmitAtZero(int cycleNumber, int nowmsec);
         private CheckTransmitAtZero checkTransmitAtZero;
 
-        void Ft8CheckTransmitAtZero(int cycleNumber, int nowmsec)
+        private void Ft8CheckTransmitAtZero(int cycleNumber, int nowmsec)
         {
             if (interval == 0)
             {
                 if (!transmitAtZeroCalled)
                 {
                     PreTransmit(cycleNumber, ((cycleNumber & 1) != 0) == radioButtonOdd.Checked);
+                    VfoSetToTxMsec = UserVfoSplitToPtt;
+                    int waveStartDeltaMsec = FT8_TX_AFTER_ZERO_MSEC - UserPttToSound - VfoSetToTxMsec;
+                    if (waveStartDeltaMsec > 0)
+                        VfoSetToTxMsec += waveStartDeltaMsec;
                     transmitAtZero();
                     transmitAtZeroCalled = true;
                 }
@@ -1812,7 +1870,7 @@ namespace WriteLogDigiRite
                 transmitAtZeroCalled = false;
         }
 
-        void Ft4CheckTransmitAtZero(int cycleNumber, int nowmsec)
+        private void Ft4CheckTransmitAtZero(int cycleNumber, int nowmsec)
         {
             if (nowmsec < 0)
                 return;
@@ -1821,23 +1879,34 @@ namespace WriteLogDigiRite
                 if (!transmitAtZeroCalled && (nowmsec >= 400))
                 {
                     cycleNumber += 1; // pretransmit for NEXT cycle
-                    PreTransmit(cycleNumber, ((cycleNumber & 1) != 0) == radioButtonOdd.Checked);
+                    bool IsTransmit = ((cycleNumber & 1) != 0) == radioButtonOdd.Checked;
                     // FT4 is MUCH less tolerant of clock sync issues than FT8.
-                    // We have to "start" about 200msec before the beginning of the start-of-cycle
-                    // We get to 200msec by getting the clock callback about 500msec, and then
-                    // delay 300.
                     var timeToReport = DateTime.UtcNow + TimeSpan.FromMilliseconds(1001 - nowmsec);
-                    int delay = 300; // empirically determined
-                    AfterNmsec(new Action(() =>
-                    transmitAtZero(false, 
-                        new GetNowTime(()=> timeToReport)
-                        )), delay);
+                    VfoSetToTxMsec = UserVfoSplitToPtt;
+                    int delay = 1001 - nowmsec;
+                    int waveStartDeltaMsec = 1000 - nowmsec - delay + FT4_TX_AFTER_ZERO_MSEC - UserPttToSound - VfoSetToTxMsec;
+                    if (waveStartDeltaMsec > 0)
+                        VfoSetToTxMsec += waveStartDeltaMsec;
+                    else 
+                        delay += waveStartDeltaMsec;
+                    if (delay <= 0)
+                        delay = 1;
+                    var getTimeToReport = new GetNowTime(() => timeToReport);
+                        
+                    AfterNmsec(
+                        new Action(() =>
+                        {
+                        PreTransmit(cycleNumber, IsTransmit);
+                        transmitAtZero(false, getTimeToReport); 
+                        }), delay);
                     transmitAtZeroCalled = true;
                 }
             }
             else
                 transmitAtZeroCalled = false;
         }
+        private ushort[] ft4DecodeOffsetMsec;
+        private int ft4DecodeOffsetIdx;
 
         /* having a clock to call the decoder simplifies
         ** keeping the demodulator on this gui thread.
@@ -1870,6 +1939,9 @@ namespace WriteLogDigiRite
                         // invokedDecode tells us whether it actually was able to invoke the wsjtx decoder.
                         // Some reasons it might not: interval is less than TRIGGER_DECODE.
                         // We have recently called into Clock which did invoke a decode, and that one isn't finished yet.
+                        if (invokedDecode)
+                            ft4DecodeOffsetIdx = 0;
+
                         labelClock.Text = interval.ToString();
                         // twice per second, and synced to the utc second
                         int nowmsec = intervalMsec = DateTime.UtcNow.Millisecond;
@@ -1896,14 +1968,14 @@ namespace WriteLogDigiRite
                             {
                                 int simTimeSeconds = simNextSeconds - simulatorTimeOrigin;
                                 if (isOdd != isOddCycle)
-                                    simTimeSeconds += FT_SEC; // delay simulation to match odd/even w.r.t. real time
+                                    simTimeSeconds += FT_CYCLE_SECONDS; // delay simulation to match odd/even w.r.t. real time
                                 if (simTimeSeconds < 0)
                                     simTimeSeconds += 60 * 60;
                                 if (simTimeSeconds > 60 * 60)
                                     simTimeSeconds -= 60 * 60;
                                 int secondsSinceOrigin = (int)(now - simulatorStart).TotalSeconds;
                                 if (simTimeSeconds <= secondsSinceOrigin)
-                                    OnReceived(simulatorLines[simulatorNext++], (simNextSeconds / FT_SEC) % (60/FT_SEC));
+                                    OnReceived(simulatorLines[simulatorNext++], (simNextSeconds / FT_CYCLE_SECONDS) % (60/FT_CYCLE_SECONDS));
                                 else
                                     break;
                             }
@@ -1992,7 +2064,7 @@ namespace WriteLogDigiRite
         {   // get back on the form's thread
             BeginInvoke(new Action<bool>(OnAudioComplete), isBeginning);
         }
-#endregion
+        #endregion
 
         private void OnAudioComplete(bool isBegin)
         {
@@ -2039,6 +2111,7 @@ namespace WriteLogDigiRite
                 listBoxAlternatives.SetItemChecked(i, false);
             checkBoxAutoXmit.Checked = false;
             checkBoxManualEntry.Checked = false;
+            checkBoxCQ.Checked = false;
         }
 
         private void radioOddEven_CheckedChanged(object sender, EventArgs e)
@@ -2154,6 +2227,8 @@ namespace WriteLogDigiRite
             form.forceRigUsb = forceRigUsb;
             form.txHighLimit = TxHighFreqLimit;
             form.digiMode = digiMode;
+            form.PttToSound = UserPttToSound;
+            form.VfoSplitToPtt = UserVfoSplitToPtt;
             var res = form.ShowDialog();
             if (res == DialogResult.OK)
             {
@@ -2161,6 +2236,8 @@ namespace WriteLogDigiRite
                 forceRigUsb = form.forceRigUsb;
                 TxHighFreqLimit = form.txHighLimit;
                 digiMode = form.digiMode;
+                UserPttToSound = form.PttToSound;
+                UserVfoSplitToPtt = form.VfoSplitToPtt;
                 changeDigiMode();
                 if (SetupMaySelectDevices)
                 {
@@ -2247,7 +2324,7 @@ namespace WriteLogDigiRite
                 return;
             deviceTx.TransmitCycle = XD.Transmit_Cycle.PLAY_NOW;
             const int tuneFrequency = 1000;
-            RigVfoSplitForTx(tuneFrequency, tuneFrequency + FT_GAP);
+            RigVfoSplitForTx(tuneFrequency, tuneFrequency + FT_GAP_HZ);
             int[] it = new int[TUNE_LEN];
             XDft.Generator.Play(genContext, it, tuneFrequency, deviceTx.GetRealTimeAudioSink());
         }

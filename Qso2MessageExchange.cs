@@ -122,6 +122,7 @@ namespace WriteLogDigiRite
         private bool haveReport  = false;
         private bool haveLogged = false;
         private bool amLeader = false;
+        private bool amLeaderSet = false;
         private bool haveSentReport = false;
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
@@ -147,7 +148,9 @@ namespace WriteLogDigiRite
         public void OnReceived(bool directlyToMe, XDpack77.Pack77Message.Message msg)
         {
             XDpack77.Pack77Message.Exchange exc = msg as XDpack77.Pack77Message.Exchange;
-            amLeader = directlyToMe;
+            if (!amLeaderSet)
+                amLeader = directlyToMe;
+            amLeaderSet = true;
             if (null != exc)
             {
                 string gs = exc.GridSquare;
@@ -188,9 +191,9 @@ namespace WriteLogDigiRite
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             if ((qsl != null) && String.Equals(qsl.CallQSLed, "ALL") || directlyToMe)
             {
-                if (!amLeader && !haveLogged && !haveGrid && !haveReport)
+                if (!haveLogged && !haveGrid && !haveReport)
                 {
-                    ExchangeSent es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, false);
+                    ExchangeSent es = () => cb.SendExchange(amLeader ? ExchangeTypes.DB_REPORT : ExchangeTypes.GRID_SQUARE, false);
                     lastSent = es;
                     es();
                     return;
@@ -199,7 +202,8 @@ namespace WriteLogDigiRite
                 {
                     haveLogged = true;
                     lastSent = null;
-                    cb.SendAck();
+                    if (!amLeader)
+                        cb.SendAck();
                     cb.LogQso();
                     return;
                 }

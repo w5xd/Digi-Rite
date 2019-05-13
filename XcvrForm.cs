@@ -59,14 +59,13 @@ namespace WriteLogDigiRite
             {
                 // if WriteLog's DigiRiteWaterfall assembly loads, use it.
                 const string name = "WriteLogWaterfall.dll";
+                string assemblyPath = System.IO.Path.GetFullPath(name);
 #if DEBUG
                 // debug environment its easier to copy the waterfall into our work area
-                string assemblyPath = System.IO.Path.GetFullPath(name);
 #else
                 // Use WriteLog's waterfall Control
-                string assemblyPath = name;
                 if (null != wlDir)
-                    assemblyPath = wlDir.ToString() + "Programs\\" + assemblyPath;
+                    assemblyPath = wlDir.ToString() + "Programs\\" + name;
 #endif
                 System.Reflection.Assembly waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPath);
                 System.Type t = waterfallAssembly.GetType("WriteLog.Waterfall");
