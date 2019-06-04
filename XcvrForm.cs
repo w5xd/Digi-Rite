@@ -303,8 +303,8 @@ namespace WriteLogDigiRite
         bool markedWaterfallThisCycle = false;
         public void OnClock(uint tick, bool isTransmit)
         {
-            labelClock.Text = tick.ToString();
-            if (tick == 0)
+            labelClock.Text = (tick/10).ToString();
+            if (tick < 10)
             {
                 if (!markedWaterfallThisCycle)
                 {
@@ -324,7 +324,7 @@ namespace WriteLogDigiRite
             ClockLabel cl = labelClockAnimation as ClockLabel;
             if (null != cl)
             {
-                cl.Seconds = tick;
+                cl.Tenths = tick;
                 cl.AmTransmit = isTransmit;
             }
         }

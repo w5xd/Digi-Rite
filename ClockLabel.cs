@@ -10,10 +10,10 @@ namespace WriteLogDigiRite
         {
             AutoSize = false;
         }
-        private uint seconds = 0;
-        public uint Seconds { get => seconds; set { 
-                if (seconds == value) return;
-                seconds = value; 
+        private uint tenths = 0;
+        public uint Tenths { get => tenths; set { 
+                if (tenths == value) return;
+                tenths = value; 
                 Invalidate();} }
 
         bool amTransmit = false;
@@ -24,14 +24,14 @@ namespace WriteLogDigiRite
                 Invalidate();
             }
         }
-        public uint CYCLE = 15;
+        public uint CYCLE = 150;
         protected override void OnPaint(PaintEventArgs e)
         {
             Color fillColor = BackColor;
             System.Drawing.Brush fb = new SolidBrush(fillColor);
             using (fb)
                 e.Graphics.FillRectangle(fb, ClientRectangle);
-            uint s = seconds;
+            uint s = tenths;
             s += 1; if (s >= CYCLE) s -= CYCLE;
             Brush circleBrush = new SolidBrush(amTransmit ? Color.Red : Color.Green);
             using (circleBrush)

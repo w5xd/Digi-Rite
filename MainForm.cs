@@ -412,7 +412,7 @@ namespace WriteLogDigiRite
                                     new IsConversationMessage((origin) =>
                                         {   // qsoQueue liked this message. log it
                                             isConversation = true;
-                                            string toLog = s.Substring(0, v) + msg;
+                                            string toLog = s.Substring(0, v+3) + msg;
                                             listBoxConversation.Items.Add(new ListBoxConversationItem(toLog, origin));
                                             conversationLogFile.SendToLog(toLog);
                                             ScrollListBoxToBottom(listBoxConversation);
@@ -460,7 +460,7 @@ namespace WriteLogDigiRite
 
         // empirically determined to "center" in the time slot
         private const int FT8_TX_AFTER_ZERO_MSEC = 570;
-        private const int FT4_TX_AFTER_ZERO_MSEC = 200;
+        private const int FT4_TX_AFTER_ZERO_MSEC = 270;
         private const ushort FT4_MULTIPLE_DECODE_OFFSET_MSEC = 400;
         private const int FT4_MULTIPLE_DECODE_COUNT = 1; // don't bother with sliding decode window with wsjtx-2.1.0-rc5
         private const short DEFAULT_DECODER_LOOKBACK_MSEC = 100;
@@ -468,7 +468,7 @@ namespace WriteLogDigiRite
         private int UserVfoSplitToPtt = 550;
         private int UserPttToSound = 20;
         private int VfoSetToTxMsec = 550;
-        private int FT_CYCLE_SECONDS = 15;
+        private int FT_CYCLE_TENTHS = 150;
         private int FT_GAP_HZ = 60;
 
         private void AfterNmsec(Action d, int msec)
@@ -495,12 +495,13 @@ namespace WriteLogDigiRite
             if (null == genMessage)
                 return;
             DateTime toSend = getNowTime == null ? DateTime.UtcNow : getNowTime();
-            int nowSecond = toSend.Second;
-            int cyclePos = nowSecond % FT_CYCLE_SECONDS; // 0 through 14
-            bool nowOdd = ((nowSecond / FT_CYCLE_SECONDS) & 1) != 0;
-            int seconds = toSend.Second;
-            seconds /= FT_CYCLE_SECONDS;
-            seconds *= FT_CYCLE_SECONDS; // round back to nearest 15
+            int nowTenths = toSend.Second * 10 + toSend.Millisecond/100;
+            int cyclePos = nowTenths % FT_CYCLE_TENTHS; 
+            bool nowOdd = ((nowTenths / FT_CYCLE_TENTHS) & 1) != 0;
+            int seconds = nowTenths;
+            seconds /= FT_CYCLE_TENTHS;
+            seconds *= FT_CYCLE_TENTHS; // round back to nearest 
+            seconds /= TENTHS_IN_SECOND;
             int lastCycleIndex = nowOdd ? 0 : 1;
              // can't transmit two consecutive cycles, one odd and one even
              bool onUserSelectedCycle = nowOdd == radioButtonOdd.Checked;
@@ -849,7 +850,7 @@ namespace WriteLogDigiRite
             watchDogTime = DateTime.UtcNow;
             if (!sendInProgress && (
                 (rm.Message.CycleNumber & 1) != (cycleNumber & 1))
-                && interval <= START_LATE_MESSAGES_THROUGH)
+                && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
             {   // start late if we can
                 transmitAtZero(true);
             }
@@ -1229,8 +1230,11 @@ namespace WriteLogDigiRite
             }
         }
 
+        const int TENTHS_IN_SECOND = 10;
+
 #if DEBUG // for the simulator
         const int INVALID_TIME_SECONDS = -1 - (60 * 60);
+        bool simulatedThisInterval;
         int timeStampSeconds(String s, out bool isOdd)
         {
             isOdd = false;
@@ -1241,7 +1245,7 @@ namespace WriteLogDigiRite
             try
             {
                 int seconds = Int32.Parse(s.Substring(4, 2));
-                isOdd = 0 != (1 & (seconds / FT_CYCLE_SECONDS));
+                isOdd = 0 != (1 & ((seconds * TENTHS_IN_SECOND) / FT_CYCLE_TENTHS));
                 return seconds +
                     60 * Int32.Parse(s.Substring(2,2));
             }
@@ -1249,7 +1253,7 @@ namespace WriteLogDigiRite
             {  return INVALID_TIME_SECONDS;   }
         }
 #endif
-        uint SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT = 13;
+        uint SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
 
         #region Form events
         private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out int v)
@@ -1554,15 +1558,15 @@ namespace WriteLogDigiRite
                         ft4DecodeOffsetMsec[i * 2 + 1] = (ushort)(FT4_DECODER_CENTER_OFFSET_MSEC + (i + 1) * FT4_MULTIPLE_DECODE_OFFSET_MSEC);
                         ft4DecodeOffsetMsec[i * 2 + 2] = (ushort)(FT4_DECODER_CENTER_OFFSET_MSEC - (i + 1) * FT4_MULTIPLE_DECODE_OFFSET_MSEC);
                     }
-                    TRIGGER_DECODE = 2;
-                    CLEAR_OLD_MESSAGES_AT = 1;
-                    cl.CYCLE = 6;
-                    rxForm.CYCLE = 6;
-                    FT_CYCLE_SECONDS = 6;
-                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT = 5;
-                    FT_GAP_HZ = 100;
+                    TRIGGER_DECODE_TENTHS = 20;
+                    CLEAR_OLD_MESSAGES_AT_TENTHS = 10;
+                    cl.CYCLE = 75;
+                    rxForm.CYCLE = 75;
+                    FT_CYCLE_TENTHS = 75;
+                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 50;
+                    FT_GAP_HZ = 90;
                     MESSAGE_SEPARATOR = '+';
-                    TUNE_LEN = 72;
+                    TUNE_LEN = 64;
                     break;
 
                 case DigiMode.FT8:
@@ -1572,12 +1576,12 @@ namespace WriteLogDigiRite
                     demodulator.digiMode = XDft.DigiMode.DIGI_FT8;
                     demodulator.DemodulateSoundPreUtcZeroMsec = DEFAULT_DECODER_LOOKBACK_MSEC;
                     demodulator.nzhsym = 50;
-                    TRIGGER_DECODE = 5;
-                    CLEAR_OLD_MESSAGES_AT = 5;
-                    cl.CYCLE = 15;
-                    FT_CYCLE_SECONDS = 15;
-                    rxForm.CYCLE = 15;
-                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT = 13;
+                    TRIGGER_DECODE_TENTHS = 50;
+                    CLEAR_OLD_MESSAGES_AT_TENTHS = 50;
+                    cl.CYCLE = 150;
+                    FT_CYCLE_TENTHS = 150;
+                    rxForm.CYCLE = 150;
+                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
                     FT_GAP_HZ = 60;
                     MESSAGE_SEPARATOR = '~';
                     TUNE_LEN =19;
@@ -1842,18 +1846,18 @@ namespace WriteLogDigiRite
         private bool cqClearCalled = false;
         private bool transmitAtZeroCalled = false;
 
-        private uint interval = 0;
+        private uint intervalTenths = 0;
         private int cycleNumber = 0;
-        uint CLEAR_OLD_MESSAGES_AT = 5;
-        uint TRIGGER_DECODE = 5; // At this second and later, see if we see any messages
+        uint CLEAR_OLD_MESSAGES_AT_TENTHS = 50;
+        uint TRIGGER_DECODE_TENTHS = 50; // At this second and later, see if we see any messages
 
-        const uint START_LATE_MESSAGES_THROUGH = 6;
-        private delegate void CheckTransmitAtZero(int cycleNumber, int nowmsec);
+        const uint START_LATE_MESSAGES_THROUGH_TENTHS = 60;
+        private delegate void CheckTransmitAtZero(int cycleNumber, int msecIntoCycle);
         private CheckTransmitAtZero checkTransmitAtZero;
 
-        private void Ft8CheckTransmitAtZero(int cycleNumber, int nowmsec)
+        private void Ft8CheckTransmitAtZero(int cycleNumber, int msecIntoCycle)
         {
-            if (interval == 0)
+            if (intervalTenths < TENTHS_IN_SECOND)
             {
                 if (!transmitAtZeroCalled)
                 {
@@ -1870,35 +1874,42 @@ namespace WriteLogDigiRite
                 transmitAtZeroCalled = false;
         }
 
-        private void Ft4CheckTransmitAtZero(int cycleNumber, int nowmsec)
+        private void Ft4CheckTransmitAtZero(int cycleNumber, int msecIntoCycle)
         {
-            if (nowmsec < 0)
+            if (msecIntoCycle < 0)
                 return;
-            if (interval == 5)
-            {
-                if (!transmitAtZeroCalled && (nowmsec >= 400))
+            if (intervalTenths >= FT_CYCLE_TENTHS - TENTHS_IN_SECOND)
+            {   // during final second 
+                const int PREP_TRANSMIT_MSEC = 1050;
+                int FT_CYCLE_MSEC = FT_CYCLE_TENTHS * 100;
+                if (!transmitAtZeroCalled && (msecIntoCycle >= FT_CYCLE_MSEC - PREP_TRANSMIT_MSEC))
                 {
-                    cycleNumber += 1; // pretransmit for NEXT cycle
+                    int preTransmitCycleNumber = cycleNumber + 1; // pretransmit for NEXT cycle
                     bool IsTransmit = ((cycleNumber & 1) != 0) == radioButtonOdd.Checked;
                     // FT4 is MUCH less tolerant of clock sync issues than FT8.
-                    var timeToReport = DateTime.UtcNow + TimeSpan.FromMilliseconds(1001 - nowmsec);
-                    VfoSetToTxMsec = UserVfoSplitToPtt;
-                    int delay = 1001 - nowmsec;
-                    int waveStartDeltaMsec = 1000 - nowmsec - delay + FT4_TX_AFTER_ZERO_MSEC - UserPttToSound - VfoSetToTxMsec;
-                    if (waveStartDeltaMsec > 0)
-                        VfoSetToTxMsec += waveStartDeltaMsec;
-                    else 
-                        delay += waveStartDeltaMsec;
-                    if (delay <= 0)
-                        delay = 1;
+                    int nowToCycleStartMsec = FT_CYCLE_MSEC + 1 - msecIntoCycle; // now to start of next cycle
+                    var timeToReport = DateTime.UtcNow + TimeSpan.FromMilliseconds(nowToCycleStartMsec);
+                    int nowToCallXmit = nowToCycleStartMsec + FT4_TX_AFTER_ZERO_MSEC - UserPttToSound - UserVfoSplitToPtt;
+                    int delayMsec = 0;
+                    if (nowToCallXmit > 0)
+                    {
+                        VfoSetToTxMsec = UserVfoSplitToPtt; // normal case--we have time
+                        delayMsec = nowToCallXmit;
+                    }
+                    else
+                    {
+                        VfoSetToTxMsec = UserVfoSplitToPtt; // timer callback came too late--just will go out late
+                        delayMsec = 1;
+                    }
                     var getTimeToReport = new GetNowTime(() => timeToReport);
                         
                     AfterNmsec(
                         new Action(() =>
                         {
-                        PreTransmit(cycleNumber, IsTransmit);
-                        transmitAtZero(false, getTimeToReport); 
-                        }), delay);
+                            cycleNumber = preTransmitCycleNumber;
+                            PreTransmit(cycleNumber, IsTransmit);
+                            transmitAtZero(false, getTimeToReport); 
+                        }), delayMsec);
                     transmitAtZeroCalled = true;
                 }
             }
@@ -1927,7 +1938,7 @@ namespace WriteLogDigiRite
                 try
                 {
                     labelClock.Text = "";
-                    int intervalMsec = -1;
+                    int msecIntoCycle = -1;
                     if ((null != demodulator) && (null != waveDevicePlayer))
                     {
                         // TRIGGER_DECODE tells the demodulator whether to actually demodulate
@@ -1935,58 +1946,68 @@ namespace WriteLogDigiRite
                         String hiscall = qsosPanel.FirstActive?.HisCall;
                         demodulator.mycall = myCall;
                         demodulator.hiscall = hiscall;
-                        interval = demodulator.Clock(TRIGGER_DECODE, wsjtExe, ref invokedDecode, ref cycleNumber);
+                        intervalTenths = demodulator.Clock(TRIGGER_DECODE_TENTHS, wsjtExe, ref invokedDecode, ref cycleNumber);
                         // invokedDecode tells us whether it actually was able to invoke the wsjtx decoder.
                         // Some reasons it might not: interval is less than TRIGGER_DECODE.
                         // We have recently called into Clock which did invoke a decode, and that one isn't finished yet.
                         if (invokedDecode)
                             ft4DecodeOffsetIdx = 0;
 
-                        labelClock.Text = interval.ToString();
+                        labelClock.Text = (intervalTenths/ TENTHS_IN_SECOND).ToString();
                         // twice per second, and synced to the utc second
-                        int nowmsec = intervalMsec = DateTime.UtcNow.Millisecond;
+                        var nowTime = DateTime.UtcNow;
+                        int nowmsec = nowTime.Millisecond;
                         if (nowmsec > 500)
                             nowmsec -= 500;
                         // stay close to the begin/middle of the UTC second
                         timerFt8Clock.Interval = 501 - nowmsec; 
+
+                        int msecInMinute = 1000 * nowTime.Second + nowTime.Millisecond;
+                        msecIntoCycle = msecInMinute % ( FT_CYCLE_TENTHS * 100);
                     }
                     bool isOddCycle = (cycleNumber & 1) != 0;
                     bool isTransmitCycle = radioButtonOdd.Checked == isOddCycle;
-                    rxForm.OnClock(interval, isTransmitCycle);
+                    rxForm.OnClock(intervalTenths, isTransmitCycle);
 
 #if DEBUG
-                    if (interval == SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT)
+                    if (intervalTenths >= SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS)
                     {   // invoke simulator in second #13 for FT8
-                        while (simulatorLines != null && simulatorLines.Count > simulatorNext)
+                        if (!simulatedThisInterval)
                         {
-                            var now = DateTime.UtcNow;
-                            bool isOdd;
-                            int simNextSeconds = timeStampSeconds(simulatorLines[simulatorNext], out isOdd);
-                            if (simNextSeconds <= INVALID_TIME_SECONDS)
-                                simulatorNext += 1; // skip it
-                            else
+                            simulatedThisInterval = true;
+                            while (simulatorLines != null && simulatorLines.Count > simulatorNext)
                             {
-                                int simTimeSeconds = simNextSeconds - simulatorTimeOrigin;
-                                if (isOdd != isOddCycle)
-                                    simTimeSeconds += FT_CYCLE_SECONDS; // delay simulation to match odd/even w.r.t. real time
-                                if (simTimeSeconds < 0)
-                                    simTimeSeconds += 60 * 60;
-                                if (simTimeSeconds > 60 * 60)
-                                    simTimeSeconds -= 60 * 60;
-                                int secondsSinceOrigin = (int)(now - simulatorStart).TotalSeconds;
-                                if (simTimeSeconds <= secondsSinceOrigin)
-                                    OnReceived(simulatorLines[simulatorNext++], (simNextSeconds / FT_CYCLE_SECONDS) % (60/FT_CYCLE_SECONDS));
+                                var now = DateTime.UtcNow;
+                                bool isOdd;
+                                int simNextSeconds = timeStampSeconds(simulatorLines[simulatorNext], out isOdd);
+                                if (simNextSeconds <= INVALID_TIME_SECONDS)
+                                    simulatorNext += 1; // skip it
                                 else
-                                    break;
+                                {
+                                    int simTimeSeconds = simNextSeconds - simulatorTimeOrigin;
+                                    if (isOdd != isOddCycle)
+                                        simTimeSeconds += FT_CYCLE_TENTHS/ TENTHS_IN_SECOND; // delay simulation to match odd/even w.r.t. real time
+                                    if (simTimeSeconds < 0)
+                                        simTimeSeconds += 60 * 60;
+                                    if (simTimeSeconds > 60 * 60)
+                                        simTimeSeconds -= 60 * 60;
+                                    int secondsSinceOrigin = (int)(now - simulatorStart).TotalSeconds;
+                                    if (simTimeSeconds <= secondsSinceOrigin)
+                                        OnReceived(simulatorLines[simulatorNext++], ((simNextSeconds * TENTHS_IN_SECOND) / FT_CYCLE_TENTHS) % (600 / FT_CYCLE_TENTHS));
+                                    else
+                                        break;
+                                }
                             }
                         }
                     }
+                    else
+                        simulatedThisInterval = false;
 #endif
 
                     if (null != checkTransmitAtZero)
-                        checkTransmitAtZero(cycleNumber, intervalMsec);
+                        checkTransmitAtZero(cycleNumber, msecIntoCycle);
 
-                    if (interval == 0)
+                    if (intervalTenths < TENTHS_IN_SECOND)
                     {   // FT8 cycle second zero is a special time
                         if (!zeroIntervalCalled)
                         {   // only once per cycle
@@ -2004,15 +2025,17 @@ namespace WriteLogDigiRite
                     else
                         zeroIntervalCalled = false;
 
-                    if (interval == CLEAR_OLD_MESSAGES_AT)
+                    if (intervalTenths >= CLEAR_OLD_MESSAGES_AT_TENTHS)
                     {
                         if (!cqClearCalled)
+                        {
                             if (isOddCycle)
                                 cqListOdd.Reset();
                             else
                                 cqListEven.Reset();
-                        if (radioButtonEven.Checked == isOddCycle)
-                            toMe.Reset();
+                            if (radioButtonEven.Checked == isOddCycle)
+                                toMe.Reset();
+                        }
                         cqClearCalled = true;
                     }
                     else
@@ -2021,7 +2044,7 @@ namespace WriteLogDigiRite
                     ClockLabel cl = labelClockAnimation as ClockLabel;
                     if (null != cl)
                     {
-                        cl.Seconds = interval;
+                        cl.Tenths = intervalTenths;
                         cl.AmTransmit = isTransmitCycle;
                     }
                     if (forceRigUsb && (null != iWlEntry) && (null != iWlDupingEntry))
@@ -2133,7 +2156,7 @@ namespace WriteLogDigiRite
                 bool checkState = e.NewValue == CheckState.Checked;
                 if (checkState)
                     BeginInvoke(new Action(() => {
-                        if (!sendInProgress && interval <= START_LATE_MESSAGES_THROUGH) 
+                        if (!sendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS) 
                             transmitAtZero(true);
                         }));
         }
@@ -2356,7 +2379,10 @@ namespace WriteLogDigiRite
                     demodulator.nfqso = v;
                 rxForm.RxHz = v;
                 if (v != (int)numericUpDownRxFrequency.Value)
-                    numericUpDownRxFrequency.Value = v;
+                {
+                    if (v >= numericUpDownFrequency.Minimum && (v <= numericUpDownFrequency.Maximum))
+                        numericUpDownRxFrequency.Value = v;
+                }
             }
         }
         
