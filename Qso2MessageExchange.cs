@@ -177,11 +177,15 @@ namespace WriteLogDigiRite
                     haveReport = true;
                     lastSent = null;
                     if (amLeader && ack && haveSentReport)
+                    {
                         cb.SendAck();
+                        haveLogged = true;
+                        cb.LogQso();
+                    }
                     else
                     {
                         haveSentReport = true;
-                        ExchangeSent es = ()=>cb.SendExchange(ExchangeTypes.DB_REPORT,true);
+                        ExchangeSent es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, true);
                         lastSent = es;
                         es();
                     }
