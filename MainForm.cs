@@ -360,11 +360,8 @@ namespace WriteLogDigiRite
                             // END kludge.
                         }
                         // have a look at the packing type. i3 and n3
-                        float msecOffset = 0;
-                        if (digiMode == DigiMode.FT4)
-                            msecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[ft4DecodeOffsetIdx] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
                         XDpack77.Pack77Message.ReceivedMessage rm =
-                            XDpack77.Pack77Message.ReceivedMessage.CreateFromReceived(i3, n3, s.Substring(0, v), msg, cycle, MESSAGE_SEPARATOR, msecOffset);
+                            XDpack77.Pack77Message.ReceivedMessage.CreateFromReceived(i3, n3, s.Substring(0, v), msg, cycle, MESSAGE_SEPARATOR, ft4MsecOffset);
                         if (rm == null)
                             return; // FIXME. some messages we can't parse
 
@@ -440,6 +437,7 @@ namespace WriteLogDigiRite
                     ft4DecodeOffsetIdx += 1;
                     if (ft4DecodeOffsetIdx < ft4DecodeOffsetMsec.Length)
                     {
+                        ft4MsecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[ft4DecodeOffsetIdx] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
                         bool started = demodulator.DecodeAgain(wsjtExe, cycleNumber, ft4DecodeOffsetMsec[ft4DecodeOffsetIdx]);
                     }
                 }
@@ -1918,6 +1916,7 @@ namespace WriteLogDigiRite
         }
         private ushort[] ft4DecodeOffsetMsec;
         private int ft4DecodeOffsetIdx;
+        private float ft4MsecOffset = 0;
 
         /* having a clock to call the decoder simplifies
         ** keeping the demodulator on this gui thread.
@@ -1951,7 +1950,10 @@ namespace WriteLogDigiRite
                         // Some reasons it might not: interval is less than TRIGGER_DECODE.
                         // We have recently called into Clock which did invoke a decode, and that one isn't finished yet.
                         if (invokedDecode)
+                        {
                             ft4DecodeOffsetIdx = 0;
+                            ft4MsecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[0] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
+                        }
 
                         labelClock.Text = (intervalTenths/ TENTHS_IN_SECOND).ToString();
                         // twice per second, and synced to the utc second
