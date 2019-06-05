@@ -1243,7 +1243,8 @@ namespace WriteLogDigiRite
             try
             {
                 int seconds = Int32.Parse(s.Substring(4, 2));
-                isOdd = 0 != (1 & ((seconds * TENTHS_IN_SECOND) / FT_CYCLE_TENTHS));
+                int secondsMaybePlusHalf = seconds + 1;
+                isOdd = 0 != (1 & ((secondsMaybePlusHalf * TENTHS_IN_SECOND) / FT_CYCLE_TENTHS));
                 return seconds +
                     60 * Int32.Parse(s.Substring(2,2));
             }
