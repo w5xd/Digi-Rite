@@ -1952,7 +1952,8 @@ namespace WriteLogDigiRite
                         if (invokedDecode)
                         {
                             ft4DecodeOffsetIdx = 0;
-                            ft4MsecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[0] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
+                            if (null != ft4DecodeOffsetMsec)
+                                ft4MsecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[0] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
                         }
 
                         labelClock.Text = (intervalTenths/ TENTHS_IN_SECOND).ToString();
