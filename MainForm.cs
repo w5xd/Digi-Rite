@@ -495,7 +495,7 @@ namespace WriteLogDigiRite
                 return;
             DateTime toSend = getNowTime == null ? DateTime.UtcNow : getNowTime();
             int nowTenths = toSend.Second * 10 + toSend.Millisecond/100;
-            int cyclePos = nowTenths % FT_CYCLE_TENTHS; 
+            int cyclePosTenths = nowTenths % FT_CYCLE_TENTHS; 
             bool nowOdd = ((nowTenths / FT_CYCLE_TENTHS) & 1) != 0;
             int seconds = nowTenths;
             seconds /= FT_CYCLE_TENTHS;
@@ -682,9 +682,9 @@ namespace WriteLogDigiRite
                     int[] itones = itonesToSend[0].itone;
                     if (allowLate)
                     {
-                        if (cyclePos > 0)
+                        if (cyclePosTenths > 0)
                         {
-                            int msecToTruncate = toSend.Millisecond + 1000 * cyclePos; // how late we are
+                            int msecToTruncate = toSend.Millisecond + 100 * cyclePosTenths; // how late we are
                             msecToTruncate -= ALLOW_LATE_MSEC; // full itones don't last a full 15 seconds
                             int itonesToLose = msecToTruncate / 160;
                             if (itonesToLose > 0)
@@ -724,9 +724,9 @@ namespace WriteLogDigiRite
                         int[] nextTones = itones.itone;
                         if (allowLate)
                         {
-                            if (cyclePos > 0)
+                            if (cyclePosTenths > 0)
                             {
-                                int msecToTruncate = toSend.Millisecond + 1000 * cyclePos; // how late we are
+                                int msecToTruncate = toSend.Millisecond + 100 * cyclePosTenths; // how late we are
                                 msecToTruncate -= ALLOW_LATE_MSEC; // full itones don't last a full 15 seconds
                                 int itonesToLose = msecToTruncate / 160;
                                 if (itonesToLose > 0)
