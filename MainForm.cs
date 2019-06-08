@@ -24,7 +24,6 @@ namespace WriteLogDigiRite
         private XcvrForm rxForm;
         private String myCall;
         private String myBaseCall; // in case myCall is nonstandard
-        private String myGrid;
         private int instanceNumber;
         private String instanceRegKeyName;
 
@@ -188,6 +187,7 @@ namespace WriteLogDigiRite
             rxForm.demodParams = null;
             timerFt8Clock.Enabled = false;
             timerSpectrum.Enabled = false;
+            timerCleanup.Enabled = false;
             if (null != demodulator)
                 demodulator.Dispose();
             demodulator = null;
@@ -304,6 +304,7 @@ namespace WriteLogDigiRite
             trackBarTxGain.Enabled = gainOK;
             timerFt8Clock.Enabled = true;
             timerSpectrum.Enabled = true;
+            timerCleanup.Enabled = true;
             return true;
         }
 
@@ -599,7 +600,7 @@ namespace WriteLogDigiRite
                 }
                 cq += " " + myCall;
                 if (fullcallok)
-                    cq += " " + myGrid;
+                    cq += " " + MyGrid4;
                 toSendList.Add(new QueuedToSendListItem(cq, null));
                 if (!checkBoxAutoXmit.Checked)
                     checkBoxCQ.Checked = false;
@@ -872,6 +873,15 @@ namespace WriteLogDigiRite
             return GetExchangeMessage(q, addAck, (ExchangeTypes)excSet);
         }
 
+        public string MyGrid4 {
+            get {
+                string ret = Properties.Settings.Default.MyGrid;
+                if (ret.Length > 4)
+                    ret = ret.Substring(0, 4);
+                return ret;
+            }
+        }
+
         public string GetExchangeMessage(QsoInProgress q, bool addAck, ExchangeTypes excSet)
         {
             string hiscall = q.HisCall;
@@ -899,7 +909,23 @@ namespace WriteLogDigiRite
                 if (q.SentSerialNumber == 0)
                 {   // assign a serial number even if contest doesn't need it
                     iWlEntry.SerialNumber = 0; // get a fresh one
-                    q.SentSerialNumber = iWlEntry.SerialNumber;
+                    uint serialToSend = iWlEntry.SerialNumber;
+                    // WriteLog may give us the same serial number since we're just one radio
+                    Dictionary<uint,uint> serialsInProgress = new Dictionary<uint, uint>();
+                    var inProgress = qsosPanel.QsosInProgress;
+                    for (int i = 0; i < inProgress.Count; i++)
+                    {   // first entries are highest priority
+                        QsoInProgress qp = inProgress[i];
+                        if (null == qp)
+                            continue;   // manual entry goes this way
+                        uint qps = qp.SentSerialNumber;
+                        if (qps != 0)
+                            serialsInProgress.Add(qps, qps);
+                    }
+                    uint ignore;
+                    while (serialsInProgress.TryGetValue(serialToSend, out ignore))
+                        serialToSend += 1;
+                    q.SentSerialNumber = serialToSend;
                 }
                 switch (excSet)
                 {
@@ -991,7 +1017,7 @@ namespace WriteLogDigiRite
             return String.Format("{0} {1} {2}{3}",
                 hiscall,
                 mycall, 
-                addAck ? "R " : "", Properties.Settings.Default.MyGrid);
+                addAck ? "R " : "", MyGrid4);
         }
 
         private string GetAckMessage(QsoInProgress q, bool ofAnAck, int whichAck)
@@ -1217,7 +1243,7 @@ namespace WriteLogDigiRite
             iWlDupingEntry.EnterQso();
         }
         
-         #endregion
+        #endregion
 
         private String MyCall {
             set { 
@@ -1231,9 +1257,9 @@ namespace WriteLogDigiRite
         const int TENTHS_IN_SECOND = 10;
 
 #if DEBUG // for the simulator
-        const int INVALID_TIME_SECONDS = -1 - (60 * 60);
+        const int INVALID_TIME_TENTHS = -1 - (10 * 60 * 60);
         bool simulatedThisInterval;
-        int timeStampSeconds(String s, out bool isOdd)
+        int timeStampTenths(String s, out bool isOdd)
         {
             isOdd = false;
             if (String.IsNullOrEmpty(s))
@@ -1245,11 +1271,11 @@ namespace WriteLogDigiRite
                 int seconds = Int32.Parse(s.Substring(4, 2));
                 int secondsMaybePlusHalf = seconds + 1;
                 isOdd = 0 != (1 & ((secondsMaybePlusHalf * TENTHS_IN_SECOND) / FT_CYCLE_TENTHS));
-                return seconds +
-                    60 * Int32.Parse(s.Substring(2,2));
+                return (isOdd ? FT_CYCLE_TENTHS % 10 : 0) + 10 * (seconds +
+                    60 * Int32.Parse(s.Substring(2,2)));
             }
             catch (System.Exception )
-            {  return INVALID_TIME_SECONDS;   }
+            {  return INVALID_TIME_TENTHS;   }
         }
 #endif
         uint SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
@@ -1266,6 +1292,21 @@ namespace WriteLogDigiRite
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+
+#if !DEBUG
+            if (null == iWlDoc)
+            {
+                if (MessageBox.Show(
+                    "Running without a logging program has limited functionality!\r\n\r\n" +
+                    "QSOs will NOT be logged, even when so indicated, and contest exchange contents are (mostly) not valid.\r\n\r\n" +
+                    "Do you understand and accept these restrictions?\r\nYou must click YES to continue.", 
+                    "DigiRite", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    Close();
+                    return;
+                }
+            }
+#endif
             rxForm = new XcvrForm(this, instanceNumber);
             this.Text = String.Format("{0}-{1}", this.Text, instanceNumber);
 
@@ -1295,7 +1336,7 @@ namespace WriteLogDigiRite
             
             while (true)
             {
-                myGrid = Properties.Settings.Default.MyGrid;
+                string myGrid = Properties.Settings.Default.MyGrid;
                 if (SetupForm.validateGridSquare(myGrid) && InitSoundInAndOut())
                     break;
                 var sf = new SetupForm(
@@ -1512,7 +1553,7 @@ namespace WriteLogDigiRite
 
                     bool isOdd;
                     if (simulatorLines != null && simulatorLines.Count > 0)
-                        simulatorTimeOrigin = timeStampSeconds(simulatorLines[0], out isOdd);
+                        simulatorTimeOrigin = timeStampTenths(simulatorLines[0], out isOdd);
                 }
             }
             catch (System.Exception)
@@ -1528,6 +1569,7 @@ namespace WriteLogDigiRite
             rxForm.MaxDecodeFrequency = decodeMax;
             listBoxConversation.DrawMode = DrawMode.OwnerDrawFixed;
             logFile.SendToLog("Started");
+            finishedLoad = true;
         }
 
         private void changeDigiMode()
@@ -1601,40 +1643,43 @@ namespace WriteLogDigiRite
             qsoQueue.MyBaseCall = myBaseCall;
             qsosPanel.Reset(); // no QSOs in progress can survive switching queue handling
         }
-
+        private bool finishedLoad = false;
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Properties.Settings.Default.ShowMenu = checkBoxShowMenu.Checked;
-            Properties.Settings.Default.Save();
-            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
-            if (null != rk)
-            {   // save windows positions, etc.
-                rk.SetValue("MainX", locationToSave.X.ToString());
-                rk.SetValue("MainY", locationToSave.Y.ToString());
-                rk.SetValue("MainW", sizeToSave.Width.ToString());
-                rk.SetValue("MainH", sizeToSave.Height.ToString());
-                rk.SetValue("MainSplit", splitContainerCqLeft.SplitterDistance.ToString());
-                rk.SetValue("XcvrX", rxForm.LocationToSave.X.ToString());
-                rk.SetValue("XcvrY", rxForm.LocationToSave.Y.ToString());
-                rk.SetValue("XcvrW", rxForm.SizeToSave.Width.ToString());
-                rk.SetValue("XcvrH", rxForm.SizeToSave.Height.ToString());
-                rk.SetValue("XcvrSplit", rxForm.SplitterDistance.ToString());
-                if (!controlVFOsplit)
-                    rk.SetValue("ControlVfoSplit", "0");
-                else
-                {
-                    rk.SetValue("ControlVfoSplit", "1");
-                    rk.SetValue("MaxTxAudioFrequency", TxHighFreqLimit.ToString());
+            if (finishedLoad)
+            {
+                Properties.Settings.Default.ShowMenu = checkBoxShowMenu.Checked;
+                Properties.Settings.Default.Save();
+                Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
+                if (null != rk)
+                {   // save windows positions, etc.
+                    rk.SetValue("MainX", locationToSave.X.ToString());
+                    rk.SetValue("MainY", locationToSave.Y.ToString());
+                    rk.SetValue("MainW", sizeToSave.Width.ToString());
+                    rk.SetValue("MainH", sizeToSave.Height.ToString());
+                    rk.SetValue("MainSplit", splitContainerCqLeft.SplitterDistance.ToString());
+                    rk.SetValue("XcvrX", rxForm.LocationToSave.X.ToString());
+                    rk.SetValue("XcvrY", rxForm.LocationToSave.Y.ToString());
+                    rk.SetValue("XcvrW", rxForm.SizeToSave.Width.ToString());
+                    rk.SetValue("XcvrH", rxForm.SizeToSave.Height.ToString());
+                    rk.SetValue("XcvrSplit", rxForm.SplitterDistance.ToString());
+                    if (!controlVFOsplit)
+                        rk.SetValue("ControlVfoSplit", "0");
+                    else
+                    {
+                        rk.SetValue("ControlVfoSplit", "1");
+                        rk.SetValue("MaxTxAudioFrequency", TxHighFreqLimit.ToString());
+                    }
+                    rk.SetValue("ForceRigUSB", forceRigUsb ? "1" : "0");
+                    rk.SetValue("TxEven", radioButtonEven.Checked ? "1" : "0");
+                    rk.SetValue("BothCQsShow", checkBoxCQboth.Checked ? "1" : "0");
+                    rk.SetValue("TXfrequency", numericUpDownFrequency.Value.ToString());
+                    rk.SetValue("DecodeMinHz", rxForm.MinDecodeFrequency.ToString());
+                    rk.SetValue("DecodeMaxHz", rxForm.MaxDecodeFrequency.ToString());
+                    rk.SetValue("DigiMode", (digiMode == DigiMode.FT8 ? 0 : 1).ToString());
+                    rk.SetValue("VfoSplitToPtt", UserVfoSplitToPtt.ToString());
+                    rk.SetValue("PttToSound", UserPttToSound.ToString());
                 }
-                rk.SetValue("ForceRigUSB", forceRigUsb ? "1" : "0");
-                rk.SetValue("TxEven", radioButtonEven.Checked ? "1" : "0");
-                rk.SetValue("BothCQsShow", checkBoxCQboth.Checked ? "1" : "0");
-                rk.SetValue("TXfrequency", numericUpDownFrequency.Value.ToString());
-                rk.SetValue("DecodeMinHz", rxForm.MinDecodeFrequency.ToString());
-                rk.SetValue("DecodeMaxHz", rxForm.MaxDecodeFrequency.ToString());
-                rk.SetValue("DigiMode", (digiMode==DigiMode.FT8 ? 0 : 1).ToString());
-                rk.SetValue("VfoSplitToPtt", UserVfoSplitToPtt.ToString());
-                rk.SetValue("PttToSound", UserPttToSound.ToString());
             }
             if (demodulator != null)
                 demodulator.Dispose();
@@ -1800,6 +1845,16 @@ namespace WriteLogDigiRite
         {
             if ((null != rxForm) && (null != demodulator))
                 rxForm.DisplaySpectrum(demodulator);
+        }
+        
+        private void timerCleanup_Tick(object sender, EventArgs e)
+        {
+#if !DEBUG
+            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromHours(1);
+#else
+            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromMinutes(4);
+#endif
+            qsosPanel.PurgeOldLoggedQsos(removalTime);
         }
 
         private System.Drawing.Point locationToSave;
@@ -1983,21 +2038,21 @@ namespace WriteLogDigiRite
                             {
                                 var now = DateTime.UtcNow;
                                 bool isOdd;
-                                int simNextSeconds = timeStampSeconds(simulatorLines[simulatorNext], out isOdd);
-                                if (simNextSeconds <= INVALID_TIME_SECONDS)
+                                int simNextTenths = timeStampTenths(simulatorLines[simulatorNext], out isOdd);
+                                if (simNextTenths <= INVALID_TIME_TENTHS)
                                     simulatorNext += 1; // skip it
                                 else
                                 {
-                                    int simTimeSeconds = simNextSeconds - simulatorTimeOrigin;
-                                    if (isOdd != isOddCycle)
-                                        simTimeSeconds += FT_CYCLE_TENTHS/ TENTHS_IN_SECOND; // delay simulation to match odd/even w.r.t. real time
-                                    if (simTimeSeconds < 0)
-                                        simTimeSeconds += 60 * 60;
-                                    if (simTimeSeconds > 60 * 60)
-                                        simTimeSeconds -= 60 * 60;
-                                    int secondsSinceOrigin = (int)(now - simulatorStart).TotalSeconds;
-                                    if (simTimeSeconds <= secondsSinceOrigin)
-                                        OnReceived(simulatorLines[simulatorNext++], ((simNextSeconds * TENTHS_IN_SECOND) / FT_CYCLE_TENTHS) % (600 / FT_CYCLE_TENTHS));
+                                    int simTimeTenths = (simNextTenths - simulatorTimeOrigin);
+                                    if (isOdd != isOddCycle) 
+                                        simTimeTenths += FT_CYCLE_TENTHS; // delay simulation to match odd/even w.r.t. real time
+                                    if (simTimeTenths < 0)
+                                        simTimeTenths += FT_CYCLE_TENTHS * 60 * 60;
+                                    if (simTimeTenths > FT_CYCLE_TENTHS * 60 * 60)
+                                        simTimeTenths -= FT_CYCLE_TENTHS * 60 * 60;
+                                    int tenthsSinceOrigin = (int)(now - simulatorStart).TotalMilliseconds / 100;
+                                    if (simTimeTenths <= tenthsSinceOrigin)
+                                        OnReceived(simulatorLines[simulatorNext++], (simNextTenths / FT_CYCLE_TENTHS) % (600 / FT_CYCLE_TENTHS));
                                     else
                                         break;
                                 }
@@ -2078,9 +2133,9 @@ namespace WriteLogDigiRite
             }
         }
 
-        #endregion
+#endregion
 
-        #region foreign threads
+#region foreign threads
         // The XDft8 assembly invokes our delegate on a foreign thread.
         private void Decoded(String s, int cycle)
         {   // BeginInvoke back onto form's thread
@@ -2091,7 +2146,7 @@ namespace WriteLogDigiRite
         {   // get back on the form's thread
             BeginInvoke(new Action<bool>(OnAudioComplete), isBeginning);
         }
-        #endregion
+#endregion
 
         private void OnAudioComplete(bool isBegin)
         {
@@ -2338,9 +2393,6 @@ namespace WriteLogDigiRite
         private void removeAllInactiveToolStripMenuItem_Click(object sender, EventArgs e)
         { qsosPanel.removeAllInactive();  }
 
-        private void removeAllLoggedToolStripMenuItem_Click(object sender, EventArgs e)
-        {  qsosPanel.removeAllLogged();       }
-
         private void trackBarTxGain_Scroll(object sender, EventArgs e)
         {   deviceTx.Gain = (float)Math.Pow(2.0, (trackBarTxGain.Value - trackBarTxGain.Maximum)/AUDIO_SLIDER_SCALE);  }
         
@@ -2404,5 +2456,6 @@ namespace WriteLogDigiRite
 
 #endregion
 
-     }
+       
+    }
 }

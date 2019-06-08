@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace WriteLogDigiRite
@@ -26,6 +27,11 @@ namespace WriteLogDigiRite
         LogAsIs logAsIsCb;
         public LogAsIs logAsIs { set { logAsIsCb = value; } get => logAsIsCb; }
 
+        /* The callback linkage in DigiRite is convoluted:
+         * QsoInProgress.OnChangedCb calls us, but only through the lambda in our Add() method.
+         * Our own qsoActiveChanged is invoked from this panel's GUI interactions
+         */
+
         public delegate void QsoActiveChanged(QsoInProgress qp);
         QsoActiveChanged qsoActiveChangedCb;
         public QsoActiveChanged qsoActiveChanged { set { qsoActiveChangedCb = value; } get => qsoActiveChangedCb; }
@@ -43,6 +49,10 @@ namespace WriteLogDigiRite
         public OrderChanged orderChanged { set { orderChangedCb = value; } get => orderChangedCb; }
         #endregion
 
+        #region state
+        private Dictionary<object, QsoInProgress> loggedInactive = new Dictionary<object, QsoInProgress>();
+        #endregion
+
         // the underlying data is in the Control array
         public List<QsoInProgress> QsosInProgress {
             get {
@@ -53,6 +63,16 @@ namespace WriteLogDigiRite
                     if (null != ql)
                         ret.Add(ql.qso);
                 }
+                return ret;
+            }
+        }
+
+        public Dictionary<object, QsoInProgress> QsosInProgressDictionary {
+            get {
+                Dictionary<object, QsoInProgress> ret = // includes loggedInactive as well as active
+                    new Dictionary<object, QsoInProgress>(loggedInactive);
+                foreach (var qp in QsosInProgress)
+                    ret[qp.GetKey()] = qp;
                 return ret;
             }
         }
@@ -74,11 +94,20 @@ namespace WriteLogDigiRite
             cb.Checked = true;
             cb.TabStop = false;
             qp.Active = true;
-            qp.OnChangedCb += new QsoInProgress.OnChanged(() =>
+            qp.OnChangedCb = new QsoInProgress.OnChanged(() =>
             {
-                lb.Invalidate();
-                if (cb.Checked != qp.Active)
-                    cb.Checked = qp.Active;
+                if (qp.IsLogged && !qp.Active)
+                {   // switch modes. qso is out of the gui and into loggedInactive
+                    Remove(qp);
+                    loggedInactive[qp.GetKey()] = qp;
+                    qp.OnChangedCb = new QsoInProgress.OnChanged(() => OnLoggedInactiveChanged(qp));
+                }
+                else
+                {   // update GUI
+                    lb.Invalidate();
+                    if (cb.Checked != qp.Active)
+                        cb.Checked = qp.Active;
+                }
             });
 
             cb.onRightMouse = new MouseEventHandler((object o, MouseEventArgs target) =>
@@ -96,6 +125,9 @@ namespace WriteLogDigiRite
             lb.onClick += new EventHandler((object o, EventArgs e) =>
             {
                 cb.Focus();
+                var args = e as System.Windows.Forms.MouseEventArgs;
+                if (null != args && args.Button==MouseButtons.Left)
+                    qp.Active = !qp.Active;
             });
             lb.onGetFocusCb += new FocusDrawingHelper.OnGetFocusCb(() => {
                 if (null != fillAlternativesCb)fillAlternativesCb(qp);
@@ -122,12 +154,6 @@ namespace WriteLogDigiRite
             }
         }
 
-        private void OnCheck(CheckBox cb, QsoInProgress qp)
-        {
-            SetQsoActive(qp, cb.Checked);
-            fillAlternativesCb(qp);
-        }
-
         public void Remove(QsoInProgress qp)
         {
             foreach (var c in tlp.Controls)
@@ -144,6 +170,7 @@ namespace WriteLogDigiRite
                     tlp.Controls.RemoveAt(idx);
                     d1.Dispose();
                     d2.Dispose();
+                    qp.OnChangedCb = null;
                     SizeChanged(null,null); // redraw
                     if (null != orderChangedCb)
                         orderChangedCb();
@@ -170,29 +197,43 @@ namespace WriteLogDigiRite
             return ret;
         }
 
+        public void RefreshOnScreen()
+        { tlp.Invalidate(true); }
+
+        public void PurgeOldLoggedQsos(DateTime olderThan)
+        {
+            foreach (var qi in loggedInactive.ToList())
+            {
+                if (qi.Value.TimeOfLastReceived < olderThan)
+                    loggedInactive.Remove(qi.Key);
+            }
+        }
+
+        private void OnLoggedInactiveChanged(QsoInProgress qp)
+        {
+            if (qp.Active)
+            {   // back into the GUI when it becomes active.
+                qp.OnChangedCb = null;
+                loggedInactive.Remove(qp.GetKey());
+                Add(qp);
+            }
+        }
+
+        // our GUI check box handler:
         private void SetQsoActive(QsoInProgress qp, bool active)
         {
             if (qp.Active != active)
             {
-                qp.Active = active;
+                qp.Active = active;  // note--invokes our lamda in Add()
                 qsoActiveChangedCb(qp);
-                for (int i = 0; i < tlp.Controls.Count; i += 1)
-                {
-                    QsoInProgressLabel lb = tlp.Controls[i] as QsoInProgressLabel;
-                    if (null == lb)
-                        continue;
-                    if (!Object.ReferenceEquals(lb.qso, qp))
-                        continue;
-                    QsoCb cb = tlp.Controls[i+1] as QsoCb;
-                    if (null != cb)
-                        cb.Checked = active;
-                    break;
-                }
             }
         }
 
-        public void RefreshOnScreen()
-        { tlp.Invalidate(true); }
+        private void OnCheck(CheckBox cb, QsoInProgress qp)
+        {
+            SetQsoActive(qp, cb.Checked);
+            fillAlternativesCb(qp);
+        }
 
         private void PanelRightMouseDown(object sender, MouseEventArgs e)
         {
@@ -209,15 +250,7 @@ namespace WriteLogDigiRite
                 contextItem.Click += inProgressContext_Click;
                 toolStripItems.Add(contextItem);
             }
-            {
-                var contextItem = new ToolStripMenuItem
-                {
-                    Text = "&Logged: remove all",
-                    Tag = new Action(() => removeAllLogged())
-                };
-                contextItem.Click += inProgressContext_Click;
-                toolStripItems.Add(contextItem);
-            }
+
             inProgressRightMouse = new ContextMenuStrip();
             inProgressRightMouse.Items.AddRange(toolStripItems.ToArray());
             System.Drawing.Point pos = Cursor.Position;
@@ -348,15 +381,7 @@ namespace WriteLogDigiRite
                 contextItem.Click += inProgressContext_Click;
                 toolStripItems.Add(contextItem);
             }
-            {
-                var contextItem = new ToolStripMenuItem
-                {
-                    Text = "&Logged: remove all",
-                    Tag = new Action(() => removeAllLogged())
-                };
-                contextItem.Click += inProgressContext_Click;
-                toolStripItems.Add(contextItem);
-            }
+           
             inProgressRightMouse = new ContextMenuStrip();
             inProgressRightMouse.Items.AddRange(toolStripItems.ToArray());
             System.Drawing.Point pos = (e != null) ?
@@ -409,8 +434,6 @@ namespace WriteLogDigiRite
         public void removeAllInactive()
         {  removeByCondition((QsoInProgress q) => !q.Active); }
 
-        public void removeAllLogged()
-        { removeByCondition((QsoInProgress q) => q.IsLogged); }
     }
 
     class QsoInProgressLabel : FocusDrawingHelper

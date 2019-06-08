@@ -18,7 +18,7 @@ namespace WriteLogDigiRite
 
     public interface IQsoSequencer
     {
-        void OnReceivedNothing();
+        bool OnReceivedNothing(); // return true on sent a message
         bool IsFinished { get; }
         string DisplayState { get; }
     }

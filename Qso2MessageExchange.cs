@@ -28,18 +28,11 @@ namespace WriteLogDigiRite
             short band, bool autoStart, IsConversationMessage onUsed)
         {
             XDpack77.Pack77Message.ReceivedMessage rm = recentMessage.Message;
-            var inProgList = qsosPanel.QsosInProgress;
+            var inProgList = qsosPanel.QsosInProgressDictionary;
             QsoInProgress inProgress = null;
-            bool isSameStation = false;
             bool used = false;
-            foreach (QsoInProgress q in inProgList)
-            {
-                inProgress = q;
-                used = q.AddMessageOnMatch(rm, directlyToMe,
-                    callQsled, band, out isSameStation);
-                if (isSameStation)
-                    break;
-            }
+            if (inProgList.TryGetValue(QsoInProgress.GetKey(rm, band), out inProgress))
+                used = inProgress.AddMessageOnMatch(rm, directlyToMe, callQsled);
             if (used)
             {
                 // we have an ongoing QSO for this message
@@ -50,7 +43,7 @@ namespace WriteLogDigiRite
                 onUsed(Conversation.Origin.TO_ME);
                 // wasn't one we already had. but we autostart with any call
                 InitiateQso(recentMessage, band, false);
-            } else if (isSameStation)
+            } else if (null != inProgress)
             {
                 if ((null != inProgress.Sequencer) && !inProgress.Sequencer.IsFinished)
                     onUsed(Conversation.Origin.TO_OTHER); // make it show up in the conversation history
@@ -215,10 +208,15 @@ namespace WriteLogDigiRite
             }
          }
 
-        public void OnReceivedNothing()
+        public bool OnReceivedNothing()
         {
             if (null != lastSent)
+            {
                 lastSent();
+                return true;
+            }
+            return false;
         }
+
     }
 }

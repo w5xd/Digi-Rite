@@ -79,7 +79,6 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.qsoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAllInactiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.removeAllLoggedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewReadMeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -98,6 +97,7 @@
             this.panelInProgress = new System.Windows.Forms.Panel();
             this.listBoxConversation = new WriteLogDigiRite.ConversationListBox();
             this.checkedlbNextToSend = new WriteLogDigiRite.ToSendListBox();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -666,8 +666,7 @@
             // qsoToolStripMenuItem
             // 
             this.qsoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.removeAllInactiveToolStripMenuItem,
-            this.removeAllLoggedToolStripMenuItem});
+            this.removeAllInactiveToolStripMenuItem});
             this.qsoToolStripMenuItem.Name = "qsoToolStripMenuItem";
             this.qsoToolStripMenuItem.Size = new System.Drawing.Size(51, 20);
             this.qsoToolStripMenuItem.Text = "Q&SO\'s";
@@ -678,13 +677,6 @@
             this.removeAllInactiveToolStripMenuItem.Size = new System.Drawing.Size(237, 22);
             this.removeAllInactiveToolStripMenuItem.Text = "In progress: remove all &Inactive";
             this.removeAllInactiveToolStripMenuItem.Click += new System.EventHandler(this.removeAllInactiveToolStripMenuItem_Click);
-            // 
-            // removeAllLoggedToolStripMenuItem
-            // 
-            this.removeAllLoggedToolStripMenuItem.Name = "removeAllLoggedToolStripMenuItem";
-            this.removeAllLoggedToolStripMenuItem.Size = new System.Drawing.Size(237, 22);
-            this.removeAllLoggedToolStripMenuItem.Text = "In progress: remove all &Logged";
-            this.removeAllLoggedToolStripMenuItem.Click += new System.EventHandler(this.removeAllLoggedToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -899,6 +891,11 @@
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
             // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1018,10 +1015,10 @@
         private System.Windows.Forms.ToolStripMenuItem viewReadMeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem qsoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removeAllInactiveToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem removeAllLoggedToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainerCenter;
         private System.Windows.Forms.Panel panelInProgress;
         private System.Windows.Forms.Button buttonTune;
+        private System.Windows.Forms.Timer timerCleanup;
     }
 }
 
