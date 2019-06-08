@@ -41,10 +41,14 @@
 
         public string DisplayState { get { return State.ToString(); } }
         
-        public void OnReceivedNothing()
+        public bool OnReceivedNothing()
         {
             if (!HaveTheirs || !HaveAck)
+            {
                 qsoSequencerCallbacks.SendExchange(HaveTheirs);
+                return true;
+            }
+            return false;
         }
 
         public void OnReceivedExchange(bool withAck)
@@ -60,6 +64,7 @@
             {   // if they do, then ack this one
                 qsoSequencerCallbacks.SendAck(false);
                 OnReceivedAck(); // state is such this call only logs--does not send
+                State = 3;
             }
         }
 

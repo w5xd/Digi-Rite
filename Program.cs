@@ -15,12 +15,12 @@ namespace WriteLogDigiRite
         [STAThread]
         static void Main(string[] args)
         {
+            const int UpgradedVersion = 24;  // increment every release
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 #if DEBUG
             MessageBox.Show("Debug me", "DigiRite.exe");
 #endif
-            const int UpgradedVersion = 23;  // increment every release
             int settingsVersion = Properties.Settings.Default.SavedVersion;
             if (settingsVersion < UpgradedVersion)
             {

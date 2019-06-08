@@ -63,23 +63,16 @@ namespace WriteLogDigiRite
             bool autoStart, IsConversationMessage onUsed)
         {
             XDpack77.Pack77Message.ReceivedMessage rm = recentMessage.Message;
-            var inProgList = qsosPanel.QsosInProgress;
+            var inProgList = qsosPanel.QsosInProgressDictionary;
             QsoInProgress inProgress = null;
-            bool isSameStation = false;
             bool used = false;
-            foreach (QsoInProgress q in inProgList)
-            {
-                inProgress = q;
-                used = q.AddMessageOnMatch(rm, directlyToMe,
-                    callQsled, band, out isSameStation);
-                if (isSameStation)
-                    break;
-            }
+            if (inProgList.TryGetValue(QsoInProgress.GetKey(rm, band), out inProgress))
+                used = inProgress.AddMessageOnMatch(rm, directlyToMe, callQsled);
             if (used)
             {
                 // we have an ongoing QSO for this message
                 QsoSequencer sequencer = inProgress.Sequencer as QsoSequencer;
-                onUsed(Conversation.Origin.TO_ME);
+                onUsed(directlyToMe ? Conversation.Origin.TO_ME : Conversation.Origin.TO_OTHER);
                 // What's in the message? an exchange and/or an acknowledgement?
                 XDpack77.Pack77Message.Exchange exc = rm.Pack77Message as XDpack77.Pack77Message.Exchange;
                 bool hasExchange = (exc != null) && !String.IsNullOrEmpty(exc.Exchange);
@@ -89,7 +82,7 @@ namespace WriteLogDigiRite
                     ack = roger.Roger; // if the message has a roger bit, use it
                 if (!hasExchange && !ack) // but if no exchange, allow QSL to also set ack
                 {   // if the message can QSO prior, see if can apply to us
-                        if (String.Equals("ALL", callQsled) || 
+                        if ((String.Equals("ALL", callQsled) && inProgress.CanAcceptAckNotToMe) || 
                             String.Equals(myCall,callQsled)  || 
                             String.Equals(myBaseCall, callQsled))
                             ack = true;
@@ -104,7 +97,7 @@ namespace WriteLogDigiRite
                 onUsed(Conversation.Origin.TO_ME);
                 // wasn't one we already had. but we autostart with any call
                 InitiateQso(recentMessage, band, false);
-            } else if (isSameStation) 
+            } else if (null != inProgress) 
             {
                 if ((null != inProgress.Sequencer) && !inProgress.Sequencer.IsFinished)
                     onUsed(Conversation.Origin.TO_OTHER); // make it show up in the conversation history
