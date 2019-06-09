@@ -203,7 +203,7 @@ namespace WriteLogDigiRite
                     {
                         // if he sends multiple messages in the same cycle...
                         // ...then we need to "hold" only if this is the only one
-                        if (!messagedThisCycle)
+                        if (!messagedThisCycle && !markedAsLogged)
                         {
                             // he sent to someone else
                             int freqDif = (int)transmitFrequency;

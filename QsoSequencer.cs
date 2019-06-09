@@ -64,7 +64,7 @@
             {   // if they do, then ack this one
                 qsoSequencerCallbacks.SendAck(false);
                 OnReceivedAck(); // state is such this call only logs--does not send
-                State = 3;
+                State = System.Math.Max(3, State);
             }
         }
 

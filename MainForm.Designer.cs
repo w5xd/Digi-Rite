@@ -86,6 +86,7 @@
             this.logFileLengthToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetLogFileToEmpyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainerCqLeft = new System.Windows.Forms.SplitContainer();
+            this.splitContainerAnswerUpCqsDown = new System.Windows.Forms.SplitContainer();
             this.splitContainerCQ = new System.Windows.Forms.SplitContainer();
             this.panelEvenCQs = new System.Windows.Forms.Panel();
             this.checkBoxCqTable = new System.Windows.Forms.CheckBox();
@@ -113,6 +114,10 @@
             this.splitContainerCqLeft.Panel1.SuspendLayout();
             this.splitContainerCqLeft.Panel2.SuspendLayout();
             this.splitContainerCqLeft.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainerAnswerUpCqsDown)).BeginInit();
+            this.splitContainerAnswerUpCqsDown.Panel1.SuspendLayout();
+            this.splitContainerAnswerUpCqsDown.Panel2.SuspendLayout();
+            this.splitContainerAnswerUpCqsDown.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerCQ)).BeginInit();
             this.splitContainerCQ.Panel1.SuspendLayout();
             this.splitContainerCQ.Panel2.SuspendLayout();
@@ -214,11 +219,11 @@
             // 
             this.listToMe.BackColor = System.Drawing.SystemColors.Window;
             this.listToMe.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.listToMe.Dock = System.Windows.Forms.DockStyle.Top;
+            this.listToMe.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listToMe.Font = new System.Drawing.Font("Lucida Console", 9F);
-            this.listToMe.Location = new System.Drawing.Point(3, 24);
+            this.listToMe.Location = new System.Drawing.Point(0, 0);
             this.listToMe.Name = "listToMe";
-            this.listToMe.Size = new System.Drawing.Size(255, 70);
+            this.listToMe.Size = new System.Drawing.Size(255, 83);
             this.listToMe.TabIndex = 2;
             // 
             // timerFt8Clock
@@ -733,8 +738,7 @@
             // 
             // splitContainerCqLeft.Panel1
             // 
-            this.splitContainerCqLeft.Panel1.Controls.Add(this.splitContainerCQ);
-            this.splitContainerCqLeft.Panel1.Controls.Add(this.listToMe);
+            this.splitContainerCqLeft.Panel1.Controls.Add(this.splitContainerAnswerUpCqsDown);
             this.splitContainerCqLeft.Panel1.Controls.Add(this.panel5);
             this.splitContainerCqLeft.Panel1.Controls.Add(this.panel1);
             this.splitContainerCqLeft.Panel1.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
@@ -746,11 +750,32 @@
             this.splitContainerCqLeft.SplitterDistance = 258;
             this.splitContainerCqLeft.TabIndex = 2;
             // 
+            // splitContainerAnswerUpCqsDown
+            // 
+            this.splitContainerAnswerUpCqsDown.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainerAnswerUpCqsDown.Location = new System.Drawing.Point(3, 24);
+            this.splitContainerAnswerUpCqsDown.Name = "splitContainerAnswerUpCqsDown";
+            this.splitContainerAnswerUpCqsDown.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainerAnswerUpCqsDown.Panel1
+            // 
+            this.splitContainerAnswerUpCqsDown.Panel1.BackColor = System.Drawing.SystemColors.Window;
+            this.splitContainerAnswerUpCqsDown.Panel1.Controls.Add(this.listToMe);
+            // 
+            // splitContainerAnswerUpCqsDown.Panel2
+            // 
+            this.splitContainerAnswerUpCqsDown.Panel2.BackColor = System.Drawing.SystemColors.Window;
+            this.splitContainerAnswerUpCqsDown.Panel2.Controls.Add(this.splitContainerCQ);
+            this.splitContainerAnswerUpCqsDown.Panel2MinSize = 100;
+            this.splitContainerAnswerUpCqsDown.Size = new System.Drawing.Size(255, 351);
+            this.splitContainerAnswerUpCqsDown.SplitterDistance = 83;
+            this.splitContainerAnswerUpCqsDown.TabIndex = 2;
+            // 
             // splitContainerCQ
             // 
             this.splitContainerCQ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.splitContainerCQ.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerCQ.Location = new System.Drawing.Point(3, 94);
+            this.splitContainerCQ.Location = new System.Drawing.Point(0, 0);
             this.splitContainerCQ.Name = "splitContainerCQ";
             this.splitContainerCQ.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -765,8 +790,8 @@
             this.splitContainerCQ.Panel2.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerCQ.Panel2.Controls.Add(this.panelOddCQs);
             this.splitContainerCQ.Panel2.Controls.Add(this.label11);
-            this.splitContainerCQ.Size = new System.Drawing.Size(255, 281);
-            this.splitContainerCQ.SplitterDistance = 111;
+            this.splitContainerCQ.Size = new System.Drawing.Size(255, 264);
+            this.splitContainerCQ.SplitterDistance = 163;
             this.splitContainerCQ.TabIndex = 3;
             // 
             // panelEvenCQs
@@ -776,7 +801,7 @@
             this.panelEvenCQs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelEvenCQs.Location = new System.Drawing.Point(0, 17);
             this.panelEvenCQs.Name = "panelEvenCQs";
-            this.panelEvenCQs.Size = new System.Drawing.Size(253, 92);
+            this.panelEvenCQs.Size = new System.Drawing.Size(253, 144);
             this.panelEvenCQs.TabIndex = 1;
             // 
             // checkBoxCqTable
@@ -817,7 +842,7 @@
             this.panelOddCQs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelOddCQs.Location = new System.Drawing.Point(0, 17);
             this.panelOddCQs.Name = "panelOddCQs";
-            this.panelOddCQs.Size = new System.Drawing.Size(253, 147);
+            this.panelOddCQs.Size = new System.Drawing.Size(253, 78);
             this.panelOddCQs.TabIndex = 1;
             // 
             // label11
@@ -934,6 +959,10 @@
             this.splitContainerCqLeft.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerCqLeft)).EndInit();
             this.splitContainerCqLeft.ResumeLayout(false);
+            this.splitContainerAnswerUpCqsDown.Panel1.ResumeLayout(false);
+            this.splitContainerAnswerUpCqsDown.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainerAnswerUpCqsDown)).EndInit();
+            this.splitContainerAnswerUpCqsDown.ResumeLayout(false);
             this.splitContainerCQ.Panel1.ResumeLayout(false);
             this.splitContainerCQ.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerCQ)).EndInit();
@@ -988,6 +1017,7 @@
         private System.Windows.Forms.ToolStripMenuItem setupToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainerCqLeft;
+        private System.Windows.Forms.SplitContainer splitContainerAnswerUpCqsDown;
         private System.Windows.Forms.CheckBox checkBoxCQboth;
         private System.Windows.Forms.SplitContainer splitContainerCQ;
         private System.Windows.Forms.CheckBox checkBoxCqTable;
