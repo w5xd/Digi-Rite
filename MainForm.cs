@@ -394,6 +394,12 @@ namespace WriteLogDigiRite
                             iWlDupingEntry.ClearEntry();
                             if (DgtlFieldNumber > 0)
                                 iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
+                            if (GridSquareReceivedFieldNumber > 0)
+                            {
+                                XDpack77.Pack77Message.Exchange hisGrid = rm.Pack77Message as XDpack77.Pack77Message.Exchange;
+                                if (!String.IsNullOrEmpty(hisGrid.GridSquare))
+                                    iWlDupingEntry.SetFieldN((short)GridSquareReceivedFieldNumber, hisGrid.GridSquare);
+                            }
                             iWlDupingEntry.Callsign = fromCall;
                             dupe = iWlDupingEntry.Dupe();
                             if (dupe == 0)
@@ -566,7 +572,7 @@ namespace WriteLogDigiRite
                     break;
                 checkedlbNextToSend.Items.Remove(qli);
                 if (toSendList.Any((qalready) => { 
-                    if (null != qalready)
+                    if (null != qalready && null != qalready.q && null != qli.q)
                         return String.Equals(qli.q.HisCall, qalready.q.HisCall);
                     return false;}
                     ))
@@ -1247,8 +1253,8 @@ namespace WriteLogDigiRite
 
         private String MyCall {
             set { 
-                myCall = value;
-                myBaseCall = value;
+                myCall = value.ToUpper().Trim();
+                myBaseCall = myCall;
                 if (!String.IsNullOrEmpty(value) && !XDft.Generator.checkCall(myCall, ref myBaseCall))
                     MessageBox.Show("Callsign " + value + " is not a valid callsign for FT8");
             }
@@ -1357,7 +1363,7 @@ namespace WriteLogDigiRite
                 forceRigUsb = sf.forceRigUsb;
                 TxHighFreqLimit = sf.txHighLimit;
                 digiMode = sf.digiMode;
-                MyCall = Properties.Settings.Default.CallUsed.ToUpper();
+                MyCall = Properties.Settings.Default.CallUsed;
                 UserPttToSound = sf.PttToSound;
                 UserVfoSplitToPtt = sf.VfoSplitToPtt;
             }
@@ -1442,10 +1448,18 @@ namespace WriteLogDigiRite
                 int mainSplitterDistance;
                 if (fromRegistryValue(rk, "MainSplit", out mainSplitterDistance))
                 {  
-                    if (mainSplitterDistance >= splitContainerCqLeft.Panel1MinSize && mainSplitterDistance <= 
-                        splitContainerCQ.Width - splitContainerCQ.Panel2MinSize)
+                    if (mainSplitterDistance >= splitContainerCqLeft.Panel1MinSize && 
+                        mainSplitterDistance <= splitContainerCqLeft.Width - splitContainerCqLeft.Panel2MinSize)
                         splitContainerCqLeft.SplitterDistance = mainSplitterDistance; 
-                }    
+                }
+
+                int leftSplitterDistance;
+                if (fromRegistryValue(rk, "LeftVerticalSplit", out leftSplitterDistance))
+                {
+                    if (leftSplitterDistance >= splitContainerAnswerUpCqsDown.Panel1MinSize && 
+                        leftSplitterDistance <= splitContainerAnswerUpCqsDown.Height - splitContainerAnswerUpCqsDown.Panel2MinSize)
+                        splitContainerAnswerUpCqsDown.SplitterDistance = leftSplitterDistance;
+                }
 
                 {
                     int x, y;
@@ -1658,6 +1672,7 @@ namespace WriteLogDigiRite
                     rk.SetValue("MainW", sizeToSave.Width.ToString());
                     rk.SetValue("MainH", sizeToSave.Height.ToString());
                     rk.SetValue("MainSplit", splitContainerCqLeft.SplitterDistance.ToString());
+                    rk.SetValue("LeftVerticalSplit", splitContainerAnswerUpCqsDown.SplitterDistance.ToString());
                     rk.SetValue("XcvrX", rxForm.LocationToSave.X.ToString());
                     rk.SetValue("XcvrY", rxForm.LocationToSave.Y.ToString());
                     rk.SetValue("XcvrW", rxForm.SizeToSave.Width.ToString());
@@ -1833,12 +1848,12 @@ namespace WriteLogDigiRite
                     Properties.Settings.Default["AudioOutputChannel_" + instanceNumber.ToString()] = (uint)lr;
                     SetupMaySelectLR = false;
                 }
-                MyCall = iWlDoc.CallUsed.ToUpper();
+                MyCall = iWlDoc.CallUsed;
                 if (!String.IsNullOrEmpty(myCall))
                     Properties.Settings.Default.CallUsed = myCall;
             }
             else
-                MyCall = Properties.Settings.Default.CallUsed.ToUpper();
+                MyCall = Properties.Settings.Default.CallUsed;
         }
 
         private void timerSpectrum_Tick(object sender, EventArgs e)
@@ -2296,7 +2311,7 @@ namespace WriteLogDigiRite
                 String curCall = iWlDoc.CallUsed;
                 if (!String.IsNullOrEmpty(curCall))
                 {
-                    Properties.Settings.Default.CallUsed = curCall.ToUpper();
+                    Properties.Settings.Default.CallUsed = curCall.ToUpper().Trim();
                     MyCall = curCall;
                     qsoQueue.MyCall = myCall;
                     qsoQueue.MyBaseCall = myBaseCall;
@@ -2330,7 +2345,7 @@ namespace WriteLogDigiRite
                 }
                 if (maySelectCallUsed)
                 {
-                    MyCall = Properties.Settings.Default.CallUsed.ToUpper();
+                    MyCall = Properties.Settings.Default.CallUsed;
                     qsoQueue.MyCall = myCall;
                     qsoQueue.MyBaseCall = myBaseCall;
                 }
