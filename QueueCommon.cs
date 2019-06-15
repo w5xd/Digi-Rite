@@ -26,7 +26,14 @@ namespace WriteLogDigiRite
             var inProgList = qsosPanel.QsosInProgressDictionary;
             QsoInProgress q = null;
             if (inProgList.TryGetValue(QsoInProgress.GetKey(rm.Message, band), out q))
+            {
+                if (!q.Active)
+                {
+                    q.Active = true;
+                    StartQso(q);
+                }
                 return false; // we're already trying to work this guy
+            }
             if (null != onUsed) onUsed();
             QsoInProgress newStn = new QsoInProgress(rm, band);
             if (onHisFrequency)

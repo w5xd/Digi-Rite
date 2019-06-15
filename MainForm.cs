@@ -1,7 +1,10 @@
-﻿using System;
+﻿#define DISABLE_FT4
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+
 
 namespace WriteLogDigiRite
 {
@@ -594,12 +597,12 @@ namespace WriteLogDigiRite
                 {   // get CQ message from WriteLog if its there
                     const short WRITELOG_CQ_MESSAGE_NUMBER = 9;
                     var split = iWlDoc.GetFKeyMsgDigital(
-                        WRITELOG_CQ_MESSAGE_NUMBER).Split((char[])null);
-                    if ((split.Length >= 2) && (split[0].ToUpper() == "CQ"))
+                        WRITELOG_CQ_MESSAGE_NUMBER).ToUpper().Split((char[])null);
+                    if ((split.Length >= 2) && (split[0] == "CQ"))
                     {
                         if ((split[1].Length <= 4) && split[1].All(Char.IsLetter))
                         {
-                            string nextword = split[1].ToUpper();
+                            string nextword = split[1];
                             cq += " " + nextword;
                         }
                     }
@@ -910,7 +913,7 @@ namespace WriteLogDigiRite
             {
                 // fill in from WriteLog if we can
                 const short WRITELOG_EXCHANGE_MESSAGE_NUMBER = 0;
-                string rawMessage = iWlDoc.GetFKeyMsgDigital(WRITELOG_EXCHANGE_MESSAGE_NUMBER);
+                string rawMessage = iWlDoc.GetFKeyMsgDigital(WRITELOG_EXCHANGE_MESSAGE_NUMBER).ToUpper();
                 iWlEntry.Callsign = q.HisCall;
                 if (q.SentSerialNumber == 0)
                 {   // assign a serial number even if contest doesn't need it
@@ -1172,8 +1175,8 @@ namespace WriteLogDigiRite
             for (int i = q.MessageList.Count - 1; i >= 0; i -= 1)
             {
                 XDpack77.Pack77Message.ReceivedMessage rm = q.MessageList[i];
-                XDpack77.Pack77Message.RttyRoundUpMessage iexc = 
-                    rm.Pack77Message as XDpack77.Pack77Message.RttyRoundUpMessage;
+                XDpack77.Pack77Message.ArrlFieldDayMessage iexc = 
+                    rm.Pack77Message as XDpack77.Pack77Message.ArrlFieldDayMessage;
                 if (iexc == null)
                     continue;
                 var fields = iexc.Exchange.Split((char[])null);
@@ -1589,6 +1592,9 @@ namespace WriteLogDigiRite
         private void changeDigiMode()
         {
             ClockLabel cl = labelClockAnimation as ClockLabel;
+#if DISABLE_FT4
+            digiMode = DigiMode.FT8;
+#endif
             switch (digiMode)
             {
                 case DigiMode.FT4:
