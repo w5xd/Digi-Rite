@@ -137,6 +137,7 @@ namespace WriteLogDigiRite
                 return v.ToString();
             }
         }
+
         public delegate bool IsMe(string c);
         public void OnReceived(bool directlyToMe, XDpack77.Pack77Message.Message msg)
         {

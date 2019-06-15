@@ -122,12 +122,13 @@ namespace WriteLogDigiRite
         public DateTime TimeOfLastReceived { get { return timeOfLastReceived; } }
 
         public bool Active { get { return active; } set { 
-                active = value;
-                if (value)
+                if (value && !active)
                 {
                     CyclesSinceMessaged = 0;
                     holdingForAnotherQso = false;
+                    messagedThisCycle = true;
                 }
+                active = value;
                 if (null != OnChangedCb) OnChangedCb();
                 } }
         public bool Dupe { get => originatingMessage.Dupe;  }
