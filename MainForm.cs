@@ -1,8 +1,8 @@
-﻿using System;
+﻿#define DISABLE_FT4
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-
 
 namespace WriteLogDigiRite
 {
@@ -398,7 +398,7 @@ namespace WriteLogDigiRite
                             if (GridSquareReceivedFieldNumber > 0)
                             {
                                 XDpack77.Pack77Message.Exchange hisGrid = rm.Pack77Message as XDpack77.Pack77Message.Exchange;
-                                if (!String.IsNullOrEmpty(hisGrid.GridSquare))
+                                if (hisGrid != null && !String.IsNullOrEmpty(hisGrid.GridSquare))
                                     iWlDupingEntry.SetFieldN((short)GridSquareReceivedFieldNumber, hisGrid.GridSquare);
                             }
                             iWlDupingEntry.Callsign = fromCall;
