@@ -1338,8 +1338,9 @@ namespace WriteLogDigiRite
             groupBox3.BackColor =
             trackBarTxGain.BackColor = CustomColors.TxBackgroundColor;
 
-            SetupTxAndRxDeviceIndicies();
-            
+            if (!SetupTxAndRxDeviceIndicies())
+                MyCall = Properties.Settings.Default.CallUsed;
+
             while (true)
             {
                 string myGrid = Properties.Settings.Default.MyGrid;
@@ -1727,7 +1728,7 @@ namespace WriteLogDigiRite
             conversationLogFile = null;
         }
 
-        private void SetupTxAndRxDeviceIndicies()
+        private bool SetupTxAndRxDeviceIndicies()
         {
             // default device select to what's in settings
             TxOutDevice = StringToIndex(Properties.Settings.Default["AudioOutputDevice_" + instanceNumber.ToString()].ToString(),
@@ -1744,12 +1745,12 @@ namespace WriteLogDigiRite
                         lr = 0; // put on left
                     else if (lr > 1)
                     { // Radio #3 or #4
-                        return; // use setup form
+                        return false; // use setup form
                     }
                     else
                     {
                         MessageBox.Show("DigiRite requires the Entry Window to be set to either L or R");
-                        return;
+                        return false;
                     }
                 }
                 SetupMaySelectDevices = false;
@@ -1856,7 +1857,8 @@ namespace WriteLogDigiRite
                     Properties.Settings.Default.CallUsed = myCall;
             }
             else
-                MyCall = Properties.Settings.Default.CallUsed;
+                return false;
+            return true;
         }
 
         private void timerSpectrum_Tick(object sender, EventArgs e)
