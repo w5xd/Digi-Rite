@@ -62,12 +62,13 @@
             this.textBoxMessageEdit = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label13 = new System.Windows.Forms.Label();
             this.buttonTune = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.numericUpDownStreams = new System.Windows.Forms.NumericUpDown();
             this.labelPtt = new System.Windows.Forms.Label();
             this.buttonEqRx = new System.Windows.Forms.Button();
-            this.checkBoxCQ = new System.Windows.Forms.CheckBox();
+            this.comboBoxCQ = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.radioButtonOdd = new System.Windows.Forms.RadioButton();
             this.radioButtonEven = new System.Windows.Forms.RadioButton();
@@ -175,7 +176,7 @@
             this.panel1.Controls.Add(this.checkBoxShowMenu);
             this.panel1.Controls.Add(this.buttonAbort);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(3, 375);
+            this.panel1.Location = new System.Drawing.Point(3, 399);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(255, 45);
             this.panel1.TabIndex = 3;
@@ -223,7 +224,7 @@
             this.listToMe.Font = new System.Drawing.Font("Lucida Console", 9F);
             this.listToMe.Location = new System.Drawing.Point(0, 0);
             this.listToMe.Name = "listToMe";
-            this.listToMe.Size = new System.Drawing.Size(255, 83);
+            this.listToMe.Size = new System.Drawing.Size(255, 88);
             this.listToMe.TabIndex = 2;
             // 
             // timerFt8Clock
@@ -358,7 +359,7 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Right;
             this.panel3.Location = new System.Drawing.Point(609, 24);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(225, 420);
+            this.panel3.Size = new System.Drawing.Size(225, 444);
             this.panel3.TabIndex = 2;
             // 
             // trackBarTxGain
@@ -490,12 +491,13 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.label13);
             this.groupBox3.Controls.Add(this.buttonTune);
             this.groupBox3.Controls.Add(this.label12);
             this.groupBox3.Controls.Add(this.numericUpDownStreams);
             this.groupBox3.Controls.Add(this.labelPtt);
             this.groupBox3.Controls.Add(this.buttonEqRx);
-            this.groupBox3.Controls.Add(this.checkBoxCQ);
+            this.groupBox3.Controls.Add(this.comboBoxCQ);
             this.groupBox3.Controls.Add(this.groupBox1);
             this.groupBox3.Controls.Add(this.numericUpDownFrequency);
             this.groupBox3.Controls.Add(this.label9);
@@ -503,10 +505,19 @@
             this.groupBox3.Location = new System.Drawing.Point(7, 240);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(6);
-            this.groupBox3.Size = new System.Drawing.Size(185, 171);
+            this.groupBox3.Size = new System.Drawing.Size(185, 201);
             this.groupBox3.TabIndex = 9;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "&Tx";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(1, 147);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(25, 13);
+            this.label13.TabIndex = 9;
+            this.label13.Text = "CQ:";
             // 
             // buttonTune
             // 
@@ -554,7 +565,7 @@
             this.labelPtt.AutoSize = true;
             this.labelPtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelPtt.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelPtt.Location = new System.Drawing.Point(99, 148);
+            this.labelPtt.Location = new System.Drawing.Point(83, 177);
             this.labelPtt.Name = "labelPtt";
             this.labelPtt.Size = new System.Drawing.Size(76, 13);
             this.labelPtt.TabIndex = 8;
@@ -570,16 +581,17 @@
             this.buttonEqRx.UseVisualStyleBackColor = true;
             this.buttonEqRx.Click += new System.EventHandler(this.buttonEqRx_Click);
             // 
-            // checkBoxCQ
+            // comboBoxCQ
             // 
-            this.checkBoxCQ.AutoSize = true;
-            this.checkBoxCQ.Location = new System.Drawing.Point(15, 146);
-            this.checkBoxCQ.Name = "checkBoxCQ";
-            this.checkBoxCQ.Size = new System.Drawing.Size(61, 17);
-            this.checkBoxCQ.TabIndex = 7;
-            this.checkBoxCQ.Text = "Call CQ";
-            this.checkBoxCQ.UseVisualStyleBackColor = true;
-            this.checkBoxCQ.CheckedChanged += new System.EventHandler(this.checkBoxCQ_CheckedChanged);
+            this.comboBoxCQ.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxCQ.Items.AddRange(new object[] {
+            "Off",
+            "On idle",
+            "Use stream"});
+            this.comboBoxCQ.Location = new System.Drawing.Point(30, 143);
+            this.comboBoxCQ.Name = "comboBoxCQ";
+            this.comboBoxCQ.Size = new System.Drawing.Size(116, 21);
+            this.comboBoxCQ.TabIndex = 7;
             // 
             // groupBox1
             // 
@@ -746,7 +758,7 @@
             // splitContainerCqLeft.Panel2
             // 
             this.splitContainerCqLeft.Panel2.Controls.Add(this.splitContainerCenter);
-            this.splitContainerCqLeft.Size = new System.Drawing.Size(609, 420);
+            this.splitContainerCqLeft.Size = new System.Drawing.Size(609, 444);
             this.splitContainerCqLeft.SplitterDistance = 258;
             this.splitContainerCqLeft.TabIndex = 2;
             // 
@@ -767,8 +779,8 @@
             this.splitContainerAnswerUpCqsDown.Panel2.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerAnswerUpCqsDown.Panel2.Controls.Add(this.splitContainerCQ);
             this.splitContainerAnswerUpCqsDown.Panel2MinSize = 100;
-            this.splitContainerAnswerUpCqsDown.Size = new System.Drawing.Size(255, 351);
-            this.splitContainerAnswerUpCqsDown.SplitterDistance = 83;
+            this.splitContainerAnswerUpCqsDown.Size = new System.Drawing.Size(255, 375);
+            this.splitContainerAnswerUpCqsDown.SplitterDistance = 88;
             this.splitContainerAnswerUpCqsDown.TabIndex = 2;
             // 
             // splitContainerCQ
@@ -790,8 +802,8 @@
             this.splitContainerCQ.Panel2.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerCQ.Panel2.Controls.Add(this.panelOddCQs);
             this.splitContainerCQ.Panel2.Controls.Add(this.label11);
-            this.splitContainerCQ.Size = new System.Drawing.Size(255, 264);
-            this.splitContainerCQ.SplitterDistance = 163;
+            this.splitContainerCQ.Size = new System.Drawing.Size(255, 283);
+            this.splitContainerCQ.SplitterDistance = 174;
             this.splitContainerCQ.TabIndex = 3;
             // 
             // panelEvenCQs
@@ -801,7 +813,7 @@
             this.panelEvenCQs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelEvenCQs.Location = new System.Drawing.Point(0, 17);
             this.panelEvenCQs.Name = "panelEvenCQs";
-            this.panelEvenCQs.Size = new System.Drawing.Size(253, 144);
+            this.panelEvenCQs.Size = new System.Drawing.Size(253, 155);
             this.panelEvenCQs.TabIndex = 1;
             // 
             // checkBoxCqTable
@@ -842,7 +854,7 @@
             this.panelOddCQs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelOddCQs.Location = new System.Drawing.Point(0, 17);
             this.panelOddCQs.Name = "panelOddCQs";
-            this.panelOddCQs.Size = new System.Drawing.Size(253, 78);
+            this.panelOddCQs.Size = new System.Drawing.Size(253, 86);
             this.panelOddCQs.TabIndex = 1;
             // 
             // label11
@@ -875,8 +887,8 @@
             this.splitContainerCenter.Panel2.Controls.Add(this.label5);
             this.splitContainerCenter.Panel2.Controls.Add(this.checkedlbNextToSend);
             this.splitContainerCenter.Panel2.Controls.Add(this.panel6);
-            this.splitContainerCenter.Size = new System.Drawing.Size(347, 420);
-            this.splitContainerCenter.SplitterDistance = 148;
+            this.splitContainerCenter.Size = new System.Drawing.Size(347, 444);
+            this.splitContainerCenter.SplitterDistance = 156;
             this.splitContainerCenter.TabIndex = 6;
             // 
             // panelInProgress
@@ -886,7 +898,7 @@
             this.panelInProgress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelInProgress.Location = new System.Drawing.Point(0, 23);
             this.panelInProgress.Name = "panelInProgress";
-            this.panelInProgress.Size = new System.Drawing.Size(347, 125);
+            this.panelInProgress.Size = new System.Drawing.Size(347, 133);
             this.panelInProgress.TabIndex = 1;
             // 
             // listBoxConversation
@@ -898,7 +910,7 @@
             this.listBoxConversation.ItemHeight = 12;
             this.listBoxConversation.Location = new System.Drawing.Point(0, 165);
             this.listBoxConversation.Name = "listBoxConversation";
-            this.listBoxConversation.Size = new System.Drawing.Size(347, 103);
+            this.listBoxConversation.Size = new System.Drawing.Size(347, 119);
             this.listBoxConversation.TabIndex = 3;
             // 
             // checkedlbNextToSend
@@ -926,7 +938,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonAbort;
-            this.ClientSize = new System.Drawing.Size(834, 444);
+            this.ClientSize = new System.Drawing.Size(834, 468);
             this.Controls.Add(this.splitContainerCqLeft);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.menuStrip);
@@ -1007,7 +1019,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckedListBox listBoxAlternatives;
         private System.Windows.Forms.Panel panel6;
-        private System.Windows.Forms.CheckBox checkBoxCQ;
+        private System.Windows.Forms.ComboBox comboBoxCQ;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.CheckBox checkBoxShowMenu;
         private System.Windows.Forms.MenuStrip menuStrip;
@@ -1049,6 +1061,7 @@
         private System.Windows.Forms.Panel panelInProgress;
         private System.Windows.Forms.Button buttonTune;
         private System.Windows.Forms.Timer timerCleanup;
+        private System.Windows.Forms.Label label13;
     }
 }
 

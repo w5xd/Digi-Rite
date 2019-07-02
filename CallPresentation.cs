@@ -17,9 +17,21 @@ namespace WriteLogDigiRite
             : base(tp, modelLabel, modelCheckbox)
         {}
 
+        private static int SortOrder(RecentMessage left, RecentMessage right)
+        {
+            if (!left.Dupe && right.Dupe)
+                return 1;
+            if (left.Dupe && !right.Dupe)
+                return -1;
+            if (left.Message.SignalDB > right.Message.SignalDB)
+                return 1;
+            if (left.Message.SignalDB < right.Message.SignalDB)
+                return -1;
+            return 0;
+        }
+
         public void Add(RecentMessage rm)
         {
-            int addedIndex = tlp.Controls.Count / 2;
             CqLabel lb = new CqLabel(rm, colors);
             lb.Font = lblFont;
             lb.BackColor = lblBackColor;
@@ -28,8 +40,30 @@ namespace WriteLogDigiRite
             CheckBox cb = new CheckBox();
             cb.GotFocus += lb.OnGetFocus;
             cb.LostFocus += lb.OnLostFocus;
+
+            // sort by dupe and signal strength
+            int insertIdx = tlp.Controls.Count;
+            for (int i = 0; i < tlp.Controls.Count; )
+            {
+                CqLabel cql = tlp.Controls[i] as CqLabel;
+                if (null == cql)
+                {
+                    i += 2;
+                    continue; // shouldn't happen. but don't crash
+                }
+                if (SortOrder(rm, cql.rm) > 0)
+                {
+                    insertIdx = i;
+                    break;
+                }
+                else
+                    i += 2;
+            }
+
             tlp.Controls.Add(lb);
             tlp.Controls.Add(cb);
+            tlp.Controls.SetChildIndex(cb, insertIdx);
+            tlp.Controls.SetChildIndex(lb, insertIdx);
 
             cb.TabStop = false;
 
@@ -54,7 +88,7 @@ namespace WriteLogDigiRite
 
             lb.Size = lblSize;
             cb.Size = cbSize;
-            PositionEntry(cb, lb, addedIndex);
+            SizeChanged(null,null);
         }
 
         private void OnCheck(CheckBox cb, RecentMessage rm, bool onHisFreq)
@@ -66,7 +100,7 @@ namespace WriteLogDigiRite
 
     class CqLabel : FocusDrawingHelper
     {
-        RecentMessage rm;
+        public RecentMessage rm;
         RttyRiteColors colors;
         public CqLabel(RecentMessage rm, RttyRiteColors colors)
         {            

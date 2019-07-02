@@ -403,9 +403,13 @@ namespace WriteLogDigiRite
                             iWlDupingEntry.Callsign = fromCall;
                             dupe = iWlDupingEntry.Dupe();
                             if (dupe == 0)
+                            {
                                 mult = iWlDupingEntry.IsNewMultiplier((short)-1);
+                                if (mult <= 0 && GridSquareReceivedFieldNumber > 0)
+                                    mult = iWlDupingEntry.IsNewMultiplier((short)GridSquareReceivedFieldNumber);
+                            }
                         }
-                        recentMessage = new RecentMessage(rm, dupe != 0, mult != 0);
+                        recentMessage = new RecentMessage(rm, dupe != 0, mult > 0);
 
                         bool isConversation = false;
                         string callQsled = (rm.Pack77Message as XDpack77.Pack77Message.QSL)?.CallQSLed;
@@ -424,7 +428,7 @@ namespace WriteLogDigiRite
                         if (!isConversation)
                         {   // nobody above claimed this message
                             if (directlyToMe)
-                                toMe.Add(new RecentMessage(rm, dupe != 0, mult != 0));
+                                toMe.Add(new RecentMessage(rm, dupe != 0, mult > 0));
                             else if ((fromCall != null) &&
                                 !String.Equals(fromCall, myCall) &&  // decoder is hearing our own
                                 !String.Equals(fromCall, myBaseCall) &&  // transmissions
@@ -584,7 +588,9 @@ namespace WriteLogDigiRite
             int thisCycleIndex = nowOdd ? 1 : 0;
             transmittedForQSOLastCycle[thisCycleIndex] = anyToSend;
 
-            if (!anyToSend && checkBoxCQ.Checked && onUserSelectedCycle)
+            int cqMode = comboBoxCQ.SelectedIndex;
+            if (onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE &&
+                    ((cqMode == 1 && !toSendList.Any()) || cqMode == 2))
             {   // only CQ if we have nothing else to send
                 string cq = "CQ";
                 /* 77-bit pack is special w.r.t. CQ. can't sent directed CQ 
@@ -609,7 +615,7 @@ namespace WriteLogDigiRite
                     cq += " " + MyGrid4;
                 toSendList.Add(new QueuedToSendListItem(cq, null));
                 if (!checkBoxAutoXmit.Checked)
-                    checkBoxCQ.Checked = false;
+                    comboBoxCQ.SelectedIndex = 0;
             }
 
             List<XDft.Tone> itonesToSend = new List<XDft.Tone>();
@@ -1582,6 +1588,7 @@ namespace WriteLogDigiRite
             rxForm.RxHz = (int)numericUpDownRxFrequency.Value;
             rxForm.MinDecodeFrequency = decodeMin;
             rxForm.MaxDecodeFrequency = decodeMax;
+            comboBoxCQ.SelectedIndex = 0;
             listBoxConversation.DrawMode = DrawMode.OwnerDrawFixed;
             logFile.SendToLog("Started");
             finishedLoad = true;
@@ -2213,7 +2220,7 @@ namespace WriteLogDigiRite
                 listBoxAlternatives.SetItemChecked(i, false);
             checkBoxAutoXmit.Checked = false;
             checkBoxManualEntry.Checked = false;
-            checkBoxCQ.Checked = false;
+            comboBoxCQ.SelectedIndex = 0;
         }
 
         private void radioOddEven_CheckedChanged(object sender, EventArgs e)
@@ -2277,12 +2284,6 @@ namespace WriteLogDigiRite
                 textBoxMessageEdit.Text = qli.MessageText;
         }
 
-        private void checkBoxCQ_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBoxCQ.Checked)
-                watchDogTime = DateTime.UtcNow;
-        }
-
         private void checkBoxRespondAny_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxRespondAny.Checked)
@@ -2290,6 +2291,7 @@ namespace WriteLogDigiRite
                 watchDogTime = DateTime.UtcNow;
                 checkBoxAutoXmit.Checked = true;
             }
+            splitContainerAnswerUpCqsDown.Panel1Collapsed = checkBoxRespondAny.Checked;
         }
 
         private void OnQsoActiveChanged(QsoInProgress q)
