@@ -33,6 +33,7 @@
             this.buttonAbort = new System.Windows.Forms.Button();
             this.numericUpDownFrequency = new System.Windows.Forms.NumericUpDown();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.checkBoxOnlyCQs = new System.Windows.Forms.CheckBox();
             this.checkBoxCQboth = new System.Windows.Forms.CheckBox();
             this.checkBoxShowMenu = new System.Windows.Forms.CheckBox();
             this.labelClock = new System.Windows.Forms.Label();
@@ -50,7 +51,6 @@
             this.label8 = new System.Windows.Forms.Label();
             this.checkBoxAutoXmit = new System.Windows.Forms.CheckBox();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.trackBarTxGain = new System.Windows.Forms.TrackBar();
             this.labelClockAnimation = new System.Windows.Forms.Label();
             this.buttonEqTx = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -62,6 +62,7 @@
             this.textBoxMessageEdit = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.trackBarTxGain = new System.Windows.Forms.TrackBar();
             this.label13 = new System.Windows.Forms.Label();
             this.buttonTune = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
@@ -105,9 +106,9 @@
             this.panel5.SuspendLayout();
             this.panel6.SuspendLayout();
             this.panel3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarTxGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRxFrequency)).BeginInit();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarTxGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStreams)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -134,7 +135,7 @@
             // buttonAbort
             // 
             this.buttonAbort.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonAbort.Location = new System.Drawing.Point(7, 8);
+            this.buttonAbort.Location = new System.Drawing.Point(9, 12);
             this.buttonAbort.Name = "buttonAbort";
             this.buttonAbort.Size = new System.Drawing.Size(58, 23);
             this.buttonAbort.TabIndex = 0;
@@ -149,7 +150,7 @@
             0,
             0,
             0});
-            this.numericUpDownFrequency.Location = new System.Drawing.Point(36, 23);
+            this.numericUpDownFrequency.Location = new System.Drawing.Point(21, 23);
             this.numericUpDownFrequency.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -172,6 +173,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.checkBoxOnlyCQs);
             this.panel1.Controls.Add(this.checkBoxCQboth);
             this.panel1.Controls.Add(this.checkBoxShowMenu);
             this.panel1.Controls.Add(this.buttonAbort);
@@ -181,12 +183,24 @@
             this.panel1.Size = new System.Drawing.Size(255, 45);
             this.panel1.TabIndex = 3;
             // 
+            // checkBoxOnlyCQs
+            // 
+            this.checkBoxOnlyCQs.AutoSize = true;
+            this.checkBoxOnlyCQs.Location = new System.Drawing.Point(175, 6);
+            this.checkBoxOnlyCQs.Name = "checkBoxOnlyCQs";
+            this.checkBoxOnlyCQs.Size = new System.Drawing.Size(70, 17);
+            this.checkBoxOnlyCQs.TabIndex = 3;
+            this.checkBoxOnlyCQs.Text = "Only CQs";
+            this.checkBoxOnlyCQs.ThreeState = true;
+            this.checkBoxOnlyCQs.UseVisualStyleBackColor = true;
+            this.checkBoxOnlyCQs.CheckStateChanged += new System.EventHandler(this.checkBoxOnlyCQs_CheckedChanged);
+            // 
             // checkBoxCQboth
             // 
             this.checkBoxCQboth.AutoSize = true;
             this.checkBoxCQboth.Checked = true;
             this.checkBoxCQboth.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxCQboth.Location = new System.Drawing.Point(78, 11);
+            this.checkBoxCQboth.Location = new System.Drawing.Point(78, 6);
             this.checkBoxCQboth.Name = "checkBoxCQboth";
             this.checkBoxCQboth.Size = new System.Drawing.Size(71, 17);
             this.checkBoxCQboth.TabIndex = 1;
@@ -199,7 +213,7 @@
             this.checkBoxShowMenu.AutoSize = true;
             this.checkBoxShowMenu.Checked = true;
             this.checkBoxShowMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxShowMenu.Location = new System.Drawing.Point(158, 11);
+            this.checkBoxShowMenu.Location = new System.Drawing.Point(78, 25);
             this.checkBoxShowMenu.Name = "checkBoxShowMenu";
             this.checkBoxShowMenu.Size = new System.Drawing.Size(83, 17);
             this.checkBoxShowMenu.TabIndex = 2;
@@ -343,7 +357,6 @@
             // 
             // panel3
             // 
-            this.panel3.Controls.Add(this.trackBarTxGain);
             this.panel3.Controls.Add(this.labelClockAnimation);
             this.panel3.Controls.Add(this.buttonEqTx);
             this.panel3.Controls.Add(this.label1);
@@ -362,18 +375,6 @@
             this.panel3.Size = new System.Drawing.Size(225, 444);
             this.panel3.TabIndex = 2;
             // 
-            // trackBarTxGain
-            // 
-            this.trackBarTxGain.AutoSize = false;
-            this.trackBarTxGain.Location = new System.Drawing.Point(193, 299);
-            this.trackBarTxGain.Maximum = 32;
-            this.trackBarTxGain.Name = "trackBarTxGain";
-            this.trackBarTxGain.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.trackBarTxGain.Size = new System.Drawing.Size(25, 111);
-            this.trackBarTxGain.TabIndex = 12;
-            this.trackBarTxGain.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.trackBarTxGain.Scroll += new System.EventHandler(this.trackBarTxGain_Scroll);
-            // 
             // labelClockAnimation
             // 
             this.labelClockAnimation.Location = new System.Drawing.Point(193, 202);
@@ -385,7 +386,7 @@
             // 
             // buttonEqTx
             // 
-            this.buttonEqTx.Location = new System.Drawing.Point(135, 209);
+            this.buttonEqTx.Location = new System.Drawing.Point(131, 209);
             this.buttonEqTx.Name = "buttonEqTx";
             this.buttonEqTx.Size = new System.Drawing.Size(43, 23);
             this.buttonEqTx.TabIndex = 8;
@@ -433,7 +434,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(107, 214);
+            this.label10.Location = new System.Drawing.Point(108, 214);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(20, 13);
             this.label10.TabIndex = 7;
@@ -491,6 +492,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.trackBarTxGain);
             this.groupBox3.Controls.Add(this.label13);
             this.groupBox3.Controls.Add(this.buttonTune);
             this.groupBox3.Controls.Add(this.label12);
@@ -502,21 +504,33 @@
             this.groupBox3.Controls.Add(this.numericUpDownFrequency);
             this.groupBox3.Controls.Add(this.label9);
             this.groupBox3.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.groupBox3.Location = new System.Drawing.Point(7, 240);
+            this.groupBox3.Location = new System.Drawing.Point(7, 259);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(6);
-            this.groupBox3.Size = new System.Drawing.Size(185, 201);
+            this.groupBox3.Size = new System.Drawing.Size(215, 182);
             this.groupBox3.TabIndex = 9;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "&Tx";
             // 
+            // trackBarTxGain
+            // 
+            this.trackBarTxGain.AutoSize = false;
+            this.trackBarTxGain.Location = new System.Drawing.Point(184, 22);
+            this.trackBarTxGain.Maximum = 32;
+            this.trackBarTxGain.Name = "trackBarTxGain";
+            this.trackBarTxGain.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.trackBarTxGain.Size = new System.Drawing.Size(25, 125);
+            this.trackBarTxGain.TabIndex = 12;
+            this.trackBarTxGain.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBarTxGain.Scroll += new System.EventHandler(this.trackBarTxGain_Scroll);
+            // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(1, 147);
+            this.label13.Location = new System.Drawing.Point(1, 139);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(25, 13);
-            this.label13.TabIndex = 9;
+            this.label13.TabIndex = 7;
             this.label13.Text = "CQ:";
             // 
             // buttonTune
@@ -565,10 +579,10 @@
             this.labelPtt.AutoSize = true;
             this.labelPtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelPtt.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelPtt.Location = new System.Drawing.Point(83, 177);
+            this.labelPtt.Location = new System.Drawing.Point(135, 163);
             this.labelPtt.Name = "labelPtt";
             this.labelPtt.Size = new System.Drawing.Size(76, 13);
-            this.labelPtt.TabIndex = 8;
+            this.labelPtt.TabIndex = 9;
             this.labelPtt.Text = "PTT on COM1";
             // 
             // buttonEqRx
@@ -588,10 +602,10 @@
             "Off",
             "On idle",
             "Use stream"});
-            this.comboBoxCQ.Location = new System.Drawing.Point(30, 143);
+            this.comboBoxCQ.Location = new System.Drawing.Point(30, 135);
             this.comboBoxCQ.Name = "comboBoxCQ";
             this.comboBoxCQ.Size = new System.Drawing.Size(116, 21);
-            this.comboBoxCQ.TabIndex = 7;
+            this.comboBoxCQ.TabIndex = 8;
             // 
             // groupBox1
             // 
@@ -631,7 +645,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(107, 27);
+            this.label9.Location = new System.Drawing.Point(98, 27);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(20, 13);
             this.label9.TabIndex = 1;
@@ -803,7 +817,7 @@
             this.splitContainerCQ.Panel2.Controls.Add(this.panelOddCQs);
             this.splitContainerCQ.Panel2.Controls.Add(this.label11);
             this.splitContainerCQ.Size = new System.Drawing.Size(255, 283);
-            this.splitContainerCQ.SplitterDistance = 174;
+            this.splitContainerCQ.SplitterDistance = 151;
             this.splitContainerCQ.TabIndex = 3;
             // 
             // panelEvenCQs
@@ -813,7 +827,7 @@
             this.panelEvenCQs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelEvenCQs.Location = new System.Drawing.Point(0, 17);
             this.panelEvenCQs.Name = "panelEvenCQs";
-            this.panelEvenCQs.Size = new System.Drawing.Size(253, 155);
+            this.panelEvenCQs.Size = new System.Drawing.Size(253, 132);
             this.panelEvenCQs.TabIndex = 1;
             // 
             // checkBoxCqTable
@@ -854,7 +868,7 @@
             this.panelOddCQs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelOddCQs.Location = new System.Drawing.Point(0, 17);
             this.panelOddCQs.Name = "panelOddCQs";
-            this.panelOddCQs.Size = new System.Drawing.Size(253, 86);
+            this.panelOddCQs.Size = new System.Drawing.Size(253, 109);
             this.panelOddCQs.TabIndex = 1;
             // 
             // label11
@@ -864,7 +878,7 @@
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(253, 17);
             this.label11.TabIndex = 0;
-            this.label11.Text = "Odd CQs heard. Click to answer";
+            this.label11.Text = "Odd C&Qs heard. Click to answer";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // splitContainerCenter
@@ -958,10 +972,10 @@
             this.panel6.PerformLayout();
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarTxGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRxFrequency)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarTxGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStreams)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -1062,6 +1076,7 @@
         private System.Windows.Forms.Button buttonTune;
         private System.Windows.Forms.Timer timerCleanup;
         private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.CheckBox checkBoxOnlyCQs;
     }
 }
 

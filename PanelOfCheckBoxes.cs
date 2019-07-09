@@ -43,31 +43,38 @@ namespace WriteLogDigiRite
         {
             int rowNum = idx % rowsThatfit;
             int colNum = idx / rowsThatfit;
-
             System.Drawing.Point cbLocation = cbLocation0;
             System.Drawing.Point lblLocation = lblLocation0;
             cbLocation.Y += rowNum * VerticalPitch;
             lblLocation.Y += rowNum * VerticalPitch;
             cbLocation.X += colNum * HorizontalPitch;
             lblLocation.X += colNum * HorizontalPitch;
-
             lb.Location = lblLocation;
-            lb.TabIndex = idx * 2;
             cb.Location = cbLocation;
-            cb.TabStop = (idx == 0);
-            cb.TabIndex = 1 + idx*2;
         }
-        
+
         public void SizeChanged(object sender, EventArgs e)
         {
             rowsThatfit = (tlp.Size.Height - 1) / VerticalPitch;
             if (rowsThatfit < 1)
                 rowsThatfit = 1;
+            bool first = true;
+            int which = 0;
             for (int i = 0; i < tlp.Controls.Count; i++)
             {
-                Control lb = tlp.Controls[i++];
+                Control lb = tlp.Controls[i];
+                lb.TabIndex = i++;
                 Control cb = tlp.Controls[i];
-                PositionEntry(cb, lb, i / 2);
+                if (cb.Enabled)
+                {
+                    cb.TabIndex = i;
+                    cb.TabStop = first;
+                    first = false;
+                }
+                else // !Enabled pushed to end of keyboard tab order. 
+                    cb.TabIndex = tlp.Controls.Count + i; 
+                if (cb.Visible)
+                    PositionEntry(cb, lb, which++);
             }
         }
 

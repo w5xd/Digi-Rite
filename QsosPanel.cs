@@ -92,7 +92,7 @@ namespace WriteLogDigiRite
 
             // set active and checked on add
             cb.Checked = true;
-            cb.TabStop = false;
+            cb.TabStop = addedIndex == 0;
             qp.Active = true;
             qp.OnChangedCb = new QsoInProgress.OnChanged(() =>
             {
@@ -505,7 +505,6 @@ namespace WriteLogDigiRite
             else
                 onRightMouse(this, mevent);
         }
-
 
         // label control doesn't do what we want on these events:
         protected override void OnMouseUp(MouseEventArgs mevent)

@@ -19,52 +19,91 @@ namespace WriteLogDigiRite
 
         private static int SortOrder(RecentMessage left, RecentMessage right)
         {
-            if (!left.Dupe && right.Dupe)
-                return 1;
             if (left.Dupe && !right.Dupe)
-                return -1;
-            if (left.Message.SignalDB > right.Message.SignalDB)
                 return 1;
-            if (left.Message.SignalDB < right.Message.SignalDB)
+            if (!left.Dupe && right.Dupe)
                 return -1;
-            return 0;
+            return right.Message.SignalDB - left.Message.SignalDB;
+        }
+        
+        public delegate bool EnableCb(CheckState CqsOnly);
+
+        private CheckState m_filterCqs;
+        public CheckState FilterCqs { set {
+                m_filterCqs = value;
+                for (int i = 0; i < tlp.Controls.Count; i+=2)
+                {
+                    CqLabel cql = tlp.Controls[i] as CqLabel;
+                    Control cb = tlp.Controls[i+1];
+                    bool enable = cql.enableCb(value);
+                    cql.Enabled = enable;
+                    cb.Enabled = enable;
+                    bool vis = true;
+                    if (value == CheckState.Checked)
+                        vis = enable;
+                    cql.Visible = vis;
+                    cb.Visible = vis;
+                    if (vis)
+                    {
+                        cql.Invalidate();
+                        cb.Invalidate();
+                    }
+                }
+                SortControls();
+                SizeChanged(null,null);
+            } }
+
+        private class SortPanelOrder : System.Collections.Generic.IComparer<int>
+        {   // sort by position to draw
+            public SortPanelOrder(Control[] ar)
+            {  m_ar = ar; }
+            public int Compare(int x, int y)
+            {
+                CqLabel left = m_ar[x] as CqLabel;
+                CqLabel right = m_ar[y] as CqLabel;
+                return SortOrder(left.rm, right.rm);
+            }
+            private Control[] m_ar;
         }
 
-        public void Add(RecentMessage rm)
+        void SortControls()
+        {
+            Control []controls = new Control[tlp.Controls.Count];
+            tlp.Controls.CopyTo(controls,0);        
+            
+            // sort the integer array without messing with tlp
+            int []panelOrder = new int[controls.Length/2];
+            for (int i = 0; i < panelOrder.Length; i++)
+                panelOrder[i] = i *2;
+            Array.Sort<int>(panelOrder, new SortPanelOrder(controls));
+
+            // install the new order
+            for (int i = 0; i < panelOrder.Length; i++)
+            {
+                int idx = panelOrder[i];
+                Control cq = controls[idx];
+                Control cbc = controls[idx+1];
+                int TwoI = i * 2;
+                tlp.Controls.SetChildIndex(cq, TwoI);
+                tlp.Controls.SetChildIndex(cbc, 1 + TwoI);
+            }
+        }
+
+        public void Add(RecentMessage rm, EnableCb enableCb)
         {
             CqLabel lb = new CqLabel(rm, colors);
             lb.Font = lblFont;
             lb.BackColor = lblBackColor;
             lb.ForeColor = lblForeColor;
             lb.AutoSize = false;
+            lb.enableCb = enableCb;
             CheckBox cb = new CheckBox();
             cb.GotFocus += lb.OnGetFocus;
             cb.LostFocus += lb.OnLostFocus;
 
-            // sort by dupe and signal strength
-            int insertIdx = tlp.Controls.Count;
-            for (int i = 0; i < tlp.Controls.Count; )
-            {
-                CqLabel cql = tlp.Controls[i] as CqLabel;
-                if (null == cql)
-                {
-                    i += 2;
-                    continue; // shouldn't happen. but don't crash
-                }
-                if (SortOrder(rm, cql.rm) > 0)
-                {
-                    insertIdx = i;
-                    break;
-                }
-                else
-                    i += 2;
-            }
-
             tlp.Controls.Add(lb);
             tlp.Controls.Add(cb);
-            tlp.Controls.SetChildIndex(cb, insertIdx);
-            tlp.Controls.SetChildIndex(lb, insertIdx);
-
+            lb.Enabled =  cb.Enabled = enableCb(m_filterCqs);
             cb.TabStop = false;
 
             lb.Click += new EventHandler((object o, EventArgs e) => {
@@ -88,6 +127,7 @@ namespace WriteLogDigiRite
 
             lb.Size = lblSize;
             cb.Size = cbSize;
+            SortControls();
             SizeChanged(null,null);
         }
 
@@ -101,6 +141,7 @@ namespace WriteLogDigiRite
     class CqLabel : FocusDrawingHelper
     {
         public RecentMessage rm;
+        public CallPresentation.EnableCb enableCb;
         RttyRiteColors colors;
         public CqLabel(RecentMessage rm, RttyRiteColors colors)
         {            
@@ -113,11 +154,16 @@ namespace WriteLogDigiRite
             using (System.Drawing.Brush bck = new System.Drawing.SolidBrush(BackColor))
                 e.Graphics.FillRectangle(bck, ClientRectangle);
             System.Drawing.Color fillColor = BackColor;
-            bool doBck = rm.Dupe || rm.Mult;;
-            if (rm.Dupe)
-                fillColor = colors.DupeBackGround;
-            else if (rm.Mult)
-                fillColor = colors.MultBackGround;
+            bool doBck = rm.Dupe || rm.Mult || !Enabled;
+            if (!Enabled)
+                fillColor = System.Drawing.Color.LightGray;
+            else
+            {
+                if (rm.Dupe)
+                    fillColor = colors.DupeBackGround;
+                else if (rm.Mult)
+                    fillColor = colors.MultBackGround;
+            }
             if (doBck)
             {
                 String toRender = rm.ToString();
