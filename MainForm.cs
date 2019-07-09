@@ -394,6 +394,8 @@ namespace WriteLogDigiRite
                             iWlDupingEntry.ClearEntry();
                             if (DgtlFieldNumber > 0)
                                 iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
+                            if (ReceivedRstFieldNumber > 0) // ClearEntry in WL defaults the RST. clear it out
+                                iWlDupingEntry.SetFieldN((short)ReceivedRstFieldNumber, "");
                             if (GridSquareReceivedFieldNumber > 0)
                             {
                                 XDpack77.Pack77Message.Exchange hisGrid = rm.Pack77Message as XDpack77.Pack77Message.Exchange;
@@ -428,14 +430,18 @@ namespace WriteLogDigiRite
                         if (!isConversation)
                         {   // nobody above claimed this message
                             if (directlyToMe)
-                                toMe.Add(new RecentMessage(rm, dupe != 0, mult > 0));
+                                toMe.Add(new RecentMessage(rm, dupe != 0, mult > 0), (CheckState x) => {return true;});
                             else if ((fromCall != null) &&
                                 !String.Equals(fromCall, myCall) &&  // decoder is hearing our own
                                 !String.Equals(fromCall, myBaseCall) &&  // transmissions
                                 String.Equals("ALL", callQsled))
                             {
                                 CallPresentation cqList = (cycle & 1) == 0 ? cqListEven : cqListOdd;
-                                cqList.Add(recentMessage);
+                                cqList.Add(recentMessage, (CheckState cqOnly) => {
+                                    if (cqOnly == CheckState.Unchecked) return true; // everything shows in this mode
+                                    // else if its not a CQ , return false
+                                    else return null != toCall && toCall.Length >= 2 && toCall.Substring(0, 2) == "CQ";}
+                                    );
                             }
                         }
                     }
@@ -479,6 +485,7 @@ namespace WriteLogDigiRite
         private int VfoSetToTxMsec = 550;
         private int FT_CYCLE_TENTHS = 150;
         private int FT_GAP_HZ = 60;
+        private const int MAX_MULTI_STREAM_INCREMENT = 3;
 
         private void AfterNmsec(Action d, int msec)
         {
@@ -622,6 +629,7 @@ namespace WriteLogDigiRite
             List<int> freqsUsed = new List<int>();
             int freqRange = FT_GAP_HZ + 1;
             int freqIncrement = freqRange+1;
+            bool doingMultiStream = toSendList.Count > 1;
             foreach (var item in toSendList)
             {
                 QsoInProgress q = item.q;
@@ -630,7 +638,17 @@ namespace WriteLogDigiRite
                 {
                     uint assigned = q.TransmitFrequency;
                     if (assigned != 0)
+                    {
                         freq = (int)assigned;
+                        if (doingMultiStream)
+                        {
+                            int fdiff = freq - TxFrequency;
+                            if (fdiff < 0)
+                                fdiff = -fdiff;
+                            if (fdiff > freqIncrement * MAX_MULTI_STREAM_INCREMENT)
+                                freq = TxFrequency; // don't allow multi-streaming that far apart
+                        }
+                    }
                 }
 
                 // prohibit overlapping send frequencies
@@ -1134,6 +1152,8 @@ namespace WriteLogDigiRite
             if ((null != iWlEntry) && (null != iWlDoc))
             {
                 iWlDupingEntry.ClearEntry();
+                if (ReceivedRstFieldNumber > 0) // ClearEntry in WL defaults the RST. clear it out
+                    iWlDupingEntry.SetFieldN((short)ReceivedRstFieldNumber, "");
                 var excSet = Properties.Settings.Default.ContestExchange;
                 {
                     short mode = 0;double tx = 0;  double rx = 0; short split = 0;
@@ -1511,6 +1531,16 @@ namespace WriteLogDigiRite
                 int cqBoth;
                 if (fromRegistryValue(rk, "BothCQsShow", out cqBoth))
                     checkBoxCQboth.Checked = cqBoth != 0;
+                int cqsOnly;
+                if (fromRegistryValue(rk, "OnlyCQsShow", out cqsOnly))
+                {
+                    switch (cqsOnly)
+                    {
+                        case 0: checkBoxOnlyCQs.CheckState = CheckState.Unchecked; break;
+                        case 1:    checkBoxOnlyCQs.CheckState = CheckState.Indeterminate;    break;
+                        case 2:  checkBoxOnlyCQs.CheckState = CheckState.Checked; break;
+                    }
+                }
                 int txFreq;
                 if (fromRegistryValue(rk, "TXfrequency", out txFreq))
                     TxFrequency = txFreq;
@@ -1589,6 +1619,7 @@ namespace WriteLogDigiRite
             rxForm.MinDecodeFrequency = decodeMin;
             rxForm.MaxDecodeFrequency = decodeMax;
             comboBoxCQ.SelectedIndex = 0;
+            cqListEven.FilterCqs = cqListOdd.FilterCqs = checkBoxOnlyCQs.CheckState;
             listBoxConversation.DrawMode = DrawMode.OwnerDrawFixed;
             logFile.SendToLog("Started");
             finishedLoad = true;
@@ -1698,6 +1729,14 @@ namespace WriteLogDigiRite
                     }
                     rk.SetValue("ForceRigUSB", forceRigUsb ? "1" : "0");
                     rk.SetValue("TxEven", radioButtonEven.Checked ? "1" : "0");
+                    string onlyCqsVal="0";
+                    switch (checkBoxOnlyCQs.CheckState)
+                    {
+                        case CheckState.Unchecked:  onlyCqsVal = "0"; break;
+                        case CheckState.Indeterminate: onlyCqsVal = "1"; break;
+                        case CheckState.Checked:   onlyCqsVal = "2";  break;
+                    }
+                    rk.SetValue("OnlyCQsShow", onlyCqsVal);
                     rk.SetValue("BothCQsShow", checkBoxCQboth.Checked ? "1" : "0");
                     rk.SetValue("TXfrequency", numericUpDownFrequency.Value.ToString());
                     rk.SetValue("DecodeMinHz", rxForm.MinDecodeFrequency.ToString());
@@ -2378,6 +2417,11 @@ namespace WriteLogDigiRite
             }
         }
 
+        private void checkBoxOnlyCQs_CheckedChanged(object sender, EventArgs e)
+        {
+            cqListEven.FilterCqs = cqListOdd.FilterCqs = checkBoxOnlyCQs.CheckState;
+        }
+
         private void viewLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             logFile.Flush();
@@ -2476,8 +2520,8 @@ namespace WriteLogDigiRite
         private void buttonEqRx_Click(object sender, EventArgs e)
         { numericUpDownFrequency.Value = numericUpDownRxFrequency.Value; }
 
-#endregion
 
-       
+        #endregion
+
     }
 }
