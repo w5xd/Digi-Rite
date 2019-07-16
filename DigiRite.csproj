@@ -53,14 +53,14 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-    <PropertyGroup Label="UserMacros"  Condition="'$(Platform)' == 'x64'">
-        <CopyArchitecture>x64</CopyArchitecture>
-    </PropertyGroup>
-    <PropertyGroup Label="UserMacros"  Condition="'$(Platform)' == 'x86'">
-        <CopyArchitecture>Win32</CopyArchitecture>
-    </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)' == 'x64'">
+    <CopyArchitecture>x64</CopyArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)' == 'x86'">
+    <CopyArchitecture>Win32</CopyArchitecture>
+  </PropertyGroup>
   <PropertyGroup Label="UserMacros">
-        <XDftSdkDir>$(ProjectDir)Digi-XDft\$(CopyArchitecture)\$(Configuration)\</XDftSdkDir>
+    <XDftSdkDir>$(ProjectDir)Digi-XDft\$(CopyArchitecture)\$(Configuration)\</XDftSdkDir>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -100,6 +100,7 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="AltMessageShortcuts.cs" />
     <Compile Include="CallPresentation.cs" />
     <Compile Include="ClockLabel.cs">
       <SubType>Component</SubType>
@@ -181,8 +182,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-        <PostBuildEvent>
-            copy $(SolutionDir)DigiRite\Digi-XDft\$(CopyArchitecture)\$(ConfigurationName)\*.* $(TargetDir)
-        </PostBuildEvent>
+    <PostBuildEvent>
+            copy $(SolutionDir)\Digi-XDft\$(CopyArchitecture)\$(ConfigurationName)\*.* $(TargetDir)
+</PostBuildEvent>
   </PropertyGroup>
 </Project>

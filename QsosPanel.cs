@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace WriteLogDigiRite
 {
-    /*DigiRite has multiple QSOs "in progress" concurrently.
+    /* DigiRite has multiple QSOs "in progress" concurrently.
      * This is shown visually in a PanelOfCheckBoxes, specialized here
      * with some mouse event handling and on-screen drawing.
      */
@@ -125,9 +125,6 @@ namespace WriteLogDigiRite
             lb.onClick += new EventHandler((object o, EventArgs e) =>
             {
                 cb.Focus();
-                var args = e as System.Windows.Forms.MouseEventArgs;
-                if (null != args && args.Button==MouseButtons.Left)
-                    qp.Active = !qp.Active;
             });
             lb.onGetFocusCb += new FocusDrawingHelper.OnGetFocusCb(() => {
                 if (null != fillAlternativesCb)fillAlternativesCb(qp);

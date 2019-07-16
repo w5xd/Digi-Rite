@@ -36,6 +36,7 @@ namespace WriteLogDigiRite
         private LogFile logFile;
         private LogFile conversationLogFile;
         private bool sendInProgress = false;
+        private AltMessageShortcuts altMessageShortcuts;
 
         // what we put in listToMe and cqlist
         private CallPresentation cqListOdd;
@@ -935,13 +936,13 @@ namespace WriteLogDigiRite
                 // fill in from WriteLog if we can
                 const short WRITELOG_EXCHANGE_MESSAGE_NUMBER = 0;
                 string rawMessage = iWlDoc.GetFKeyMsgDigital(WRITELOG_EXCHANGE_MESSAGE_NUMBER).ToUpper();
-                iWlEntry.Callsign = q.HisCall;
+                iWlDupingEntry.Callsign = q.HisCall;
                 if (q.SentSerialNumber == 0)
                 {   // assign a serial number even if contest doesn't need it
-                    iWlEntry.SerialNumber = 0; // get a fresh one
-                    uint serialToSend = iWlEntry.SerialNumber;
+                    iWlDupingEntry.SerialNumber = 0; // get a fresh one
+                    uint serialToSend = iWlDupingEntry.SerialNumber;
                     // WriteLog may give us the same serial number since we're just one radio
-                    Dictionary<uint,uint> serialsInProgress = new Dictionary<uint, uint>();
+                    Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
                     var inProgress = qsosPanel.QsosInProgress;
                     for (int i = 0; i < inProgress.Count; i++)
                     {   // first entries are highest priority
@@ -957,80 +958,87 @@ namespace WriteLogDigiRite
                         serialToSend += 1;
                     q.SentSerialNumber = serialToSend;
                 }
-                switch (excSet)
+                try
                 {
-                    case ExchangeTypes.ARRL_FIELD_DAY:
-                        string entryclass = "";
-                        var fdsplit = rawMessage.Split((char[])null,
-                            StringSplitOptions.RemoveEmptyEntries);
-                        bool founddigit = false;
-                        foreach (string w in fdsplit)
-                        {
-                            if (!founddigit)
+                    switch (excSet)
+                    {
+                        case ExchangeTypes.ARRL_FIELD_DAY:
+                            string entryclass = "";
+                            var fdsplit = rawMessage.Split((char[])null,
+                                StringSplitOptions.RemoveEmptyEntries);
+                            bool founddigit = false;
+                            foreach (string w in fdsplit)
                             {
-                                if (Char.IsDigit(w[0]))
+                                if (!founddigit)
                                 {
-                                    founddigit = true;
-                                    entryclass = w;
+                                    if (Char.IsDigit(w[0]))
+                                    {
+                                        founddigit = true;
+                                        entryclass = w;
+                                    }
                                 }
+                                else if (w.All(Char.IsLetter))
+                                    return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                                        addAck ? "R " : "", entryclass, w);
                             }
-                            else if (w.All(Char.IsLetter))
-                                return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall, 
-                                    addAck ? "R " : "", entryclass, w);
-                        }
-                        break;
-
-                    case ExchangeTypes.ARRL_RTTY:
-                        string part = null;
-                        String percentSearch = rawMessage;
-                        String percentsRemoved = "";
-                        for (; ; )
-                        {   // is there a serial number in the message?
-                            int percentPos = percentSearch.IndexOf('%');
-                            if (percentPos < 0)
-                            {
-                                percentsRemoved += percentSearch;
-                                break;  // no serial number
-                            }
-                            if ((percentPos < percentSearch.Length - 1) &&
-                                Char.IsLetter(percentSearch[percentPos + 1]))
-                            {
-                                percentsRemoved += percentSearch.Substring(0, percentPos);
-                                percentSearch = percentSearch.Substring(percentPos + 2);
-                                continue; // this one is not a serial number
-                            }
-                            part = String.Format("{0:0000}", q.SentSerialNumber);
                             break;
-                        }
-                        if (String.IsNullOrEmpty(part))
-                        {
-                            var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (string w in rttysplit)
-                                if (w.All(Char.IsLetter))
+
+                        case ExchangeTypes.ARRL_RTTY:
+                            string part = null;
+                            String percentSearch = rawMessage;
+                            String percentsRemoved = "";
+                            for (; ; )
+                            {   // is there a serial number in the message?
+                                int percentPos = percentSearch.IndexOf('%');
+                                if (percentPos < 0)
                                 {
-                                    part = w.ToUpper();
-                                    break;
+                                    percentsRemoved += percentSearch;
+                                    break;  // no serial number
                                 }
-                        }
-                        return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall, 
-                            addAck ? "R " : "", q.Message.RST, part);
-
-                    case ExchangeTypes.GRID_SQUARE:
-                        if (GridSquareSentFieldNumber > 0)
-                        {
-                            string sentgrid = iWlEntry.GetFieldN((short)GridSquareSentFieldNumber).ToUpper();
-                            if (sentgrid.Length >= 4)
-                            {
-                                q.SentGrid = sentgrid;
-                                return String.Format("{0} {1} {2} {3}",
-                                    hiscall, mycall, 
-                                    addAck ? "R" : "" , sentgrid);
+                                if ((percentPos < percentSearch.Length - 1) &&
+                                    Char.IsLetter(percentSearch[percentPos + 1]))
+                                {
+                                    percentsRemoved += percentSearch.Substring(0, percentPos);
+                                    percentSearch = percentSearch.Substring(percentPos + 2);
+                                    continue; // this one is not a serial number
+                                }
+                                part = String.Format("{0:0000}", q.SentSerialNumber);
+                                break;
                             }
-                        }
-                        break;
+                            if (String.IsNullOrEmpty(part))
+                            {
+                                var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                                foreach (string w in rttysplit)
+                                    if (w.All(Char.IsLetter))
+                                    {
+                                        part = w.ToUpper();
+                                        break;
+                                    }
+                            }
+                            return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                                addAck ? "R " : "", q.Message.RST, part);
 
-                    case ExchangeTypes.DB_REPORT:
-                        break; // handle below
+                        case ExchangeTypes.GRID_SQUARE:
+                            if (GridSquareSentFieldNumber > 0)
+                            {
+                                string sentgrid = iWlEntry.GetFieldN((short)GridSquareSentFieldNumber).ToUpper();
+                                if (sentgrid.Length >= 4)
+                                {
+                                    q.SentGrid = sentgrid;
+                                    return String.Format("{0} {1} {2} {3}",
+                                        hiscall, mycall,
+                                        addAck ? "R" : "", sentgrid);
+                                }
+                            }
+                            break;
+
+                        case ExchangeTypes.DB_REPORT:
+                            break; // handle below
+                    }
+                }
+                finally
+                {
+                    iWlDupingEntry.Callsign = "";
                 }
             }
             // if WriteLog is not running, or doesn't handle the exchange.
@@ -1123,6 +1131,8 @@ namespace WriteLogDigiRite
                 msg = GetAckMessage(q, false, i);
                 listBoxAlternatives.Items.Add(new QueuedToSendListItem(msg, q));
             }
+
+            altMessageShortcuts.Populate();
         }
 
         public void SendMessage(string s, QsoInProgress q)
@@ -1168,7 +1178,7 @@ namespace WriteLogDigiRite
                 String date = String.Format("{0:yyyyMMdd}", q.TimeOfLastReceived);
                 String time = String.Format("{0:HHmmss}", q.TimeOfLastReceived);
                 iWlDupingEntry.SetDateTimeFromADIF(date, time);
-                if (GridSquareSentFieldNumber > 0)
+                if (null != q.SentGrid && GridSquareSentFieldNumber > 0)
                     iWlDupingEntry.SetFieldN((short)GridSquareSentFieldNumber, q.SentGrid);
                 if (DgtlFieldNumber > 0)
                     iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
@@ -1621,6 +1631,7 @@ namespace WriteLogDigiRite
             comboBoxCQ.SelectedIndex = 0;
             cqListEven.FilterCqs = cqListOdd.FilterCqs = checkBoxOnlyCQs.CheckState;
             listBoxConversation.DrawMode = DrawMode.OwnerDrawFixed;
+            altMessageShortcuts = new AltMessageShortcuts(listBoxAlternativesPanel, listBoxAlternatives);
             logFile.SendToLog("Started");
             finishedLoad = true;
         }
@@ -1689,12 +1700,20 @@ namespace WriteLogDigiRite
 
         private void initQsoQueue()
         {
-            // the two-message exchanges per QSO sequencing is different
-            if (ExchangeTypes.GRID_SQUARE_PLUS_REPORT != 
-                    (ExchangeTypes)Properties.Settings.Default.ContestExchange)
-                qsoQueue = new QsoQueue(qsosPanel, this);
-            else // has its own class
-                qsoQueue = new Qso2MessageExchange(qsosPanel, this);
+            ExchangeTypes contest = (ExchangeTypes)Properties.Settings.Default.ContestExchange;
+            switch (contest)
+            {
+                case ExchangeTypes.GRID_SQUARE_PLUS_REPORT:
+                    // the two-message exchanges per QSO sequencing is different
+                    qsoQueue = new Qso2MessageExchange(qsosPanel, this);
+                    break;
+                case ExchangeTypes.GRID_SQUARE:
+                    qsoQueue = new QsoQueueGridSquare(qsosPanel, this, !needBrackets(myCall));
+                    break;
+                default:
+                    qsoQueue = new QsoQueue(qsosPanel, this);
+                    break;
+            }
             qsoQueue.MyCall = myCall;
             qsoQueue.MyBaseCall = myBaseCall;
             qsosPanel.Reset(); // no QSOs in progress can survive switching queue handling
@@ -2461,14 +2480,14 @@ namespace WriteLogDigiRite
 
         private void trackBarTxGain_Scroll(object sender, EventArgs e)
         {   deviceTx.Gain = (float)Math.Pow(2.0, (trackBarTxGain.Value - trackBarTxGain.Maximum)/AUDIO_SLIDER_SCALE);  }
-        
+
         int TUNE_LEN;
         private void buttonTune_Click(object sender, EventArgs e)
         {
             if (sendInProgress)
                 return;
             deviceTx.TransmitCycle = XD.Transmit_Cycle.PLAY_NOW;
-            const int tuneFrequency = 1000;
+            int tuneFrequency = TxFrequency;
             RigVfoSplitForTx(tuneFrequency, tuneFrequency + FT_GAP_HZ);
             int[] it = new int[TUNE_LEN];
             XDft.Generator.Play(genContext, it, tuneFrequency, deviceTx.GetRealTimeAudioSink());
@@ -2521,7 +2540,8 @@ namespace WriteLogDigiRite
         { numericUpDownFrequency.Value = numericUpDownRxFrequency.Value; }
 
 
-        #endregion
+#endregion
 
+       
     }
 }

@@ -36,7 +36,7 @@ namespace WriteLogDigiRite
         };
 
         // connect the QsoQueue with QsoInProgress on callbacks from the QsoSequencer
-        class QsoSequencerImpl : QsoSequencer.IQsoSequencerCallbacks
+        protected class QsoSequencerImpl : QsoSequencer.IQsoSequencerCallbacks
         {
             public QsoSequencerImpl(QsoQueue queue, QsoInProgress q)
             {   qsoQueue = queue; qso = q;   }
@@ -55,7 +55,9 @@ namespace WriteLogDigiRite
         }
 
         public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb) : base(listBox)
-        { callbacks = cb;  }     
+        {   
+            callbacks = cb;  
+        }     
 
         // call here every for every incoming message that might be relevant to us
         public override void MessageForMycall(RecentMessage recentMessage,  
@@ -74,8 +76,7 @@ namespace WriteLogDigiRite
                 QsoSequencer sequencer = inProgress.Sequencer as QsoSequencer;
                 onUsed(directlyToMe ? Conversation.Origin.TO_ME : Conversation.Origin.TO_OTHER);
                 // What's in the message? an exchange and/or an acknowledgement?
-                XDpack77.Pack77Message.Exchange exc = rm.Pack77Message as XDpack77.Pack77Message.Exchange;
-                bool hasExchange = (exc != null) && !String.IsNullOrEmpty(exc.Exchange);
+                bool hasExchange = ExchangeFromMessage(rm.Pack77Message) != null;
                 XDpack77.Pack77Message.Roger roger = rm.Pack77Message as XDpack77.Pack77Message.Roger;
                 bool ack = false;
                 if (roger != null)
@@ -104,14 +105,24 @@ namespace WriteLogDigiRite
             }
         }
 
+        protected virtual XDpack77.Pack77Message.Exchange ExchangeFromMessage(XDpack77.Pack77Message.Message m)
+        {
+            XDpack77.Pack77Message.Exchange exc = m as XDpack77.Pack77Message.Exchange;
+            // The Pack77Message Exchange interface can be deceptive.
+            // The Standard message CQ can have this interface but a null exc.Exchange with non-null GridSquare
+            if (exc != null && !String.IsNullOrEmpty(exc.Exchange))
+                return exc;
+            return null;
+        }
+
         protected override void StartQso(QsoInProgress q)
         {   // q needs to already be in our qsosPanel list
             QsoSequencer qs = new QsoSequencer(new QsoSequencerImpl(this, q));
             q.Sequencer = qs;
             // very first message directed from other to me
             // can be a CQ I chose to answer, or can be an exchange
-            XDpack77.Pack77Message.Exchange exc = q.Message.Pack77Message as XDpack77.Pack77Message.Exchange;
-            if ((exc != null) && !String.IsNullOrEmpty(exc.Exchange))
+            XDpack77.Pack77Message.Exchange exc =  ExchangeFromMessage(q.Message.Pack77Message);
+            if (exc != null)
                 qs.OnReceivedExchange(false);
             else
                 qs.Initiate();
@@ -142,5 +153,36 @@ namespace WriteLogDigiRite
 
         private string ackMessage(QsoInProgress q, bool ofAnAck)
         { return callbacks.GetAckMessage(q, ofAnAck); }
+
+    }
+
+    class QsoQueueGridSquare : QsoQueue
+    {
+        protected bool gridSquareAck;
+        public QsoQueueGridSquare(QsosPanel listBox, IQsoQueueCallBacks cb, bool gridAck) : base(listBox, cb)
+        {
+            gridSquareAck = gridAck;
+        }
+
+        protected override void StartQso(QsoInProgress q)
+        {   // q needs to already be in our qsosPanel list
+            QsoSequencer qs = new QsoSequencer(new QsoSequencerImpl(this, q));
+            q.Sequencer = qs;
+            // very first message directed from other to me
+            // can be a CQ I chose to answer, or can be an exchange
+            XDpack77.Pack77Message.Exchange exc = q.Message.Pack77Message as XDpack77.Pack77Message.Exchange;
+            if (null != ExchangeFromMessage(q.Message.Pack77Message))
+                qs.OnReceivedExchange(gridSquareAck);
+            else
+                qs.Initiate(gridSquareAck && exc != null && exc.GridSquare != null && exc.GridSquare.Length >= 4);
+        }
+
+        protected override XDpack77.Pack77Message.Exchange ExchangeFromMessage(XDpack77.Pack77Message.Message m)
+        {   // more restrictive than base class. Insist on a grid square
+            XDpack77.Pack77Message.Exchange exc = base.ExchangeFromMessage(m);
+            if (exc != null && !String.IsNullOrEmpty(exc.GridSquare) && exc.GridSquare.Length >= 4)
+                return exc;
+            return null;
+        }
     }
 }
