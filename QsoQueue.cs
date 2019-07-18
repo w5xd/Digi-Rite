@@ -36,7 +36,7 @@ namespace WriteLogDigiRite
         };
 
         // connect the QsoQueue with QsoInProgress on callbacks from the QsoSequencer
-        class QsoSequencerImpl : QsoSequencer.IQsoSequencerCallbacks
+        protected class QsoSequencerImpl : QsoSequencer.IQsoSequencerCallbacks
         {
             public QsoSequencerImpl(QsoQueue queue, QsoInProgress q)
             {   qsoQueue = queue; qso = q;   }
@@ -54,8 +54,10 @@ namespace WriteLogDigiRite
             private QsoInProgress qso;
         }
 
-        public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb) : base(listBox)
-        { callbacks = cb;  }     
+        public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb, bool startWithAck = false) : base(listBox)
+        {   callbacks = cb;  
+            gridSquareAck = startWithAck;
+        }     
 
         // call here every for every incoming message that might be relevant to us
         public override void MessageForMycall(RecentMessage recentMessage,  
@@ -112,9 +114,9 @@ namespace WriteLogDigiRite
             // can be a CQ I chose to answer, or can be an exchange
             XDpack77.Pack77Message.Exchange exc = q.Message.Pack77Message as XDpack77.Pack77Message.Exchange;
             if ((exc != null) && !String.IsNullOrEmpty(exc.Exchange))
-                qs.OnReceivedExchange(false);
+                qs.OnReceivedExchange(gridSquareAck);
             else
-                qs.Initiate();
+                qs.Initiate(gridSquareAck && exc != null && exc.GridSquare != null && exc.GridSquare.Length >= 4);
         }
 
         private void sendExchange(QsoInProgress q, bool withAck)
@@ -142,5 +144,8 @@ namespace WriteLogDigiRite
 
         private string ackMessage(QsoInProgress q, bool ofAnAck)
         { return callbacks.GetAckMessage(q, ofAnAck); }
+
+        protected bool gridSquareAck;
     }
+       
 }
