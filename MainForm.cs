@@ -1689,12 +1689,20 @@ namespace WriteLogDigiRite
 
         private void initQsoQueue()
         {
-            // the two-message exchanges per QSO sequencing is different
-            if (ExchangeTypes.GRID_SQUARE_PLUS_REPORT != 
-                    (ExchangeTypes)Properties.Settings.Default.ContestExchange)
-                qsoQueue = new QsoQueue(qsosPanel, this);
-            else // has its own class
-                qsoQueue = new Qso2MessageExchange(qsosPanel, this);
+            ExchangeTypes contest = (ExchangeTypes)Properties.Settings.Default.ContestExchange;
+            switch (contest)
+            {
+                case ExchangeTypes.GRID_SQUARE_PLUS_REPORT:
+                    // the two-message exchanges per QSO sequencing is different
+                    qsoQueue = new Qso2MessageExchange(qsosPanel, this);
+                    break;
+                case ExchangeTypes.GRID_SQUARE:
+                    qsoQueue = new QsoQueue(qsosPanel, this, !needBrackets(myCall));
+                    break;
+                default:
+                    qsoQueue = new QsoQueue(qsosPanel, this);
+                    break;
+            }
             qsoQueue.MyCall = myCall;
             qsoQueue.MyBaseCall = myBaseCall;
             qsosPanel.Reset(); // no QSOs in progress can survive switching queue handling
@@ -2521,7 +2529,7 @@ namespace WriteLogDigiRite
         { numericUpDownFrequency.Value = numericUpDownRxFrequency.Value; }
 
 
-        #endregion
+#endregion
 
     }
 }
