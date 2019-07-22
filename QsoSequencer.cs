@@ -27,7 +27,7 @@
         private const uint FINISHED_STATE = 4;
 
         // call to answer a CQ or otherwise think the other station might answer
-        public void Initiate(bool ack)
+        public void Initiate(bool ack = false)
         {
             qsoSequencerCallbacks.SendExchange(ack);
             HaveTheirs = ack;
