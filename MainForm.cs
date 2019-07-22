@@ -1168,7 +1168,7 @@ namespace WriteLogDigiRite
                 String date = String.Format("{0:yyyyMMdd}", q.TimeOfLastReceived);
                 String time = String.Format("{0:HHmmss}", q.TimeOfLastReceived);
                 iWlDupingEntry.SetDateTimeFromADIF(date, time);
-                if (GridSquareSentFieldNumber > 0)
+                if (null != q.SentGrid && GridSquareSentFieldNumber > 0)
                     iWlDupingEntry.SetFieldN((short)GridSquareSentFieldNumber, q.SentGrid);
                 if (DgtlFieldNumber > 0)
                     iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
@@ -1697,7 +1697,7 @@ namespace WriteLogDigiRite
                     qsoQueue = new Qso2MessageExchange(qsosPanel, this);
                     break;
                 case ExchangeTypes.GRID_SQUARE:
-                    qsoQueue = new QsoQueue(qsosPanel, this, !needBrackets(myCall));
+                    qsoQueue = new QsoQueueGridSquare(qsosPanel, this, !needBrackets(myCall));
                     break;
                 default:
                     qsoQueue = new QsoQueue(qsosPanel, this);
