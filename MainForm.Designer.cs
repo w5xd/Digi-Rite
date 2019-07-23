@@ -56,6 +56,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDownRxFrequency = new System.Windows.Forms.NumericUpDown();
             this.label10 = new System.Windows.Forms.Label();
+            this.listBoxAlternativesPanel = new System.Windows.Forms.Panel();
             this.listBoxAlternatives = new System.Windows.Forms.CheckedListBox();
             this.checkBoxManualEntry = new System.Windows.Forms.CheckBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -98,15 +99,16 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new WriteLogDigiRite.ConversationListBox();
             this.checkedlbNextToSend = new WriteLogDigiRite.ToSendListBox();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel6.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRxFrequency)).BeginInit();
+            this.listBoxAlternativesPanel.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTxGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStreams)).BeginInit();
@@ -362,7 +364,7 @@
             this.panel3.Controls.Add(this.label1);
             this.panel3.Controls.Add(this.numericUpDownRxFrequency);
             this.panel3.Controls.Add(this.label10);
-            this.panel3.Controls.Add(this.listBoxAlternatives);
+            this.panel3.Controls.Add(this.listBoxAlternativesPanel);
             this.panel3.Controls.Add(this.checkBoxManualEntry);
             this.panel3.Controls.Add(this.label7);
             this.panel3.Controls.Add(this.textBoxMessageEdit);
@@ -440,15 +442,25 @@
             this.label10.TabIndex = 7;
             this.label10.Text = "Hz";
             // 
+            // listBoxAlternativesPanel
+            // 
+            this.listBoxAlternativesPanel.Controls.Add(this.listBoxAlternatives);
+            this.listBoxAlternativesPanel.Location = new System.Drawing.Point(0, 76);
+            this.listBoxAlternativesPanel.Margin = new System.Windows.Forms.Padding(0);
+            this.listBoxAlternativesPanel.Name = "listBoxAlternativesPanel";
+            this.listBoxAlternativesPanel.Size = new System.Drawing.Size(225, 126);
+            this.listBoxAlternativesPanel.TabIndex = 11;
+            // 
             // listBoxAlternatives
             // 
             this.listBoxAlternatives.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listBoxAlternatives.CheckOnClick = true;
+            this.listBoxAlternatives.Dock = System.Windows.Forms.DockStyle.Right;
             this.listBoxAlternatives.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listBoxAlternatives.FormattingEnabled = true;
-            this.listBoxAlternatives.Location = new System.Drawing.Point(0, 76);
+            this.listBoxAlternatives.Location = new System.Drawing.Point(45, 0);
             this.listBoxAlternatives.Name = "listBoxAlternatives";
-            this.listBoxAlternatives.Size = new System.Drawing.Size(225, 126);
+            this.listBoxAlternatives.Size = new System.Drawing.Size(180, 126);
             this.listBoxAlternatives.TabIndex = 4;
             this.listBoxAlternatives.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.listBoxAlternatives_ItemCheck);
             this.listBoxAlternatives.SelectedIndexChanged += new System.EventHandler(this.listBoxAlternatives_SelectedIndexChanged);
@@ -915,6 +927,11 @@
             this.panelInProgress.Size = new System.Drawing.Size(347, 133);
             this.panelInProgress.TabIndex = 1;
             // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
+            // 
             // listBoxConversation
             // 
             this.listBoxConversation.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -942,11 +959,6 @@
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
             // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -973,6 +985,7 @@
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRxFrequency)).EndInit();
+            this.listBoxAlternativesPanel.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTxGain)).EndInit();
@@ -1032,6 +1045,7 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckedListBox listBoxAlternatives;
+        private System.Windows.Forms.Panel listBoxAlternativesPanel;
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.ComboBox comboBoxCQ;
         private System.Windows.Forms.GroupBox groupBox3;
