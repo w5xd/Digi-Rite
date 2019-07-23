@@ -36,6 +36,7 @@ namespace WriteLogDigiRite
         private LogFile logFile;
         private LogFile conversationLogFile;
         private bool sendInProgress = false;
+        private AltMessageShortcuts altMessageShortcuts;
 
         // what we put in listToMe and cqlist
         private CallPresentation cqListOdd;
@@ -1123,6 +1124,8 @@ namespace WriteLogDigiRite
                 msg = GetAckMessage(q, false, i);
                 listBoxAlternatives.Items.Add(new QueuedToSendListItem(msg, q));
             }
+
+            altMessageShortcuts.Populate();
         }
 
         public void SendMessage(string s, QsoInProgress q)
@@ -1621,6 +1624,7 @@ namespace WriteLogDigiRite
             comboBoxCQ.SelectedIndex = 0;
             cqListEven.FilterCqs = cqListOdd.FilterCqs = checkBoxOnlyCQs.CheckState;
             listBoxConversation.DrawMode = DrawMode.OwnerDrawFixed;
+            altMessageShortcuts = new AltMessageShortcuts(listBoxAlternativesPanel, listBoxAlternatives);
             logFile.SendToLog("Started");
             finishedLoad = true;
         }
@@ -2469,7 +2473,7 @@ namespace WriteLogDigiRite
 
         private void trackBarTxGain_Scroll(object sender, EventArgs e)
         {   deviceTx.Gain = (float)Math.Pow(2.0, (trackBarTxGain.Value - trackBarTxGain.Maximum)/AUDIO_SLIDER_SCALE);  }
-        
+
         int TUNE_LEN;
         private void buttonTune_Click(object sender, EventArgs e)
         {
@@ -2529,7 +2533,8 @@ namespace WriteLogDigiRite
         { numericUpDownFrequency.Value = numericUpDownRxFrequency.Value; }
 
 
-#endregion
+        #endregion
 
+       
     }
 }
