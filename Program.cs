@@ -15,7 +15,7 @@ namespace WriteLogDigiRite
         [STAThread]
         static void Main(string[] args)
         {
-            const int UpgradedVersion = 35;  // increment every release
+            const int UpgradedVersion = 36;  // increment every release
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 #if DEBUG
