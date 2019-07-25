@@ -936,11 +936,11 @@ namespace WriteLogDigiRite
                 // fill in from WriteLog if we can
                 const short WRITELOG_EXCHANGE_MESSAGE_NUMBER = 0;
                 string rawMessage = iWlDoc.GetFKeyMsgDigital(WRITELOG_EXCHANGE_MESSAGE_NUMBER).ToUpper();
-                iWlEntry.Callsign = q.HisCall;
+                iWlDupingEntry.Callsign = q.HisCall;
                 if (q.SentSerialNumber == 0)
                 {   // assign a serial number even if contest doesn't need it
-                    iWlEntry.SerialNumber = 0; // get a fresh one
-                    uint serialToSend = iWlEntry.SerialNumber;
+                    iWlDupingEntry.SerialNumber = 0; // get a fresh one
+                    uint serialToSend = iWlDupingEntry.SerialNumber;
                     // WriteLog may give us the same serial number since we're just one radio
                     Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
                     var inProgress = qsosPanel.QsosInProgress;
@@ -1038,7 +1038,7 @@ namespace WriteLogDigiRite
                 }
                 finally
                 {
-                    iWlEntry.Callsign = "";
+                    iWlDupingEntry.Callsign = "";
                 }
             }
             // if WriteLog is not running, or doesn't handle the exchange.
