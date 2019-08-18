@@ -100,9 +100,9 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new WriteLogDigiRite.ConversationListBox();
             this.checkedlbNextToSend = new WriteLogDigiRite.ToSendListBox();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -941,11 +941,6 @@
             this.panelInProgress.Size = new System.Drawing.Size(347, 133);
             this.panelInProgress.TabIndex = 1;
             // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
-            // 
             // listBoxConversation
             // 
             this.listBoxConversation.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -972,6 +967,11 @@
             this.checkedlbNextToSend.Sorted = true;
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
+            // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
             // 
             // MainForm
             // 
