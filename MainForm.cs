@@ -178,7 +178,7 @@ namespace WriteLogDigiRite
 
         private string LogFilePath { get { return wsjtExe.AppDirectoryPath + "DigiRite.log"; } }
 
-        const double AUDIO_SLIDER_SCALE = 8;
+        const double AUDIO_SLIDER_SCALE = 12;
         private bool InitSoundInAndOut()
         {
             // The objects implement IDisposable. Failing to
@@ -293,6 +293,7 @@ namespace WriteLogDigiRite
             deviceTx.SoundSyncCallback = new XD.SoundBeginEnd(AudioBeginEnd);
             float gain = deviceTx.Gain;
             bool gainOK = gain >= 0;
+            labelTxValue.Text = "";
             if (gainOK)
             {   // not sure why the windows volume slider don't
                 // really work with linear commands, but here we go:
@@ -301,6 +302,7 @@ namespace WriteLogDigiRite
                 if (v < trackBarTxGain.Minimum)
                     v = trackBarTxGain.Minimum;
                 trackBarTxGain.Value = v;
+                labelTxValue.Text = trackBarTxGain.Value.ToString();
             }
             trackBarTxGain.Enabled = gainOK;
             timerFt8Clock.Enabled = true;
@@ -2132,9 +2134,9 @@ namespace WriteLogDigiRite
                                     if (isOdd != isOddCycle) 
                                         simTimeTenths += FT_CYCLE_TENTHS; // delay simulation to match odd/even w.r.t. real time
                                     if (simTimeTenths < 0)
-                                        simTimeTenths += FT_CYCLE_TENTHS * 60 * 60;
-                                    if (simTimeTenths > FT_CYCLE_TENTHS * 60 * 60)
-                                        simTimeTenths -= FT_CYCLE_TENTHS * 60 * 60;
+                                        simTimeTenths += 10 * 60 * 60;
+                                    if (simTimeTenths > 10 * 60 * 60)
+                                        simTimeTenths -= 10 * 60 * 60;
                                     int tenthsSinceOrigin = (int)(now - simulatorStart).TotalMilliseconds / 100;
                                     if (simTimeTenths <= tenthsSinceOrigin)
                                         OnReceived(simulatorLines[simulatorNext++], (simNextTenths / FT_CYCLE_TENTHS) % (600 / FT_CYCLE_TENTHS));
@@ -2479,7 +2481,10 @@ namespace WriteLogDigiRite
         { qsosPanel.removeAllInactive();  }
 
         private void trackBarTxGain_Scroll(object sender, EventArgs e)
-        {   deviceTx.Gain = (float)Math.Pow(2.0, (trackBarTxGain.Value - trackBarTxGain.Maximum)/AUDIO_SLIDER_SCALE);  }
+        {
+            deviceTx.Gain = (float)Math.Pow(2.0, (trackBarTxGain.Value - trackBarTxGain.Maximum) / AUDIO_SLIDER_SCALE);
+            labelTxValue.Text = trackBarTxGain.Value.ToString();
+        }
 
         int TUNE_LEN;
         private void buttonTune_Click(object sender, EventArgs e)
@@ -2540,8 +2545,8 @@ namespace WriteLogDigiRite
         { numericUpDownFrequency.Value = numericUpDownRxFrequency.Value; }
 
 
-#endregion
 
-       
+        #endregion
+
     }
 }
