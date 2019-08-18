@@ -63,6 +63,7 @@
             this.textBoxMessageEdit = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.labelTxValue = new System.Windows.Forms.Label();
             this.trackBarTxGain = new System.Windows.Forms.TrackBar();
             this.label13 = new System.Windows.Forms.Label();
             this.buttonTune = new System.Windows.Forms.Button();
@@ -195,6 +196,7 @@
             this.checkBoxOnlyCQs.Text = "Only CQs";
             this.checkBoxOnlyCQs.ThreeState = true;
             this.checkBoxOnlyCQs.UseVisualStyleBackColor = true;
+            this.checkBoxOnlyCQs.CheckedChanged += new System.EventHandler(this.checkBoxOnlyCQs_CheckedChanged);
             this.checkBoxOnlyCQs.CheckStateChanged += new System.EventHandler(this.checkBoxOnlyCQs_CheckedChanged);
             // 
             // checkBoxCQboth
@@ -504,6 +506,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.labelTxValue);
             this.groupBox3.Controls.Add(this.trackBarTxGain);
             this.groupBox3.Controls.Add(this.label13);
             this.groupBox3.Controls.Add(this.buttonTune);
@@ -524,16 +527,27 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "&Tx";
             // 
+            // labelTxValue
+            // 
+            this.labelTxValue.AutoSize = true;
+            this.labelTxValue.Location = new System.Drawing.Point(186, 138);
+            this.labelTxValue.Name = "labelTxValue";
+            this.labelTxValue.Size = new System.Drawing.Size(19, 13);
+            this.labelTxValue.TabIndex = 13;
+            this.labelTxValue.Text = "99";
+            // 
             // trackBarTxGain
             // 
             this.trackBarTxGain.AutoSize = false;
-            this.trackBarTxGain.Location = new System.Drawing.Point(184, 22);
-            this.trackBarTxGain.Maximum = 32;
+            this.trackBarTxGain.Location = new System.Drawing.Point(184, 15);
+            this.trackBarTxGain.Maximum = 100;
+            this.trackBarTxGain.Minimum = 1;
             this.trackBarTxGain.Name = "trackBarTxGain";
             this.trackBarTxGain.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.trackBarTxGain.Size = new System.Drawing.Size(25, 125);
             this.trackBarTxGain.TabIndex = 12;
             this.trackBarTxGain.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBarTxGain.Value = 1;
             this.trackBarTxGain.Scroll += new System.EventHandler(this.trackBarTxGain_Scroll);
             // 
             // label13
@@ -1091,6 +1105,7 @@
         private System.Windows.Forms.Timer timerCleanup;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.CheckBox checkBoxOnlyCQs;
+        private System.Windows.Forms.Label labelTxValue;
     }
 }
 
