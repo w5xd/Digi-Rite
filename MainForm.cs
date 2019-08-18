@@ -441,6 +441,7 @@ namespace WriteLogDigiRite
                             {
                                 CallPresentation cqList = (cycle & 1) == 0 ? cqListEven : cqListOdd;
                                 cqList.Add(recentMessage, (CheckState cqOnly) => {
+                                    // enable the checkbox if: its a CQ, or if CheckState is Unchecked
                                     if (cqOnly == CheckState.Unchecked) return true; // everything shows in this mode
                                     // else if its not a CQ , return false
                                     else return null != toCall && toCall.Length >= 2 && toCall.Substring(0, 2) == "CQ";}

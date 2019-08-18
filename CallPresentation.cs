@@ -35,11 +35,11 @@ namespace WriteLogDigiRite
                 {
                     CqLabel cql = tlp.Controls[i] as CqLabel;
                     Control cb = tlp.Controls[i+1];
-                    bool enable = cql.enableCb(value);
+                    bool enable = cql.enableCb(m_filterCqs);
                     cql.Enabled = enable;
                     cb.Enabled = enable;
                     bool vis = true;
-                    if (value == CheckState.Checked)
+                    if (m_filterCqs == CheckState.Checked)
                         vis = enable;
                     cql.Visible = vis;
                     cb.Visible = vis;
@@ -103,7 +103,14 @@ namespace WriteLogDigiRite
 
             tlp.Controls.Add(lb);
             tlp.Controls.Add(cb);
-            lb.Enabled =  cb.Enabled = enableCb(m_filterCqs);
+            bool enabled = enableCb(m_filterCqs);
+            lb.Enabled =  cb.Enabled = enabled;
+            bool vis = true;
+            if (m_filterCqs == CheckState.Checked)
+                vis = cb.Enabled;
+            lb.Visible = vis;
+            cb.Visible = vis;
+
             cb.TabStop = false;
 
             lb.Click += new EventHandler((object o, EventArgs e) => {
