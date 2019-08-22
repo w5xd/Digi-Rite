@@ -22,7 +22,7 @@ namespace WriteLogDigiRite
 
         public int whichTxDevice;
         public int whichRxDevice;
-        public bool controlSplit;
+        public VfoControl controlSplit;
         public int txHighLimit;
         public bool forceRigUsb;
         public MainForm.DigiMode digiMode = MainForm.DigiMode.FT8;
@@ -112,7 +112,18 @@ namespace WriteLogDigiRite
             comboBoxAckMsg.SelectedIndex = Properties.Settings.Default.DefaultAcknowlegement;
 
             // these parameters are per-instance
-            checkBoxSplit.Checked = controlSplit;
+            switch (controlSplit)
+            {
+                case VfoControl.VFO_NONE:
+                    radioButtonNoVfo.Checked = true;
+                    break;
+                case VfoControl.VFO_SHIFT:
+                    radioButtonShiftTX.Checked = true;
+                    break;
+                case VfoControl.VFO_SPLIT:
+                    radioButtonSplitTX.Checked = true;
+                    break;
+            }
             if (txHighLimit >= numericUpDownTxMaxHz.Minimum &&
                 txHighLimit <= numericUpDownTxMaxHz.Maximum)
                 numericUpDownTxMaxHz.Value = txHighLimit;
@@ -196,8 +207,9 @@ namespace WriteLogDigiRite
             Properties.Settings.Default.DefaultAcknowlegement = comboBoxAckMsg.SelectedIndex;
 
             DialogResult = DialogResult.OK;
-            controlSplit = checkBoxSplit.Checked;
-            if (controlSplit)
+            controlSplit = radioButtonSplitTX.Checked ? VfoControl.VFO_SPLIT : 
+                            (radioButtonShiftTX.Checked ? VfoControl.VFO_SHIFT : VfoControl.VFO_NONE);
+            if (controlSplit != VfoControl.VFO_NONE)
                 txHighLimit = (int)numericUpDownTxMaxHz.Value;
             forceRigUsb = checkBoxUSB.Checked;
 
@@ -217,7 +229,7 @@ namespace WriteLogDigiRite
         {  radioButtonOutput = ((RadioButton)(sender)).TabIndex; }
 
         private void checkBoxSplit_CheckedChanged(object sender, EventArgs e)
-        { numericUpDownTxMaxHz.Enabled = checkBoxSplit.Checked;   }
+        { numericUpDownTxMaxHz.Enabled = !radioButtonNoVfo.Checked;   }
 
         private void SetupForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -230,6 +242,5 @@ namespace WriteLogDigiRite
                 }
             }
         }
-
     }
 }
