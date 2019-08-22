@@ -6,7 +6,9 @@ using System.Windows.Forms;
 namespace WriteLogDigiRite
 {
     public enum ExchangeTypes { GRID_SQUARE, DB_REPORT, ARRL_FIELD_DAY, ARRL_RTTY, GRID_SQUARE_PLUS_REPORT};
-    
+
+    public enum VfoControl { VFO_NONE, VFO_SPLIT, VFO_SHIFT };
+
     public partial class MainForm : Form, QsoQueue.IQsoQueueCallBacks, Qso2MessageExchange.IQsoQueueCallBacks
     {
         public static String[] DefaultAcknowledgements = { "73", "RR73", "RRR" };
@@ -44,7 +46,7 @@ namespace WriteLogDigiRite
         private CallPresentation toMe;
         private QsosPanel qsosPanel;
 
-        private bool controlVFOsplit = false;
+        private VfoControl controlVFOsplit = VfoControl.VFO_NONE;
         private bool forceRigUsb = false;
         private int TxHighFreqLimit = 0;
 
@@ -89,7 +91,7 @@ namespace WriteLogDigiRite
                 iWlDoc = (WriteLogClrTypes.IWriteL)iWlEntry.GetParent();
                 iWlDupingEntry = iWlDoc.CreateEntry();
                 SetupExchangeFieldNumbers();
-                string RttyRegKeyName ="Software\\W5XD\\writelog.ini\\RttyRite";
+                string RttyRegKeyName = "Software\\W5XD\\writelog.ini\\RttyRite";
                 if (instanceNumber > 1)
                     RttyRegKeyName += instanceNumber.ToString();
                 Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RttyRegKeyName);
@@ -110,8 +112,8 @@ namespace WriteLogDigiRite
                                 pttPort.Open();
                                 labelPtt.Text = "ptt on " + portname;
                             }
-                            catch (System.Exception )
-                            { 
+                            catch (System.Exception)
+                            {
                                 pttPort = null;
                             }
                         }
@@ -148,7 +150,7 @@ namespace WriteLogDigiRite
             }
             if (GridSquareReceivedFieldNumber <= 0)
                 GridSquareReceivedFieldNumber = appWriteLogGrid;
-            string []titles = qsoc.GetColumnTitles();
+            string[] titles = qsoc.GetColumnTitles();
             for (int i = 0; i < titles.Length; i++)
             {
                 if (titles[i].ToUpper().IndexOf("DGTL") >= 0)
@@ -313,7 +315,7 @@ namespace WriteLogDigiRite
 
         #region received message interactions
 
-        private List<XDpack77.Pack77Message.ReceivedMessage> recentMessages = 
+        private List<XDpack77.Pack77Message.ReceivedMessage> recentMessages =
             new List<XDpack77.Pack77Message.ReceivedMessage>();
 
         private DateTime watchDogTime; // the dog sleeps only for so long
@@ -425,7 +427,7 @@ namespace WriteLogDigiRite
                                     new IsConversationMessage((origin) =>
                                         {   // qsoQueue liked this message. log it
                                             isConversation = true;
-                                            string toLog = s.Substring(0, v+3) + msg;
+                                            string toLog = s.Substring(0, v + 3) + msg;
                                             listBoxConversation.Items.Add(new ListBoxConversationItem(toLog, origin));
                                             conversationLogFile.SendToLog(toLog);
                                             ScrollListBoxToBottom(listBoxConversation);
@@ -433,7 +435,7 @@ namespace WriteLogDigiRite
                         if (!isConversation)
                         {   // nobody above claimed this message
                             if (directlyToMe)
-                                toMe.Add(new RecentMessage(rm, dupe != 0, mult > 0), (CheckState x) => {return true;});
+                                toMe.Add(new RecentMessage(rm, dupe != 0, mult > 0), (CheckState x) => { return true; });
                             else if ((fromCall != null) &&
                                 !String.Equals(fromCall, myCall) &&  // decoder is hearing our own
                                 !String.Equals(fromCall, myBaseCall) &&  // transmissions
@@ -444,7 +446,7 @@ namespace WriteLogDigiRite
                                     // enable the checkbox if: its a CQ, or if CheckState is Unchecked
                                     if (cqOnly == CheckState.Unchecked) return true; // everything shows in this mode
                                     // else if its not a CQ , return false
-                                    else return null != toCall && toCall.Length >= 2 && toCall.Substring(0, 2) == "CQ";}
+                                    else return null != toCall && toCall.Length >= 2 && toCall.Substring(0, 2) == "CQ"; }
                                     );
                             }
                         }
@@ -468,14 +470,14 @@ namespace WriteLogDigiRite
         private void ScrollListBoxToBottom(ListBox lb)
         {
             int visibleItems = lb.ClientSize.Height / lb.ItemHeight;
-            lb.TopIndex = Math.Max(1 + lb.Items.Count - visibleItems , 0);
+            lb.TopIndex = Math.Max(1 + lb.Items.Count - visibleItems, 0);
         }
-        
+
         #endregion
 
         #region transmit management
 
-        private int MAX_MESSAGES_PER_CYCLE { get {  return (int)numericUpDownStreams.Value; } }
+        private int MAX_MESSAGES_PER_CYCLE { get { return (int)numericUpDownStreams.Value; } }
 
         // empirically determined to "center" in the time slot
         private const int FT8_TX_AFTER_ZERO_MSEC = 570;
@@ -494,7 +496,7 @@ namespace WriteLogDigiRite
         private void AfterNmsec(Action d, int msec)
         {
             var timer = new Timer { Interval = msec };
-            timer.Tick += new EventHandler((o,e) =>
+            timer.Tick += new EventHandler((o, e) =>
                 {
                     timer.Enabled = false;
                     d();
@@ -507,7 +509,7 @@ namespace WriteLogDigiRite
         private GenMessage genMessage;
         private bool[] transmittedForQSOLastCycle = new bool[2];
         private delegate DateTime GetNowTime();
-        
+
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
             if ((digiMode == DigiMode.FT4) && allowLate)
@@ -515,16 +517,16 @@ namespace WriteLogDigiRite
             if (null == genMessage)
                 return;
             DateTime toSend = getNowTime == null ? DateTime.UtcNow : getNowTime();
-            int nowTenths = toSend.Second * 10 + toSend.Millisecond/100;
-            int cyclePosTenths = nowTenths % FT_CYCLE_TENTHS; 
+            int nowTenths = toSend.Second * 10 + toSend.Millisecond / 100;
+            int cyclePosTenths = nowTenths % FT_CYCLE_TENTHS;
             bool nowOdd = ((nowTenths / FT_CYCLE_TENTHS) & 1) != 0;
             int seconds = nowTenths;
             seconds /= FT_CYCLE_TENTHS;
             seconds *= FT_CYCLE_TENTHS; // round back to nearest 
             seconds /= TENTHS_IN_SECOND;
             int lastCycleIndex = nowOdd ? 0 : 1;
-             // can't transmit two consecutive cycles, one odd and one even
-             bool onUserSelectedCycle = nowOdd == radioButtonOdd.Checked;
+            // can't transmit two consecutive cycles, one odd and one even
+            bool onUserSelectedCycle = nowOdd == radioButtonOdd.Checked;
             if ((transmittedForQSOLastCycle[lastCycleIndex])
                     && !onUserSelectedCycle)
                 return;
@@ -576,7 +578,7 @@ namespace WriteLogDigiRite
                     if (!checkedlbNextToSend.GetItemChecked(j))
                         continue;   // present, but marked to skip
                     QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
-                    if ((null != qli)&& Object.ReferenceEquals(qli.q, q))
+                    if ((null != qli) && Object.ReferenceEquals(qli.q, q))
                         inToSend.Add(qli);
                 }
             }
@@ -586,15 +588,15 @@ namespace WriteLogDigiRite
                 if (toSendList.Count >= MAX_MESSAGES_PER_CYCLE)
                     break;
                 checkedlbNextToSend.Items.Remove(qli);
-                if (toSendList.Any((qalready) => { 
+                if (toSendList.Any((qalready) => {
                     if (null != qalready && null != qalready.q && null != qli.q)
                         return String.Equals(qli.q.HisCall, qalready.q.HisCall);
-                    return false;}
+                    return false; }
                     ))
                     continue; // already a send to this callsign. don't allow another
                 toSendList.Add(qli);
             }
-    
+
             bool anyToSend = toSendList.Any();
             int thisCycleIndex = nowOdd ? 1 : 0;
             transmittedForQSOLastCycle[thisCycleIndex] = anyToSend;
@@ -632,7 +634,7 @@ namespace WriteLogDigiRite
             List<XDft.Tone> itonesToSend = new List<XDft.Tone>();
             List<int> freqsUsed = new List<int>();
             int freqRange = FT_GAP_HZ + 1;
-            int freqIncrement = freqRange+1;
+            int freqIncrement = freqRange + 1;
             bool doingMultiStream = toSendList.Count > 1;
             foreach (var item in toSendList)
             {
@@ -656,7 +658,7 @@ namespace WriteLogDigiRite
                 }
 
                 // prohibit overlapping send frequencies
-                for (int i = 0; i < freqsUsed.Count; )
+                for (int i = 0; i < freqsUsed.Count;)
                 {
                     int f = freqsUsed[i];
                     if ((freq <= f + freqRange) && (freq >= f - freqRange))
@@ -684,7 +686,7 @@ namespace WriteLogDigiRite
                 bool[] ftbits = null;
                 genMessage(item.MessageText, ref asSent, ref itones, ref ftbits);
                 const float RELATIVE_POWER_THIS_QSO = 1.0f;
-                itonesToSend.Add(new XDft.Tone(itones, RELATIVE_POWER_THIS_QSO, freq,0));
+                itonesToSend.Add(new XDft.Tone(itones, RELATIVE_POWER_THIS_QSO, freq, 0));
                 string conversationItem = String.Format("{2:00}{3:00}{4:00} transmit {1,4}    {0}",
                         asSent,
                         freq, toSend.Hour, toSend.Minute, seconds);
@@ -736,7 +738,7 @@ namespace WriteLogDigiRite
                         XDft.Generator.Play(genContext, itones,
                             freq, deviceTx.GetRealTimeAudioSink())), VfoSetToTxMsec);
                 }
-                else 
+                else
                 {   // multiple to send
                     int minFreq = 99999;
                     int maxFreq = 0;
@@ -772,7 +774,7 @@ namespace WriteLogDigiRite
                             }
                         }
 
-                        XDft.Tone thisSignal = new XDft.Tone(nextTones, 1.0f, itones.frequency + deltaFreq,0);
+                        XDft.Tone thisSignal = new XDft.Tone(nextTones, 1.0f, itones.frequency + deltaFreq, 0);
                         tones.Add(thisSignal);
                     }
                     RigVfoSplitForTx(minFreq, maxFreq + FT_GAP_HZ, tones);
@@ -783,7 +785,7 @@ namespace WriteLogDigiRite
             }
 
             // clear out checkedlbNextToSend of anything from a QSO no longer in QSO(s) in Progress
-            for (int j = 0; j < checkedlbNextToSend.Items.Count; )
+            for (int j = 0; j < checkedlbNextToSend.Items.Count;)
             {
                 QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
                 QsoInProgress qp;
@@ -798,12 +800,18 @@ namespace WriteLogDigiRite
             }
         }
 
+        delegate void VfoOnTxEnd();
+        private VfoOnTxEnd vfoOnTxEnd;
+
         private int RigVfoSplitForTx(int minAudioTx, int maxAudioTx, List<XDft.Tone> tones = null)
         {
             if (iWlEntry == null)
                 return minAudioTx; // can't do rig control
 
             iWlEntry.SetTransmitFocus();
+
+            if (controlVFOsplit == VfoControl.VFO_NONE)
+                return minAudioTx;
 
             short mode = 0;  short split = 0;double tx = 0;  double rx = 0;  // where is the rig now?
             iWlEntry.GetLogFrequency(ref mode, ref rx, ref tx, ref split);
@@ -833,12 +841,12 @@ namespace WriteLogDigiRite
             if (((maxAudioTx - minAudioTx) >= (maxFreq - minFreq))
                 || (offset == 0))
             {   //un-split the rig if the needed range is beyond
-                // the setup parameters
+                // the setup parameters, or no offset is needed
                 if (split != 0)
                     iWlEntry.SetLogFrequencyEx(mode, rx, rx, 0);
                 return minAudioTx;
             }
- 
+
             bool rigIsAlreadyOk = false;  // check if the rig has an acceptable split already
             if (split != 0)
             {
@@ -847,18 +855,40 @@ namespace WriteLogDigiRite
                     maxAudioTx + currentOffset <= maxFreq)
                 {   // the rig's state is OK already
                     offset = currentOffset;
-                    rigIsAlreadyOk = true;
+                    rigIsAlreadyOk = // OK only if we're really supposed to be in split mode
+                        controlVFOsplit != VfoControl.VFO_SHIFT;
                 }
             }
             // offset is what we'll set
             if (!rigIsAlreadyOk)
-                iWlEntry.SetLogFrequencyEx(mode, rx, rx - .001f * offset, 1);
+            {
+                double rxDuringTx = rx;
+                double txDuringTx = rx - .001f * offset;
+                if (controlVFOsplit == VfoControl.VFO_SPLIT)
+                    iWlEntry.SetLogFrequencyEx(mode, rxDuringTx, txDuringTx, 1);
+                else if (controlVFOsplit == VfoControl.VFO_SHIFT)
+                {
+                    rxDuringTx = txDuringTx;
+                    iWlEntry.SetLogFrequencyEx(mode, rxDuringTx, txDuringTx, 0);
+                    vfoOnTxEnd = () =>
+                    {
+                        iWlEntry.SetLogFrequencyEx(mode, rx, rx, 0);
+                    };
+                }
+            }
             if (null != tones)
                 foreach (var t in tones)
                     t.frequency += offset;
             return minAudioTx + offset;
         }
-        
+
+        private void RigVfoSplitForTxOff()
+        {
+            if (null != vfoOnTxEnd)
+                vfoOnTxEnd();
+            vfoOnTxEnd = null; // only run it once
+        }
+
         private void SetTxCycle(int cycle)
         {
             if ((cycle & 1) == 0)
@@ -1447,8 +1477,11 @@ namespace WriteLogDigiRite
                         int m;
                         if (fromRegistryValue(rk, "MaxTxAudioFrequency", out m) && m > 0)
                         {
-                            controlVFOsplit = true;
-                            TxHighFreqLimit = m;
+                            if (Enum.IsDefined(typeof(VfoControl), x))
+                            {
+                                controlVFOsplit = (VfoControl)x;
+                                TxHighFreqLimit = m;
+                            }
                         }
                     }
                 }
@@ -1742,12 +1775,12 @@ namespace WriteLogDigiRite
                     rk.SetValue("XcvrW", rxForm.SizeToSave.Width.ToString());
                     rk.SetValue("XcvrH", rxForm.SizeToSave.Height.ToString());
                     rk.SetValue("XcvrSplit", rxForm.SplitterDistance.ToString());
-                    if (!controlVFOsplit)
-                        rk.SetValue("ControlVfoSplit", "0");
+                    if (controlVFOsplit == VfoControl.VFO_NONE)
+                            rk.SetValue("ControlVfoSplit", "0");
                     else
                     {
-                        rk.SetValue("ControlVfoSplit", "1");
                         rk.SetValue("MaxTxAudioFrequency", TxHighFreqLimit.ToString());
+                        rk.SetValue("ControlVfoSplit", ((int) controlVFOsplit).ToString());
                     }
                     rk.SetValue("ForceRigUSB", forceRigUsb ? "1" : "0");
                     rk.SetValue("TxEven", radioButtonEven.Checked ? "1" : "0");
@@ -2244,6 +2277,8 @@ namespace WriteLogDigiRite
                 iWlEntry.SetXmitPtt((short)(isBegin ? 1 : 0));
                 if (null != pttPort)
                     pttPort.RtsEnable = isBegin;
+                if (!isBegin)
+                    RigVfoSplitForTxOff();
             }
             sendInProgress = isBegin;
         }
@@ -2496,10 +2531,11 @@ namespace WriteLogDigiRite
             int tuneFrequency = TxFrequency;
             RigVfoSplitForTx(tuneFrequency, tuneFrequency + FT_GAP_HZ);
             int[] it = new int[TUNE_LEN];
-            XDft.Generator.Play(genContext, it, tuneFrequency, deviceTx.GetRealTimeAudioSink());
+            AfterNmsec(new Action(() =>
+                XDft.Generator.Play(genContext, it, tuneFrequency, deviceTx.GetRealTimeAudioSink())), UserVfoSplitToPtt);
         }
 
-#region TX RX frequency
+        #region TX RX frequency
 
         public int TxFrequency {
             get {
@@ -2545,9 +2581,6 @@ namespace WriteLogDigiRite
         private void buttonEqRx_Click(object sender, EventArgs e)
         { numericUpDownFrequency.Value = numericUpDownRxFrequency.Value; }
 
-
-
         #endregion
-
     }
 }

@@ -49,10 +49,12 @@
             this.label4 = new System.Windows.Forms.Label();
             this.comboBoxAckMsg = new System.Windows.Forms.ComboBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.radioButtonShiftTX = new System.Windows.Forms.RadioButton();
+            this.radioButtonNoVfo = new System.Windows.Forms.RadioButton();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.numericUpDownTxMaxHz = new System.Windows.Forms.NumericUpDown();
-            this.checkBoxSplit = new System.Windows.Forms.CheckBox();
+            this.radioButtonSplitTX = new System.Windows.Forms.RadioButton();
             this.checkBoxUSB = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.radioButtonFt4 = new System.Windows.Forms.RadioButton();
@@ -282,30 +284,56 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.radioButtonShiftTX);
+            this.groupBox3.Controls.Add(this.radioButtonNoVfo);
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.label5);
             this.groupBox3.Controls.Add(this.numericUpDownTxMaxHz);
-            this.groupBox3.Controls.Add(this.checkBoxSplit);
-            this.groupBox3.Location = new System.Drawing.Point(325, 283);
+            this.groupBox3.Controls.Add(this.radioButtonSplitTX);
+            this.groupBox3.Location = new System.Drawing.Point(325, 273);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(146, 107);
+            this.groupBox3.Size = new System.Drawing.Size(167, 135);
             this.groupBox3.TabIndex = 17;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "TX frequency limits";
             // 
+            // radioButtonShiftTX
+            // 
+            this.radioButtonShiftTX.AutoSize = true;
+            this.radioButtonShiftTX.Location = new System.Drawing.Point(7, 63);
+            this.radioButtonShiftTX.Name = "radioButtonShiftTX";
+            this.radioButtonShiftTX.Size = new System.Drawing.Size(119, 17);
+            this.radioButtonShiftTX.TabIndex = 2;
+            this.radioButtonShiftTX.TabStop = true;
+            this.radioButtonShiftTX.Text = "Shift VFO during TX";
+            this.radioButtonShiftTX.UseVisualStyleBackColor = true;
+            this.radioButtonShiftTX.CheckedChanged += new System.EventHandler(this.checkBoxSplit_CheckedChanged);
+            // 
+            // radioButtonNoVfo
+            // 
+            this.radioButtonNoVfo.AutoSize = true;
+            this.radioButtonNoVfo.Location = new System.Drawing.Point(7, 19);
+            this.radioButtonNoVfo.Name = "radioButtonNoVfo";
+            this.radioButtonNoVfo.Size = new System.Drawing.Size(96, 17);
+            this.radioButtonNoVfo.TabIndex = 0;
+            this.radioButtonNoVfo.TabStop = true;
+            this.radioButtonNoVfo.Text = "no VFO control";
+            this.radioButtonNoVfo.UseVisualStyleBackColor = true;
+            this.radioButtonNoVfo.CheckedChanged += new System.EventHandler(this.checkBoxSplit_CheckedChanged);
+            // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(7, 48);
+            this.label6.Location = new System.Drawing.Point(44, 84);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(104, 13);
-            this.label6.TabIndex = 1;
+            this.label6.TabIndex = 3;
             this.label6.Text = "Maximum audio freq:";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(69, 72);
+            this.label5.Location = new System.Drawing.Point(106, 104);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(20, 13);
             this.label5.TabIndex = 3;
@@ -319,7 +347,7 @@
             0,
             0,
             0});
-            this.numericUpDownTxMaxHz.Location = new System.Drawing.Point(14, 69);
+            this.numericUpDownTxMaxHz.Location = new System.Drawing.Point(51, 101);
             this.numericUpDownTxMaxHz.Maximum = new decimal(new int[] {
             3500,
             0,
@@ -332,23 +360,23 @@
             0});
             this.numericUpDownTxMaxHz.Name = "numericUpDownTxMaxHz";
             this.numericUpDownTxMaxHz.Size = new System.Drawing.Size(48, 20);
-            this.numericUpDownTxMaxHz.TabIndex = 2;
+            this.numericUpDownTxMaxHz.TabIndex = 4;
             this.numericUpDownTxMaxHz.Value = new decimal(new int[] {
             2000,
             0,
             0,
             0});
             // 
-            // checkBoxSplit
+            // radioButtonSplitTX
             // 
-            this.checkBoxSplit.AutoSize = true;
-            this.checkBoxSplit.Location = new System.Drawing.Point(7, 24);
-            this.checkBoxSplit.Name = "checkBoxSplit";
-            this.checkBoxSplit.Size = new System.Drawing.Size(104, 17);
-            this.checkBoxSplit.TabIndex = 0;
-            this.checkBoxSplit.Text = "Control VFO split";
-            this.checkBoxSplit.UseVisualStyleBackColor = true;
-            this.checkBoxSplit.CheckedChanged += new System.EventHandler(this.checkBoxSplit_CheckedChanged);
+            this.radioButtonSplitTX.AutoSize = true;
+            this.radioButtonSplitTX.Location = new System.Drawing.Point(7, 41);
+            this.radioButtonSplitTX.Name = "radioButtonSplitTX";
+            this.radioButtonSplitTX.Size = new System.Drawing.Size(123, 17);
+            this.radioButtonSplitTX.TabIndex = 1;
+            this.radioButtonSplitTX.Text = "Split VFOs during TX";
+            this.radioButtonSplitTX.UseVisualStyleBackColor = true;
+            this.radioButtonSplitTX.CheckedChanged += new System.EventHandler(this.checkBoxSplit_CheckedChanged);
             // 
             // checkBoxUSB
             // 
@@ -535,7 +563,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.NumericUpDown numericUpDownTxMaxHz;
-        private System.Windows.Forms.CheckBox checkBoxSplit;
+        private System.Windows.Forms.RadioButton radioButtonSplitTX;
         private System.Windows.Forms.CheckBox checkBoxUSB;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.RadioButton radioButtonFt4;
@@ -544,5 +572,7 @@
         private System.Windows.Forms.NumericUpDown numericUpDownVfoToPtt;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.RadioButton radioButtonNoVfo;
+        private System.Windows.Forms.RadioButton radioButtonShiftTX;
     }
 }
