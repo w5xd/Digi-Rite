@@ -798,6 +798,13 @@ namespace WriteLogDigiRite
                 else
                     checkedlbNextToSend.Items.RemoveAt(j);
             }
+
+            foreach (var item in toSendList)
+            {
+                var cb = item.MessageSent;
+                if (null != cb)
+                    cb();
+            }
         }
 
         delegate void VfoOnTxEnd();
@@ -1168,7 +1175,7 @@ namespace WriteLogDigiRite
             altMessageShortcuts.Populate();
         }
 
-        public void SendMessage(string s, QsoInProgress q)
+        public void SendMessage(string s, QsoInProgress q, QsoSequencer.MessageSent ms)
         {
             for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
             {   // if there is a message on this QSO already, remove it.
@@ -1184,7 +1191,7 @@ namespace WriteLogDigiRite
             }
             if (q.Active)
             {
-                int idx = checkedlbNextToSend.Items.Add(new SortedQueuedToSendListItem(s, q, qsosPanel));
+                int idx = checkedlbNextToSend.Items.Add(new SortedQueuedToSendListItem(s, q, qsosPanel, ms));
                 checkedlbNextToSend.SetItemChecked(idx, checkBoxAutoXmit.Checked && q.Active);
                 checkedlbNextToSend.Sort();
             }

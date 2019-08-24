@@ -31,7 +31,7 @@ namespace WriteLogDigiRite
         {
             string GetExchangeMessage(QsoInProgress q, bool addAck);
             string GetAckMessage(QsoInProgress q, bool ofAnAck);
-            void SendMessage(string toSend, QsoInProgress q);
+            void SendMessage(string toSend, QsoInProgress q, QsoSequencer.MessageSent ms);
             void LogQso(QsoInProgress q);
         };
 
@@ -43,10 +43,10 @@ namespace WriteLogDigiRite
 
             public void LogQso()  
                 {  qsoQueue.logQso(qso);   }
-            public void SendAck(bool ofAnAck)  
-                { qsoQueue.sendAck(qso, ofAnAck);  }
-            public void SendExchange(bool withAck)  
-                {  qsoQueue.sendExchange(qso, withAck); }
+            public void SendAck(bool ofAnAck, QsoSequencer.MessageSent ms)  
+                { qsoQueue.sendAck(qso, ofAnAck, ms);  }
+            public void SendExchange(bool withAck, QsoSequencer.MessageSent ms)  
+                {  qsoQueue.sendExchange(qso, withAck, ms); }
             public override String ToString()         
                 { return qso.ToString(); }
 
@@ -128,8 +128,8 @@ namespace WriteLogDigiRite
                 qs.Initiate();
         }
 
-        private void sendExchange(QsoInProgress q, bool withAck)
-        {    callbacks.SendMessage(exchangeMessage(q,withAck), q);    }
+        private void sendExchange(QsoInProgress q, bool withAck, QsoSequencer.MessageSent ms)
+        {    callbacks.SendMessage(exchangeMessage(q,withAck), q, ms);    }
 
         private string exchangeMessage(QsoInProgress q, bool withAck)
         {  return callbacks.GetExchangeMessage(q, withAck);   }
@@ -148,8 +148,8 @@ namespace WriteLogDigiRite
             }
         }
 
-        private void sendAck(QsoInProgress q, bool ofAnAck) /* ofAnAck can be used to send CQ*/
-        {  callbacks.SendMessage(ackMessage(q,ofAnAck), q); }
+        private void sendAck(QsoInProgress q, bool ofAnAck, QsoSequencer.MessageSent ms) /* ofAnAck can be used to send CQ*/
+        {  callbacks.SendMessage(ackMessage(q,ofAnAck), q, ms); }
 
         private string ackMessage(QsoInProgress q, bool ofAnAck)
         { return callbacks.GetAckMessage(q, ofAnAck); }

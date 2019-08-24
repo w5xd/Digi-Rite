@@ -14,7 +14,7 @@ namespace WriteLogDigiRite
         {
             string GetExchangeMessage(QsoInProgress q, bool addAck, ExchangeTypes exc);
             string GetAckMessage(QsoInProgress q, bool ofAnAck);
-            void SendMessage(string toSend, QsoInProgress q);
+            void SendMessage(string toSend, QsoInProgress q, QsoSequencer.MessageSent ms);
             void LogQso(QsoInProgress q);
         };
 
@@ -57,10 +57,10 @@ namespace WriteLogDigiRite
             { qsoQueue = queue; qso = q; }
             public void LogQso()
             { qsoQueue.LogQso(qso); }
-            public void SendAck()
-            { qsoQueue.SendAck(qso); }
-            public void SendExchange(ExchangeTypes ext, bool withAck )
-            { qsoQueue.SendExchange(qso, ext, withAck); }
+            public void SendAck(QsoSequencer.MessageSent ms)
+            { qsoQueue.SendAck(qso, ms); }
+            public void SendExchange(ExchangeTypes ext, bool withAck, QsoSequencer.MessageSent ms)
+            { qsoQueue.SendExchange(qso, ext, withAck, ms); }
             public override String ToString()
             { return qso.ToString(); }
 
@@ -82,8 +82,8 @@ namespace WriteLogDigiRite
             qs.OnReceived(directlyToMe, q.Message.Pack77Message);
         }
 
-        public void SendExchange(QsoInProgress q, ExchangeTypes exc, bool withAck)
-        {  callbacks.SendMessage(callbacks.GetExchangeMessage(q, withAck, exc), q);      }
+        public void SendExchange(QsoInProgress q, ExchangeTypes exc, bool withAck, QsoSequencer.MessageSent ms)
+        {  callbacks.SendMessage(callbacks.GetExchangeMessage(q, withAck, exc), q, ms);      }
 
         public void LogQso(QsoInProgress q)
         {
@@ -99,17 +99,17 @@ namespace WriteLogDigiRite
             }
         }
 
-        public void SendAck(QsoInProgress q)
-        { callbacks.SendMessage(callbacks.GetAckMessage(q, false), q);  }
+        public void SendAck(QsoInProgress q, QsoSequencer.MessageSent ms)
+        { callbacks.SendMessage(callbacks.GetAckMessage(q, false), q, ms);  }
     }
 
     class Qso2MessageSequencer : IQsoSequencer
     {
         public interface IQsoSequencerCallbacks
         {
-            void SendExchange(ExchangeTypes exc, bool withAck);
+            void SendExchange(ExchangeTypes exc, bool withAck, QsoSequencer.MessageSent ms);
             void LogQso();
-            void SendAck();
+            void SendAck(QsoSequencer.MessageSent ms);
         }
         private bool haveGrid  = false;
         private bool haveReport  = false;
@@ -154,12 +154,9 @@ namespace WriteLogDigiRite
                     haveGrid = true;
                     ExchangeSent es;
                     if (amLeader)
-                    {
-                        es = ()=> cb.SendExchange(ExchangeTypes.DB_REPORT, false); 
-                        haveSentReport = true;
-                    }
+                        es = ()=> cb.SendExchange(ExchangeTypes.DB_REPORT, false, () => { haveSentReport = true; }); 
                     else
-                        es = ()=>cb.SendExchange(ExchangeTypes.GRID_SQUARE, false);
+                        es = ()=>cb.SendExchange(ExchangeTypes.GRID_SQUARE, false, null);
                     lastSent = es;
                     es();
                     return;
@@ -172,14 +169,13 @@ namespace WriteLogDigiRite
                     lastSent = null;
                     if (amLeader && ack && haveSentReport)
                     {
-                        cb.SendAck();
+                        cb.SendAck(null);
                         haveLogged = true;
                         cb.LogQso();
                     }
                     else
                     {
-                        haveSentReport = true;
-                        ExchangeSent es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, true);
+                        ExchangeSent es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, true, ()=> { haveSentReport = true; });
                         lastSent = es;
                         es();
                     }
@@ -191,7 +187,7 @@ namespace WriteLogDigiRite
             {
                 if (!haveLogged && !haveGrid && !haveReport)
                 {
-                    ExchangeSent es = () => cb.SendExchange(amLeader ? ExchangeTypes.DB_REPORT : ExchangeTypes.GRID_SQUARE, false);
+                    ExchangeSent es = () => cb.SendExchange(amLeader ? ExchangeTypes.DB_REPORT : ExchangeTypes.GRID_SQUARE, false, null);
                     lastSent = es;
                     es();
                     return;
@@ -201,7 +197,7 @@ namespace WriteLogDigiRite
                     haveLogged = true;
                     lastSent = null;
                     if (!amLeader)
-                        cb.SendAck();
+                        cb.SendAck(null);
                     cb.LogQso();
                     return;
                 }
