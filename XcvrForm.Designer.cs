@@ -190,7 +190,7 @@
             // labelPower
             // 
             this.labelPower.AutoSize = true;
-            this.labelPower.Location = new System.Drawing.Point(568, 14);
+            this.labelPower.Location = new System.Drawing.Point(552, 14);
             this.labelPower.Name = "labelPower";
             this.labelPower.Size = new System.Drawing.Size(36, 13);
             this.labelPower.TabIndex = 6;

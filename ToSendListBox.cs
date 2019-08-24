@@ -47,22 +47,25 @@ namespace WriteLogDigiRite
 
     class QueuedToSendListItem
     {
-        public QueuedToSendListItem(string s, QsoInProgress q)
+        public QueuedToSendListItem(string s, QsoInProgress q, QsoSequencer.MessageSent ms = null)
         {
             this.s = s;
             this.q = q;
+            this.messageSentCb = ms;
         }
         public override string ToString()
         { return s; }
         public String MessageText { get { return s; } set { s = value; } }
+        public QsoSequencer.MessageSent MessageSent { get { return messageSentCb; } }
         public QsoInProgress q;
         private string s;
+        private QsoSequencer.MessageSent messageSentCb;
     }
 
     class SortedQueuedToSendListItem : QueuedToSendListItem
     {
         public QsosPanel qp;
-        public SortedQueuedToSendListItem(string s, QsoInProgress q, QsosPanel qp) : base(s,q)
-        { this.qp = qp;  }
+        public SortedQueuedToSendListItem(string s, QsoInProgress q, QsosPanel qp, QsoSequencer.MessageSent ms) : base(s,q, ms)
+        { this.qp = qp; }
     }
 }
