@@ -113,7 +113,8 @@ namespace WriteLogDigiRite
         }
         private bool haveGrid  = false;
         private bool haveReport  = false;
-        private bool haveLogged = false;
+        private bool haveLoggedGrid = false;
+        private bool haveLoggedReport = false;
         private bool amLeader = false;
         private bool amLeaderSet = false;
         private bool haveSentReport = false;
@@ -123,7 +124,7 @@ namespace WriteLogDigiRite
         public Qso2MessageSequencer(IQsoSequencerCallbacks cb)
         { this.cb = cb;   }
 
-        public bool IsFinished { get { return haveLogged; } }
+        public bool IsFinished { get { return haveLoggedGrid || haveLoggedReport; } }
 
         public string DisplayState {
             get {
@@ -132,7 +133,7 @@ namespace WriteLogDigiRite
                     v += 1;
                 if (haveReport)
                     v += 2;
-                if (haveLogged)
+                if (haveLoggedGrid || haveLoggedReport)
                     v += 4;
                 return v.ToString();
             }
@@ -170,8 +171,11 @@ namespace WriteLogDigiRite
                     if (amLeader && ack && haveSentReport)
                     {
                         cb.SendAck(null);
-                        haveLogged = true;
-                        cb.LogQso();
+                        if (!haveLoggedReport)
+                        {
+                            haveLoggedReport = true;
+                            cb.LogQso();
+                        }
                     }
                     else
                     {
@@ -185,16 +189,16 @@ namespace WriteLogDigiRite
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             if ((qsl != null) && String.Equals(qsl.CallQSLed, "ALL") || directlyToMe)
             {
-                if (!haveLogged && !haveGrid && !haveReport)
+                if (!haveGrid && !haveReport)
                 {
                     ExchangeSent es = () => cb.SendExchange(amLeader ? ExchangeTypes.DB_REPORT : ExchangeTypes.GRID_SQUARE, false, null);
                     lastSent = es;
                     es();
                     return;
                 }
-                if (!haveLogged && (haveReport || (directlyToMe && haveGrid)))
+                if (!haveLoggedGrid && (haveReport || (directlyToMe && haveGrid)))
                 {
-                    haveLogged = true;
+                    haveLoggedGrid = true;
                     lastSent = null;
                     if (!amLeader)
                         cb.SendAck(null);
