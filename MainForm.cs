@@ -1321,7 +1321,13 @@ namespace WriteLogDigiRite
             }
             // if the exchange we used had an RST, we did it above. If not, use dB
             if (!foundRstReport && !String.IsNullOrEmpty(dbReport) && (ReceivedRstFieldNumber > 0))
-                iWlDupingEntry.SetFieldN((short)ReceivedRstFieldNumber, dbReport);
+                try
+                {
+                    iWlDupingEntry.SetFieldNnoValidate((short)ReceivedRstFieldNumber, dbReport); // novalidate cuz RTTY-enabled modules won't let this in
+                }
+                catch (System.Exception) {
+                    iWlDupingEntry.SetFieldNnoValidate((short)ReceivedRstFieldNumber, dbReport); // old versions of WL don't have SetFieldNnoValidate
+                } 
             iWlDupingEntry.EnterQso();
         }
         
