@@ -80,5 +80,8 @@
     <Setting Name="TxBackground" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">235, 245, 240</Value>
     </Setting>
+    <Setting Name="MaxUnansweredMinutes" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

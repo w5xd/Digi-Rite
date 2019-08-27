@@ -926,7 +926,7 @@ namespace WriteLogDigiRite
             }
         }
 
-        const int MAX_UNANSWERED_MINUTES = 5;
+        int MAX_UNANSWERED_MINUTES = 5;
         #endregion
 
         #region IQsoQueueCallBacks
@@ -1321,7 +1321,13 @@ namespace WriteLogDigiRite
             }
             // if the exchange we used had an RST, we did it above. If not, use dB
             if (!foundRstReport && !String.IsNullOrEmpty(dbReport) && (ReceivedRstFieldNumber > 0))
-                iWlDupingEntry.SetFieldN((short)ReceivedRstFieldNumber, dbReport);
+                try
+                {
+                    iWlDupingEntry.SetFieldNnoValidate((short)ReceivedRstFieldNumber, dbReport); // novalidate cuz RTTY-enabled modules won't let this in
+                }
+                catch (System.Exception) {
+                    iWlDupingEntry.SetFieldNnoValidate((short)ReceivedRstFieldNumber, dbReport); // old versions of WL don't have SetFieldNnoValidate
+                } 
             iWlDupingEntry.EnterQso();
         }
         
@@ -1416,6 +1422,8 @@ namespace WriteLogDigiRite
 
             if (!SetupTxAndRxDeviceIndicies())
                 MyCall = Properties.Settings.Default.CallUsed;
+
+            MAX_UNANSWERED_MINUTES = Properties.Settings.Default.MaxUnansweredMinutes;
 
             while (true)
             {
