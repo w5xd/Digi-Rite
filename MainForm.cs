@@ -926,7 +926,7 @@ namespace WriteLogDigiRite
             }
         }
 
-        const int MAX_UNANSWERED_MINUTES = 5;
+        int MAX_UNANSWERED_MINUTES = 5;
         #endregion
 
         #region IQsoQueueCallBacks
@@ -1422,6 +1422,8 @@ namespace WriteLogDigiRite
 
             if (!SetupTxAndRxDeviceIndicies())
                 MyCall = Properties.Settings.Default.CallUsed;
+
+            MAX_UNANSWERED_MINUTES = Properties.Settings.Default.MaxUnansweredMinutes;
 
             while (true)
             {

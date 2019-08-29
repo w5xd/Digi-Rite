@@ -334,5 +334,17 @@ namespace WriteLogDigiRite.Properties {
                 this["TxBackground"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int MaxUnansweredMinutes {
+            get {
+                return ((int)(this["MaxUnansweredMinutes"]));
+            }
+            set {
+                this["MaxUnansweredMinutes"] = value;
+            }
+        }
     }
 }
