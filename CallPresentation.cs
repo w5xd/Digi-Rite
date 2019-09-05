@@ -16,16 +16,7 @@ namespace WriteLogDigiRite
         public CallPresentation(Panel tp, Label modelLabel, CheckBox modelCheckbox) 
             : base(tp, modelLabel, modelCheckbox)
         {}
-
-        private static int SortOrder(RecentMessage left, RecentMessage right)
-        {
-            if (left.Dupe && !right.Dupe)
-                return 1;
-            if (!left.Dupe && right.Dupe)
-                return -1;
-            return right.Message.SignalDB - left.Message.SignalDB;
-        }
-        
+       
         public delegate bool EnableCb(CheckState CqsOnly);
 
         private CheckState m_filterCqs;
@@ -49,48 +40,27 @@ namespace WriteLogDigiRite
                         cb.Invalidate();
                     }
                 }
-                SortControls();
                 SizeChanged(null,null);
             } }
-
-        private class SortPanelOrder : System.Collections.Generic.IComparer<int>
-        {   // sort by position to draw
-            public SortPanelOrder(Control[] ar)
-            {  m_ar = ar; }
-            public int Compare(int x, int y)
-            {
-                CqLabel left = m_ar[x] as CqLabel;
-                CqLabel right = m_ar[y] as CqLabel;
-                return SortOrder(left.rm, right.rm);
-            }
-            private Control[] m_ar;
-        }
-
-        void SortControls()
-        {
-            Control []controls = new Control[tlp.Controls.Count];
-            tlp.Controls.CopyTo(controls,0);        
-            
-            // sort the integer array without messing with tlp
-            int []panelOrder = new int[controls.Length/2];
-            for (int i = 0; i < panelOrder.Length; i++)
-                panelOrder[i] = i *2;
-            Array.Sort<int>(panelOrder, new SortPanelOrder(controls));
-
-            // install the new order
-            for (int i = 0; i < panelOrder.Length; i++)
-            {
-                int idx = panelOrder[i];
-                Control cq = controls[idx];
-                Control cbc = controls[idx+1];
-                int TwoI = i * 2;
-                tlp.Controls.SetChildIndex(cq, TwoI);
-                tlp.Controls.SetChildIndex(cbc, 1 + TwoI);
-            }
-        }
+        private int m_ctrlIdxOfFirstDupe;
 
         public void Add(RecentMessage rm, EnableCb enableCb)
         {
+            int insertIdx = tlp.Controls.Count;
+            if (insertIdx == 0)
+                m_ctrlIdxOfFirstDupe = 0;
+
+            // insert in tlp.Controls always at m_ctrlIdxOfFirstDupe
+            // if it Is a dupe, then m_ctrlIdxOfFirstDupe is unchanged, otherwise it increments
+            //
+            // presentationIndex assignment. 
+            // non-dupes start at zero and work up.
+            // dupes start at LabelsThatFit-1 and work down
+            //
+            // On add when full....completely different logic.
+            // when full, Dupe added at end ...or
+            //  non-dupe takes the position of the newest Dupe on the screen, which is then bumped to the end
+
             CqLabel lb = new CqLabel(rm, colors);
             lb.Font = lblFont;
             lb.BackColor = lblBackColor;
@@ -101,8 +71,35 @@ namespace WriteLogDigiRite
             cb.GotFocus += lb.OnGetFocus;
             cb.LostFocus += lb.OnLostFocus;
 
+            bool isFull = tlp.Controls.Count >= LabelsThatFit * 2;
             tlp.Controls.Add(lb);
             tlp.Controls.Add(cb);
+            if (m_ctrlIdxOfFirstDupe < tlp.Controls.Count - 2)
+            {
+                tlp.Controls.SetChildIndex(cb, m_ctrlIdxOfFirstDupe);
+                tlp.Controls.SetChildIndex(lb, m_ctrlIdxOfFirstDupe);
+            }
+            if (!rm.Dupe)
+                m_ctrlIdxOfFirstDupe += 2;
+
+            int presentationIndex;
+            int numNonDupes = m_ctrlIdxOfFirstDupe / 2;
+            int numDupes = tlp.Controls.Count / 2 - numNonDupes;
+            if (!isFull)
+                presentationIndex = rm.Dupe ? LabelsThatFit - numDupes : numNonDupes - 1;
+            else
+            {
+                if (rm.Dupe)
+                    presentationIndex = numNonDupes + numDupes - 1;
+                else
+                {
+                    presentationIndex = numNonDupes - 1;
+                    // Dupe at this position--move to end
+                    if (tlp.Controls.Count > m_ctrlIdxOfFirstDupe)
+                        PositionEntry(tlp.Controls[m_ctrlIdxOfFirstDupe+1], tlp.Controls[m_ctrlIdxOfFirstDupe], numNonDupes + numDupes - 1);
+                }
+            }
+
             bool enabled = enableCb(m_filterCqs);
             lb.Enabled =  cb.Enabled = enabled;
             bool vis = true;
@@ -134,8 +131,7 @@ namespace WriteLogDigiRite
 
             lb.Size = lblSize;
             cb.Size = cbSize;
-            SortControls();
-            SizeChanged(null,null);
+            PositionEntry(cb, lb, presentationIndex);
         }
 
         private void OnCheck(CheckBox cb, RecentMessage rm, bool onHisFreq)
@@ -145,7 +141,7 @@ namespace WriteLogDigiRite
         }
     }
 
-    class CqLabel : FocusDrawingHelper
+    class CqLabel : FocusDrawingHelper, PanelOfCheckBoxes.PresentAtEnd
     {
         public RecentMessage rm;
         public CallPresentation.EnableCb enableCb;
@@ -155,6 +151,8 @@ namespace WriteLogDigiRite
             this.rm = rm; 
             this.colors = colors;
         }
+
+        public bool AtEnd { get { return rm.Dupe; } }
 
         protected override void OnPaint(PaintEventArgs e)
         {

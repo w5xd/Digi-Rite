@@ -23,9 +23,10 @@ namespace WriteLogDigiRite
             lblLocation0 = lb.Location;
             tlp.SizeChanged += new System.EventHandler(SizeChanged);
         }
-        
+       
         protected RttyRiteColors colors = new RttyRiteColors();
         protected int rowsThatfit = 1;
+        protected int colsThatfit = 1;
         protected Panel tlp;
         protected System.Drawing.Size cbSize;
         protected System.Drawing.Size lblSize;
@@ -38,6 +39,13 @@ namespace WriteLogDigiRite
 
         protected int VerticalPitch { get { return lblSize.Height; } }
         protected int HorizontalPitch { get { return lblLocation0.X + lblSize.Width; } }
+
+        public int LabelsThatFit { get { return rowsThatfit * colsThatfit; } }
+
+        public interface PresentAtEnd
+        {
+            bool AtEnd { get; }
+        }
 
         protected void PositionEntry(Control cb, Control lb, int idx)
         {
@@ -58,8 +66,17 @@ namespace WriteLogDigiRite
             rowsThatfit = (tlp.Size.Height - 1) / VerticalPitch;
             if (rowsThatfit < 1)
                 rowsThatfit = 1;
+            colsThatfit = (tlp.Size.Width - 1) / HorizontalPitch;
+            if (colsThatfit < 1)
+                colsThatfit = 1;
             bool first = true;
             int which = 0;
+            int visibleCount = 0;
+            for (int i = 0; i < tlp.Controls.Count; i++)
+                if (tlp.Controls[i].Visible)
+                    visibleCount += 1;
+            visibleCount /= 2;
+            bool adjust = visibleCount < LabelsThatFit;
             for (int i = 0; i < tlp.Controls.Count; i++)
             {
                 Control lb = tlp.Controls[i];
@@ -72,9 +89,20 @@ namespace WriteLogDigiRite
                     first = false;
                 }
                 else // !Enabled pushed to end of keyboard tab order. 
-                    cb.TabIndex = tlp.Controls.Count + i; 
+                    cb.TabIndex = tlp.Controls.Count + i;
                 if (cb.Visible)
+                {
+                    if (adjust)
+                    {
+                        PresentAtEnd pae = lb as PresentAtEnd;
+                        if (pae != null && pae.AtEnd)
+                        {
+                            adjust = false; // only do this once
+                            which += LabelsThatFit - visibleCount;
+                        }
+                    }
                     PositionEntry(cb, lb, which++);
+                }
             }
         }
 
