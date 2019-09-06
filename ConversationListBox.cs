@@ -44,6 +44,7 @@ namespace WriteLogDigiRite
             }
             base.OnDrawItem(e);
         }
+
     }
 
     public static class Conversation

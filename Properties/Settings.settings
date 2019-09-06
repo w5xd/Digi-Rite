@@ -83,5 +83,11 @@
     <Setting Name="MaxUnansweredMinutes" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
+    <Setting Name="FixedFont" Type="System.Drawing.Font" Scope="User">
+      <Value Profile="(Default)">Lucida Console, 9pt</Value>
+    </Setting>
+    <Setting Name="LeftClickIsMyTx" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

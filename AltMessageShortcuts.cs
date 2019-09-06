@@ -37,11 +37,20 @@ namespace WriteLogDigiRite
         {
             panel = p;
             listBox = lb;
+            setup();
+        }
 
-            int h = lb.GetItemHeight(0);
+        public void setup()
+        {
+            int h = listBox.GetItemHeight(0);
             var sz = panel.Size;
 
             int btnCount = sz.Height / h;
+            if (null != buttons)
+            {
+                foreach (var b in buttons)
+                    b.Dispose();
+            }
             buttons = new MnemonicLabel[btnCount];
 
             for (int i = 0; i < btnCount; i++)
@@ -49,12 +58,12 @@ namespace WriteLogDigiRite
                 int ii = i;
                 buttons[i] = new MnemonicLabel(() =>
                 {
-                    if (lb.Items.Count > ii)
-                        lb.SetItemChecked(ii, true);
+                    if (listBox.Items.Count > ii)
+                        listBox.SetItemChecked(ii, true);
                 });
                 panel.Controls.Add(buttons[i]);
-                buttons[i].Size = new System.Drawing.Size(h-1, h-1);
-                var lbFont = lb.Font;
+                buttons[i].Size = new System.Drawing.Size(h - 1, h - 1);
+                var lbFont = listBox.Font;
                 System.Drawing.Font f = new System.Drawing.Font(lbFont.FontFamily, lbFont.Height * 2 / 3);
                 buttons[i].Font = f;
                 buttons[i].Location = new System.Drawing.Point(0, h * i);
@@ -67,8 +76,8 @@ namespace WriteLogDigiRite
                 buttons[i].TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 buttons[i].Visible = false;
             }
-            lb.TabIndex = btnCount + 1;
-            lb.Size = new System.Drawing.Size(sz.Width - h, sz.Height);
+            listBox.TabIndex = btnCount + 1;
+            listBox.Size = new System.Drawing.Size(sz.Width - h, sz.Height);
         }
 
         public void Populate()

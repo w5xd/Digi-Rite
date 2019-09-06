@@ -63,6 +63,9 @@
             this.numericUpDownVfoToPtt = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.radioButtonL = new System.Windows.Forms.RadioButton();
+            this.radioButtonR = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -70,6 +73,7 @@
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPttDelay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownVfoToPtt)).BeginInit();
+            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -487,6 +491,39 @@
             this.label8.TabIndex = 12;
             this.label8.Text = "&VFO split to PTT msec:";
             // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.radioButtonR);
+            this.groupBox5.Controls.Add(this.radioButtonL);
+            this.groupBox5.Location = new System.Drawing.Point(15, 387);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(189, 50);
+            this.groupBox5.TabIndex = 20;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "My TX is his frequency on mouse";
+            // 
+            // radioButtonL
+            // 
+            this.radioButtonL.AutoSize = true;
+            this.radioButtonL.Location = new System.Drawing.Point(41, 20);
+            this.radioButtonL.Name = "radioButtonL";
+            this.radioButtonL.Size = new System.Drawing.Size(43, 17);
+            this.radioButtonL.TabIndex = 0;
+            this.radioButtonL.TabStop = true;
+            this.radioButtonL.Text = "Left";
+            this.radioButtonL.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonR
+            // 
+            this.radioButtonR.AutoSize = true;
+            this.radioButtonR.Location = new System.Drawing.Point(103, 20);
+            this.radioButtonR.Name = "radioButtonR";
+            this.radioButtonR.Size = new System.Drawing.Size(50, 17);
+            this.radioButtonR.TabIndex = 1;
+            this.radioButtonR.TabStop = true;
+            this.radioButtonR.Text = "Right";
+            this.radioButtonR.UseVisualStyleBackColor = true;
+            // 
             // SetupForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -494,6 +531,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(519, 449);
+            this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.numericUpDownVfoToPtt);
@@ -532,6 +570,8 @@
             this.groupBox4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPttDelay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownVfoToPtt)).EndInit();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -574,5 +614,8 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.RadioButton radioButtonNoVfo;
         private System.Windows.Forms.RadioButton radioButtonShiftTX;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.RadioButton radioButtonR;
+        private System.Windows.Forms.RadioButton radioButtonL;
     }
 }

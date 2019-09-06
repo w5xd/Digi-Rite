@@ -140,6 +140,11 @@ namespace WriteLogDigiRite
             if ((VfoSplitToPtt >= numericUpDownVfoToPtt.Minimum) &&
                 (VfoSplitToPtt <= numericUpDownVfoToPtt.Maximum))
                 numericUpDownVfoToPtt.Value = VfoSplitToPtt;
+
+            if (Properties.Settings.Default.LeftClickIsMyTx)
+                radioButtonR.Checked = true;
+            else
+                radioButtonL.Checked = true;
         }
 
         // make the user type one in that can be parsed
@@ -205,6 +210,7 @@ namespace WriteLogDigiRite
             
             Properties.Settings.Default.ContestExchange = comboBoxContest.SelectedIndex;
             Properties.Settings.Default.DefaultAcknowlegement = comboBoxAckMsg.SelectedIndex;
+            Properties.Settings.Default.LeftClickIsMyTx = radioButtonR.Checked;
 
             DialogResult = DialogResult.OK;
             controlSplit = radioButtonSplitTX.Checked ? VfoControl.VFO_SPLIT : 

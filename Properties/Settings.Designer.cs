@@ -346,5 +346,29 @@ namespace WriteLogDigiRite.Properties {
                 this["MaxUnansweredMinutes"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Lucida Console, 9pt")]
+        public global::System.Drawing.Font FixedFont {
+            get {
+                return ((global::System.Drawing.Font)(this["FixedFont"]));
+            }
+            set {
+                this["FixedFont"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LeftClickIsMyTx {
+            get {
+                return ((bool)(this["LeftClickIsMyTx"]));
+            }
+            set {
+                this["LeftClickIsMyTx"] = value;
+            }
+        }
     }
 }
