@@ -13,6 +13,11 @@ namespace WriteLogDigiRite
         private InitiateQso initiateQso;
         public InitiateQso InitiateQsoCb { get => initiateQso; set => initiateQso = value; }
 
+#if DEBUG
+        private static int gInstanceNumber;
+        private int instanceNumber = ++gInstanceNumber;
+#endif
+
         public CallPresentation(Panel tp, Label modelLabel, CheckBox modelCheckbox) 
             : base(tp, modelLabel, modelCheckbox)
         {}
@@ -43,12 +48,30 @@ namespace WriteLogDigiRite
                 SizeChanged(null,null);
             } }
         private int m_ctrlIdxOfFirstDupe;
+        private int m_numVisibleDupes;
+        private int m_numVisibleNonDupes;
+        private class DupeOnStreen
+        {
+            public Control checkbox { get; private set; }
+            public CqLabel label { get; private set; }
+            public DupeOnStreen(CqLabel lb, Control cb)
+            {
+                checkbox = cb;
+                label = lb;
+            }
+        }
+        private Dictionary<int, DupeOnStreen> m_DupePresentationToCtrlIndexMap = new Dictionary<int, DupeOnStreen>();
 
         public void Add(RecentMessage rm, EnableCb enableCb)
         {
             int insertIdx = tlp.Controls.Count;
             if (insertIdx == 0)
+            {
                 m_ctrlIdxOfFirstDupe = 0;
+                m_numVisibleDupes = 0;
+                m_numVisibleNonDupes = 0;
+                m_DupePresentationToCtrlIndexMap.Clear();
+            }
 
             // insert in tlp.Controls always at m_ctrlIdxOfFirstDupe
             // if it Is a dupe, then m_ctrlIdxOfFirstDupe is unchanged, otherwise it increments
@@ -62,61 +85,35 @@ namespace WriteLogDigiRite
             //  non-dupe takes the position of the newest Dupe on the screen, which is then bumped to the end
 
             CqLabel lb = new CqLabel(rm, colors);
-            lb.Font = lblFont;
             lb.BackColor = lblBackColor;
             lb.ForeColor = lblForeColor;
+            lb.Font = tlp.Font;
             lb.AutoSize = false;
             lb.enableCb = enableCb;
             CheckBox cb = new CheckBox();
             cb.GotFocus += lb.OnGetFocus;
             cb.LostFocus += lb.OnLostFocus;
-
-            bool isFull = tlp.Controls.Count >= LabelsThatFit * 2;
-            tlp.Controls.Add(lb);
-            tlp.Controls.Add(cb);
-            if (m_ctrlIdxOfFirstDupe < tlp.Controls.Count - 2)
-            {
-                tlp.Controls.SetChildIndex(cb, m_ctrlIdxOfFirstDupe);
-                tlp.Controls.SetChildIndex(lb, m_ctrlIdxOfFirstDupe);
-            }
-            if (!rm.Dupe)
-                m_ctrlIdxOfFirstDupe += 2;
-
-            int presentationIndex;
-            int numNonDupes = m_ctrlIdxOfFirstDupe / 2;
-            int numDupes = tlp.Controls.Count / 2 - numNonDupes;
-            if (!isFull)
-                presentationIndex = rm.Dupe ? LabelsThatFit - numDupes : numNonDupes - 1;
-            else
-            {
-                if (rm.Dupe)
-                    presentationIndex = numNonDupes + numDupes - 1;
-                else
-                {
-                    presentationIndex = numNonDupes - 1;
-                    // Dupe at this position--move to end
-                    if (tlp.Controls.Count > m_ctrlIdxOfFirstDupe)
-                        PositionEntry(tlp.Controls[m_ctrlIdxOfFirstDupe+1], tlp.Controls[m_ctrlIdxOfFirstDupe], numNonDupes + numDupes - 1);
-                }
-            }
+            cb.Font = tlp.Font;
 
             bool enabled = enableCb(m_filterCqs);
-            lb.Enabled =  cb.Enabled = enabled;
+            lb.Enabled = cb.Enabled = enabled;
             bool vis = true;
             if (m_filterCqs == CheckState.Checked)
                 vis = cb.Enabled;
             lb.Visible = vis;
             cb.Visible = vis;
+            tlp.Controls.Add(lb);
+            tlp.Controls.Add(cb);
+            if (m_ctrlIdxOfFirstDupe < tlp.Controls.Count - 2)
+            {   // dupe or not, the insertion point is their boundary
+                tlp.Controls.SetChildIndex(cb, m_ctrlIdxOfFirstDupe);
+                tlp.Controls.SetChildIndex(lb, m_ctrlIdxOfFirstDupe);
+            }
 
+            if (!rm.Dupe)   // boundary moves on nondupes
+                m_ctrlIdxOfFirstDupe += 2;
+ 
             cb.TabStop = false;
-
-            lb.Click += new EventHandler((object o, EventArgs e) => {
-                MouseEventArgs me = e as MouseEventArgs;
-                bool nextCheck = !cb.Checked;
-                if ((null != me) && (me.Button == MouseButtons.Right) && nextCheck)
-                    initiateQso(rm, false);
-                cb.Checked = nextCheck;
-            });
 
             bool onHisFreq = false;
             XDpack77.Pack77Message.ToFromCall toFromCall = rm.Message.Pack77Message as XDpack77.Pack77Message.ToFromCall;
@@ -124,14 +121,54 @@ namespace WriteLogDigiRite
             if (null != toCall && (toCall=="CQ" || toCall.StartsWith("CQ ")))
                 onHisFreq = true;
 
+            lb.Click += new EventHandler((object o, EventArgs e) => {
+                MouseEventArgs me = e as MouseEventArgs;
+                bool nextCheck = !cb.Checked;
+                if ((null != me) && (me.Button == MouseButtons.Right) && nextCheck) // RIGHT MOUSE
+                    initiateQso(rm, onHisFreq & Properties.Settings.Default.LeftClickIsMyTx);
+                cb.Checked = nextCheck;
+            });
+
             cb.CheckedChanged += new EventHandler((object o, EventArgs e) =>
-            {
-                OnCheck(o as CheckBox, rm, onHisFreq);
+            {   // LEFT MOUSE
+                OnCheck(o as CheckBox, rm, onHisFreq & !Properties.Settings.Default.LeftClickIsMyTx);
             });
 
             lb.Size = lblSize;
             cb.Size = cbSize;
-            PositionEntry(cb, lb, presentationIndex);
+            if (vis)
+            {
+                if (rm.Dupe)
+                    m_numVisibleDupes += 1;
+                else
+                    m_numVisibleNonDupes += 1;
+                bool overflow = m_numVisibleDupes + m_numVisibleNonDupes > LabelsThatFit;
+                int presentationIndex;
+                if (!overflow)
+                    presentationIndex = rm.Dupe ? LabelsThatFit - m_numVisibleDupes : m_numVisibleNonDupes - 1;
+                else
+                {   // messy on overflow.
+                    if (rm.Dupe)    // new guy is a dupe, full screen, stick at the end
+                        presentationIndex = m_numVisibleNonDupes + m_numVisibleDupes - 1;
+                    else
+                    {
+                        // not a dupe, so here is where it goes
+                        presentationIndex = m_numVisibleNonDupes - 1;
+                        // If Dupe at this presentationIndex, find it and move to end
+                        DupeOnStreen dupePresentation;
+                        if (m_DupePresentationToCtrlIndexMap.TryGetValue(presentationIndex, out dupePresentation))
+                        {
+                            int dupePresentationIndex = m_numVisibleNonDupes + m_numVisibleDupes - 1;
+                            PositionEntry(dupePresentation.checkbox, dupePresentation.label, dupePresentationIndex);
+                            // remember where we put it
+                            m_DupePresentationToCtrlIndexMap[dupePresentationIndex] = dupePresentation;
+                        }
+                    }
+                }
+                if (rm.Dupe) // remember where the dupes are onscreen, so can move them if run out of room
+                    m_DupePresentationToCtrlIndexMap[presentationIndex] = new DupeOnStreen(lb,cb);
+                PositionEntry(cb, lb, presentationIndex);
+            }
         }
 
         private void OnCheck(CheckBox cb, RecentMessage rm, bool onHisFreq)

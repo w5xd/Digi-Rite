@@ -1684,6 +1684,7 @@ namespace WriteLogDigiRite
             listBoxConversation.DrawMode = DrawMode.OwnerDrawFixed;
             altMessageShortcuts = new AltMessageShortcuts(listBoxAlternativesPanel, listBoxAlternatives);
             logFile.SendToLog("Started");
+            ApplyFontControls();
             finishedLoad = true;
         }
 
@@ -2550,6 +2551,33 @@ namespace WriteLogDigiRite
                 XDft.Generator.Play(genContext, it, tuneFrequency, deviceTx.GetRealTimeAudioSink())), UserVfoSplitToPtt);
         }
 
+        private void ApplyFontControls()
+        {
+            var font = Properties.Settings.Default.FixedFont;
+            panelInProgress.Font = font;
+            listToMe.Font = font;
+            panelEvenCQs.Font = font;
+            panelOddCQs.Font = font;
+            listBoxAlternatives.Font = font;
+            altMessageShortcuts.setup();
+            altMessageShortcuts.Populate();
+            listBoxConversation.Font = font;
+            listBoxConversation.ItemHeight = font.Height;
+            textBoxMessageEdit.Font = font;
+        }
+
+        private void fontToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Windows.Forms.FontDialog fd = new FontDialog();
+            fd.FixedPitchOnly = true;
+            fd.Font = Properties.Settings.Default.FixedFont;
+            if (fd.ShowDialog() != DialogResult.Cancel)
+            {
+                Properties.Settings.Default.FixedFont = fd.Font;
+                ApplyFontControls();
+            }
+        }
+
         #region TX RX frequency
 
         public int TxFrequency {
@@ -2595,6 +2623,19 @@ namespace WriteLogDigiRite
 
         private void buttonEqRx_Click(object sender, EventArgs e)
         { numericUpDownFrequency.Value = numericUpDownRxFrequency.Value; }
+
+        private void buttonTxToQip_Click(object sender, EventArgs e)
+        {
+            var inProgress = qsosPanel.QsosInProgress;
+            for (int i = 0; i < inProgress.Count; i++)
+            {
+                QsoInProgress qp = inProgress[i];
+                if (null == qp)
+                    continue;   
+                if (qp.TransmitFrequency != qp.Message.Hz)
+                    qp.TransmitFrequency = 0;
+            }
+        }
 
         #endregion
     }

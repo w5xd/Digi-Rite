@@ -14,14 +14,15 @@ namespace WriteLogDigiRite
             // grab the presentation properties that we will use for copies
             Control cb = modelCheckbox;
             Control lb = modelLabel;
-            cbSize = cb.Size;
+            cbSize = cbOrigSize = cb.Size;
             cbLocation0 = cb.Location;
-            lblSize = lb.Size;
-            lblFont = lb.Font;
+            lblSize = lbOrigSize = lb.Size;
+            lblOrigFont = tp.Font;
             lblForeColor = lb.ForeColor;
             lblBackColor = lb.BackColor;
             lblLocation0 = lb.Location;
             tlp.SizeChanged += new System.EventHandler(SizeChanged);
+            tlp.FontChanged += new System.EventHandler(FontChanged);
         }
        
         protected RttyRiteColors colors = new RttyRiteColors();
@@ -29,8 +30,10 @@ namespace WriteLogDigiRite
         protected int colsThatfit = 1;
         protected Panel tlp;
         protected System.Drawing.Size cbSize;
+        private System.Drawing.Size cbOrigSize;
         protected System.Drawing.Size lblSize;
-        protected System.Drawing.Font lblFont;
+        private System.Drawing.Size lbOrigSize;
+        protected System.Drawing.Font lblOrigFont;
         protected System.Drawing.Point lblLocation0;
         protected System.Drawing.Point cbLocation0;
 
@@ -63,10 +66,13 @@ namespace WriteLogDigiRite
 
         public void SizeChanged(object sender, EventArgs e)
         {
-            rowsThatfit = (tlp.Size.Height - 1) / VerticalPitch;
+            int PixelMargin = (int)(tlp.Font.Size / 2);
+            if (PixelMargin < 1)
+                PixelMargin = 1;
+            rowsThatfit = (tlp.Size.Height - PixelMargin) / VerticalPitch;
             if (rowsThatfit < 1)
                 rowsThatfit = 1;
-            colsThatfit = (tlp.Size.Width - 1) / HorizontalPitch;
+            colsThatfit = (tlp.Size.Width - PixelMargin) / HorizontalPitch;
             if (colsThatfit < 1)
                 colsThatfit = 1;
             bool first = true;
@@ -104,6 +110,24 @@ namespace WriteLogDigiRite
                     PositionEntry(cb, lb, which++);
                 }
             }
+        }
+
+        public void FontChanged(object sender, EventArgs e)
+        {
+            cbSize.Height = (int)(cbOrigSize.Height * tlp.Font.Size / lblOrigFont.Size);
+            lblSize.Height = (int)(lbOrigSize.Height * tlp.Font.Size / lblOrigFont.Size);
+            cbSize.Width = (int)(cbOrigSize.Width * tlp.Font.Size / lblOrigFont.Size);
+            lblSize.Width = (int)(lbOrigSize.Width * tlp.Font.Size / lblOrigFont.Size);
+            for (int i = 0; i < tlp.Controls.Count; i++)
+            {
+                Control ctrl = tlp.Controls[i];
+                ctrl.Font = tlp.Font;
+                if (null != ctrl as CheckBox)
+                    ctrl.Size = cbSize;
+                else
+                    ctrl.Size = lblSize;
+            }
+            SizeChanged(null,null);
         }
 
         public void Reset()

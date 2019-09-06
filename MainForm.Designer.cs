@@ -79,6 +79,7 @@
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.abortTxToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.qsoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -99,10 +100,12 @@
             this.panelOddCQs = new System.Windows.Forms.Panel();
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
+            this.panelQipLabel = new System.Windows.Forms.Panel();
             this.panelInProgress = new System.Windows.Forms.Panel();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
+            this.buttonTxToQip = new System.Windows.Forms.Button();
             this.listBoxConversation = new WriteLogDigiRite.ConversationListBox();
             this.checkedlbNextToSend = new WriteLogDigiRite.ToSendListBox();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -132,16 +135,17 @@
             this.splitContainerCenter.Panel1.SuspendLayout();
             this.splitContainerCenter.Panel2.SuspendLayout();
             this.splitContainerCenter.SuspendLayout();
+            this.panelQipLabel.SuspendLayout();
             this.panelInProgress.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonAbort
             // 
             this.buttonAbort.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonAbort.Location = new System.Drawing.Point(9, 12);
+            this.buttonAbort.Location = new System.Drawing.Point(8, 181);
             this.buttonAbort.Name = "buttonAbort";
             this.buttonAbort.Size = new System.Drawing.Size(58, 23);
-            this.buttonAbort.TabIndex = 0;
+            this.buttonAbort.TabIndex = 14;
             this.buttonAbort.Text = "&Abort TX";
             this.buttonAbort.UseVisualStyleBackColor = true;
             this.buttonAbort.Click += new System.EventHandler(this.buttonAbort_Click);
@@ -153,7 +157,7 @@
             0,
             0,
             0});
-            this.numericUpDownFrequency.Location = new System.Drawing.Point(21, 23);
+            this.numericUpDownFrequency.Location = new System.Drawing.Point(6, 23);
             this.numericUpDownFrequency.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -179,17 +183,16 @@
             this.panel1.Controls.Add(this.checkBoxOnlyCQs);
             this.panel1.Controls.Add(this.checkBoxCQboth);
             this.panel1.Controls.Add(this.checkBoxShowMenu);
-            this.panel1.Controls.Add(this.buttonAbort);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(3, 399);
+            this.panel1.Location = new System.Drawing.Point(3, 417);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(255, 45);
+            this.panel1.Size = new System.Drawing.Size(260, 39);
             this.panel1.TabIndex = 3;
             // 
             // checkBoxOnlyCQs
             // 
             this.checkBoxOnlyCQs.AutoSize = true;
-            this.checkBoxOnlyCQs.Location = new System.Drawing.Point(175, 6);
+            this.checkBoxOnlyCQs.Location = new System.Drawing.Point(86, 11);
             this.checkBoxOnlyCQs.Name = "checkBoxOnlyCQs";
             this.checkBoxOnlyCQs.Size = new System.Drawing.Size(70, 17);
             this.checkBoxOnlyCQs.TabIndex = 3;
@@ -204,7 +207,7 @@
             this.checkBoxCQboth.AutoSize = true;
             this.checkBoxCQboth.Checked = true;
             this.checkBoxCQboth.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxCQboth.Location = new System.Drawing.Point(78, 6);
+            this.checkBoxCQboth.Location = new System.Drawing.Point(8, 11);
             this.checkBoxCQboth.Name = "checkBoxCQboth";
             this.checkBoxCQboth.Size = new System.Drawing.Size(71, 17);
             this.checkBoxCQboth.TabIndex = 1;
@@ -217,7 +220,7 @@
             this.checkBoxShowMenu.AutoSize = true;
             this.checkBoxShowMenu.Checked = true;
             this.checkBoxShowMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxShowMenu.Location = new System.Drawing.Point(78, 25);
+            this.checkBoxShowMenu.Location = new System.Drawing.Point(163, 10);
             this.checkBoxShowMenu.Name = "checkBoxShowMenu";
             this.checkBoxShowMenu.Size = new System.Drawing.Size(83, 17);
             this.checkBoxShowMenu.TabIndex = 2;
@@ -228,7 +231,7 @@
             // labelClock
             // 
             this.labelClock.AutoSize = true;
-            this.labelClock.Location = new System.Drawing.Point(199, 240);
+            this.labelClock.Location = new System.Drawing.Point(168, 216);
             this.labelClock.Name = "labelClock";
             this.labelClock.Size = new System.Drawing.Size(19, 13);
             this.labelClock.TabIndex = 11;
@@ -242,7 +245,7 @@
             this.listToMe.Font = new System.Drawing.Font("Lucida Console", 9F);
             this.listToMe.Location = new System.Drawing.Point(0, 0);
             this.listToMe.Name = "listToMe";
-            this.listToMe.Size = new System.Drawing.Size(255, 88);
+            this.listToMe.Size = new System.Drawing.Size(260, 92);
             this.listToMe.TabIndex = 2;
             // 
             // timerFt8Clock
@@ -262,7 +265,7 @@
             this.panel5.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel5.Location = new System.Drawing.Point(3, 0);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(255, 24);
+            this.panel5.Size = new System.Drawing.Size(260, 24);
             this.panel5.TabIndex = 1;
             // 
             // label2
@@ -287,14 +290,14 @@
             // label4
             // 
             this.label4.BackColor = System.Drawing.SystemColors.Control;
-            this.label4.Dock = System.Windows.Forms.DockStyle.Top;
+            this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.label4.Location = new System.Drawing.Point(0, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(347, 23);
+            this.label4.Size = new System.Drawing.Size(355, 24);
             this.label4.TabIndex = 0;
-            this.label4.Text = "QSO(s) in &Progress. L or R click to modify";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label4.Text = "QSO(s) in &Progress. L or R click";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // checkBoxInProgress
             // 
@@ -313,9 +316,9 @@
             this.labelInProgress.Location = new System.Drawing.Point(20, 5);
             this.labelInProgress.Margin = new System.Windows.Forms.Padding(0);
             this.labelInProgress.Name = "labelInProgress";
-            this.labelInProgress.Size = new System.Drawing.Size(150, 14);
+            this.labelInProgress.Size = new System.Drawing.Size(156, 14);
             this.labelInProgress.TabIndex = 1;
-            this.labelInProgress.Text = "1 KA1AQP 1234 1234";
+            this.labelInProgress.Text = "1 KA1AQP/AB 1234 1234";
             this.labelInProgress.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.labelInProgress.Visible = false;
             // 
@@ -324,7 +327,7 @@
             this.label5.Dock = System.Windows.Forms.DockStyle.Top;
             this.label5.Location = new System.Drawing.Point(0, 142);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(347, 23);
+            this.label5.Size = new System.Drawing.Size(355, 23);
             this.label5.TabIndex = 2;
             this.label5.Text = "Conversation chronology";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -336,7 +339,7 @@
             this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel6.Location = new System.Drawing.Point(0, 0);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(347, 52);
+            this.panel6.Size = new System.Drawing.Size(355, 52);
             this.panel6.TabIndex = 0;
             // 
             // label8
@@ -374,14 +377,14 @@
             this.panel3.Controls.Add(this.label6);
             this.panel3.Controls.Add(this.groupBox3);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel3.Location = new System.Drawing.Point(609, 24);
+            this.panel3.Location = new System.Drawing.Point(622, 24);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(225, 444);
+            this.panel3.Size = new System.Drawing.Size(225, 456);
             this.panel3.TabIndex = 2;
             // 
             // labelClockAnimation
             // 
-            this.labelClockAnimation.Location = new System.Drawing.Point(193, 202);
+            this.labelClockAnimation.Location = new System.Drawing.Point(193, 207);
             this.labelClockAnimation.Name = "labelClockAnimation";
             this.labelClockAnimation.Size = new System.Drawing.Size(30, 30);
             this.labelClockAnimation.TabIndex = 10;
@@ -390,7 +393,7 @@
             // 
             // buttonEqTx
             // 
-            this.buttonEqTx.Location = new System.Drawing.Point(131, 209);
+            this.buttonEqTx.Location = new System.Drawing.Point(122, 211);
             this.buttonEqTx.Name = "buttonEqTx";
             this.buttonEqTx.Size = new System.Drawing.Size(43, 23);
             this.buttonEqTx.TabIndex = 8;
@@ -401,7 +404,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 214);
+            this.label1.Location = new System.Drawing.Point(7, 216);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(20, 13);
             this.label1.TabIndex = 5;
@@ -414,7 +417,7 @@
             0,
             0,
             0});
-            this.numericUpDownRxFrequency.Location = new System.Drawing.Point(40, 210);
+            this.numericUpDownRxFrequency.Location = new System.Drawing.Point(30, 212);
             this.numericUpDownRxFrequency.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -438,7 +441,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(108, 214);
+            this.label10.Location = new System.Drawing.Point(99, 216);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(20, 13);
             this.label10.TabIndex = 7;
@@ -487,10 +490,10 @@
             // 
             // textBoxMessageEdit
             // 
-            this.textBoxMessageEdit.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxMessageEdit.Font = new System.Drawing.Font("Lucida Console", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxMessageEdit.Location = new System.Drawing.Point(30, 22);
             this.textBoxMessageEdit.Name = "textBoxMessageEdit";
-            this.textBoxMessageEdit.Size = new System.Drawing.Size(161, 19);
+            this.textBoxMessageEdit.Size = new System.Drawing.Size(161, 22);
             this.textBoxMessageEdit.TabIndex = 2;
             this.textBoxMessageEdit.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxMessageEdit_KeyPress);
             // 
@@ -506,9 +509,11 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.buttonTxToQip);
             this.groupBox3.Controls.Add(this.labelTxValue);
             this.groupBox3.Controls.Add(this.trackBarTxGain);
             this.groupBox3.Controls.Add(this.label13);
+            this.groupBox3.Controls.Add(this.buttonAbort);
             this.groupBox3.Controls.Add(this.buttonTune);
             this.groupBox3.Controls.Add(this.label12);
             this.groupBox3.Controls.Add(this.numericUpDownStreams);
@@ -519,10 +524,10 @@
             this.groupBox3.Controls.Add(this.numericUpDownFrequency);
             this.groupBox3.Controls.Add(this.label9);
             this.groupBox3.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.groupBox3.Location = new System.Drawing.Point(7, 259);
+            this.groupBox3.Location = new System.Drawing.Point(5, 240);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(6);
-            this.groupBox3.Size = new System.Drawing.Size(215, 182);
+            this.groupBox3.Size = new System.Drawing.Size(215, 211);
             this.groupBox3.TabIndex = 9;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "&Tx";
@@ -530,7 +535,7 @@
             // labelTxValue
             // 
             this.labelTxValue.AutoSize = true;
-            this.labelTxValue.Location = new System.Drawing.Point(186, 138);
+            this.labelTxValue.Location = new System.Drawing.Point(187, 190);
             this.labelTxValue.Name = "labelTxValue";
             this.labelTxValue.Size = new System.Drawing.Size(19, 13);
             this.labelTxValue.TabIndex = 13;
@@ -539,12 +544,12 @@
             // trackBarTxGain
             // 
             this.trackBarTxGain.AutoSize = false;
-            this.trackBarTxGain.Location = new System.Drawing.Point(184, 15);
+            this.trackBarTxGain.Location = new System.Drawing.Point(185, 52);
             this.trackBarTxGain.Maximum = 100;
             this.trackBarTxGain.Minimum = 1;
             this.trackBarTxGain.Name = "trackBarTxGain";
             this.trackBarTxGain.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.trackBarTxGain.Size = new System.Drawing.Size(25, 125);
+            this.trackBarTxGain.Size = new System.Drawing.Size(25, 135);
             this.trackBarTxGain.TabIndex = 12;
             this.trackBarTxGain.TickStyle = System.Windows.Forms.TickStyle.None;
             this.trackBarTxGain.Value = 1;
@@ -556,7 +561,7 @@
             this.label13.Location = new System.Drawing.Point(1, 139);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(25, 13);
-            this.label13.TabIndex = 7;
+            this.label13.TabIndex = 8;
             this.label13.Text = "CQ:";
             // 
             // buttonTune
@@ -564,7 +569,7 @@
             this.buttonTune.Location = new System.Drawing.Point(131, 66);
             this.buttonTune.Name = "buttonTune";
             this.buttonTune.Size = new System.Drawing.Size(43, 23);
-            this.buttonTune.TabIndex = 4;
+            this.buttonTune.TabIndex = 5;
             this.buttonTune.Text = "Tune";
             this.buttonTune.UseVisualStyleBackColor = true;
             this.buttonTune.Click += new System.EventHandler(this.buttonTune_Click);
@@ -575,7 +580,7 @@
             this.label12.Location = new System.Drawing.Point(9, 110);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(48, 13);
-            this.label12.TabIndex = 5;
+            this.label12.TabIndex = 6;
             this.label12.Text = "&Streams:";
             // 
             // numericUpDownStreams
@@ -593,7 +598,7 @@
             0});
             this.numericUpDownStreams.Name = "numericUpDownStreams";
             this.numericUpDownStreams.Size = new System.Drawing.Size(32, 20);
-            this.numericUpDownStreams.TabIndex = 6;
+            this.numericUpDownStreams.TabIndex = 7;
             this.numericUpDownStreams.Value = new decimal(new int[] {
             1,
             0,
@@ -605,7 +610,7 @@
             this.labelPtt.AutoSize = true;
             this.labelPtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelPtt.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelPtt.Location = new System.Drawing.Point(135, 163);
+            this.labelPtt.Location = new System.Drawing.Point(75, 190);
             this.labelPtt.Name = "labelPtt";
             this.labelPtt.Size = new System.Drawing.Size(76, 13);
             this.labelPtt.TabIndex = 9;
@@ -613,7 +618,7 @@
             // 
             // buttonEqRx
             // 
-            this.buttonEqRx.Location = new System.Drawing.Point(131, 22);
+            this.buttonEqRx.Location = new System.Drawing.Point(94, 22);
             this.buttonEqRx.Name = "buttonEqRx";
             this.buttonEqRx.Size = new System.Drawing.Size(43, 23);
             this.buttonEqRx.TabIndex = 2;
@@ -631,16 +636,16 @@
             this.comboBoxCQ.Location = new System.Drawing.Point(30, 135);
             this.comboBoxCQ.Name = "comboBoxCQ";
             this.comboBoxCQ.Size = new System.Drawing.Size(116, 21);
-            this.comboBoxCQ.TabIndex = 8;
+            this.comboBoxCQ.TabIndex = 9;
             // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.radioButtonOdd);
             this.groupBox1.Controls.Add(this.radioButtonEven);
-            this.groupBox1.Location = new System.Drawing.Point(12, 54);
+            this.groupBox1.Location = new System.Drawing.Point(7, 54);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(112, 43);
-            this.groupBox1.TabIndex = 3;
+            this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Cycle";
             // 
@@ -671,7 +676,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(98, 27);
+            this.label9.Location = new System.Drawing.Point(73, 27);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(20, 13);
             this.label9.TabIndex = 1;
@@ -685,7 +690,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(834, 24);
+            this.menuStrip.Size = new System.Drawing.Size(847, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -693,6 +698,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.setupToolStripMenuItem,
+            this.fontToolStripMenuItem,
             this.abortTxToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -705,6 +711,13 @@
             this.setupToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
             this.setupToolStripMenuItem.Text = "&Setup...";
             this.setupToolStripMenuItem.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
+            // 
+            // fontToolStripMenuItem
+            // 
+            this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.fontToolStripMenuItem.Text = "Font...";
+            this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // abortTxToolStripMenuItem
             // 
@@ -798,8 +811,8 @@
             // splitContainerCqLeft.Panel2
             // 
             this.splitContainerCqLeft.Panel2.Controls.Add(this.splitContainerCenter);
-            this.splitContainerCqLeft.Size = new System.Drawing.Size(609, 444);
-            this.splitContainerCqLeft.SplitterDistance = 258;
+            this.splitContainerCqLeft.Size = new System.Drawing.Size(622, 456);
+            this.splitContainerCqLeft.SplitterDistance = 263;
             this.splitContainerCqLeft.TabIndex = 2;
             // 
             // splitContainerAnswerUpCqsDown
@@ -819,8 +832,8 @@
             this.splitContainerAnswerUpCqsDown.Panel2.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerAnswerUpCqsDown.Panel2.Controls.Add(this.splitContainerCQ);
             this.splitContainerAnswerUpCqsDown.Panel2MinSize = 100;
-            this.splitContainerAnswerUpCqsDown.Size = new System.Drawing.Size(255, 375);
-            this.splitContainerAnswerUpCqsDown.SplitterDistance = 88;
+            this.splitContainerAnswerUpCqsDown.Size = new System.Drawing.Size(260, 393);
+            this.splitContainerAnswerUpCqsDown.SplitterDistance = 92;
             this.splitContainerAnswerUpCqsDown.TabIndex = 2;
             // 
             // splitContainerCQ
@@ -842,8 +855,8 @@
             this.splitContainerCQ.Panel2.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerCQ.Panel2.Controls.Add(this.panelOddCQs);
             this.splitContainerCQ.Panel2.Controls.Add(this.label11);
-            this.splitContainerCQ.Size = new System.Drawing.Size(255, 283);
-            this.splitContainerCQ.SplitterDistance = 151;
+            this.splitContainerCQ.Size = new System.Drawing.Size(260, 297);
+            this.splitContainerCQ.SplitterDistance = 158;
             this.splitContainerCQ.TabIndex = 3;
             // 
             // panelEvenCQs
@@ -851,9 +864,10 @@
             this.panelEvenCQs.Controls.Add(this.checkBoxCqTable);
             this.panelEvenCQs.Controls.Add(this.labelCqTable);
             this.panelEvenCQs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelEvenCQs.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.panelEvenCQs.Location = new System.Drawing.Point(0, 17);
             this.panelEvenCQs.Name = "panelEvenCQs";
-            this.panelEvenCQs.Size = new System.Drawing.Size(253, 132);
+            this.panelEvenCQs.Size = new System.Drawing.Size(258, 139);
             this.panelEvenCQs.TabIndex = 1;
             // 
             // checkBoxCqTable
@@ -884,7 +898,7 @@
             this.label3.Dock = System.Windows.Forms.DockStyle.Top;
             this.label3.Location = new System.Drawing.Point(0, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(253, 17);
+            this.label3.Size = new System.Drawing.Size(258, 17);
             this.label3.TabIndex = 0;
             this.label3.Text = "Even C&Qs heard. Click to answer";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -892,9 +906,10 @@
             // panelOddCQs
             // 
             this.panelOddCQs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelOddCQs.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.panelOddCQs.Location = new System.Drawing.Point(0, 17);
             this.panelOddCQs.Name = "panelOddCQs";
-            this.panelOddCQs.Size = new System.Drawing.Size(253, 109);
+            this.panelOddCQs.Size = new System.Drawing.Size(258, 116);
             this.panelOddCQs.TabIndex = 1;
             // 
             // label11
@@ -902,7 +917,7 @@
             this.label11.Dock = System.Windows.Forms.DockStyle.Top;
             this.label11.Location = new System.Drawing.Point(0, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(253, 17);
+            this.label11.Size = new System.Drawing.Size(258, 17);
             this.label11.TabIndex = 0;
             this.label11.Text = "Odd C&Qs heard. Click to answer";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -918,7 +933,7 @@
             // 
             this.splitContainerCenter.Panel1.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerCenter.Panel1.Controls.Add(this.panelInProgress);
-            this.splitContainerCenter.Panel1.Controls.Add(this.label4);
+            this.splitContainerCenter.Panel1.Controls.Add(this.panelQipLabel);
             this.splitContainerCenter.Panel1.Font = new System.Drawing.Font("Lucida Console", 9F);
             // 
             // splitContainerCenter.Panel2
@@ -927,19 +942,47 @@
             this.splitContainerCenter.Panel2.Controls.Add(this.label5);
             this.splitContainerCenter.Panel2.Controls.Add(this.checkedlbNextToSend);
             this.splitContainerCenter.Panel2.Controls.Add(this.panel6);
-            this.splitContainerCenter.Size = new System.Drawing.Size(347, 444);
-            this.splitContainerCenter.SplitterDistance = 156;
+            this.splitContainerCenter.Size = new System.Drawing.Size(355, 456);
+            this.splitContainerCenter.SplitterDistance = 160;
             this.splitContainerCenter.TabIndex = 6;
+            // 
+            // panelQipLabel
+            // 
+            this.panelQipLabel.Controls.Add(this.label4);
+            this.panelQipLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelQipLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.panelQipLabel.Location = new System.Drawing.Point(0, 0);
+            this.panelQipLabel.Name = "panelQipLabel";
+            this.panelQipLabel.Size = new System.Drawing.Size(355, 24);
+            this.panelQipLabel.TabIndex = 4;
             // 
             // panelInProgress
             // 
             this.panelInProgress.Controls.Add(this.labelInProgress);
             this.panelInProgress.Controls.Add(this.checkBoxInProgress);
             this.panelInProgress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelInProgress.Location = new System.Drawing.Point(0, 23);
+            this.panelInProgress.Location = new System.Drawing.Point(0, 24);
             this.panelInProgress.Name = "panelInProgress";
-            this.panelInProgress.Size = new System.Drawing.Size(347, 133);
+            this.panelInProgress.Size = new System.Drawing.Size(355, 136);
             this.panelInProgress.TabIndex = 1;
+            // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
+            // 
+            // buttonTxToQip
+            // 
+            this.buttonTxToQip.AutoSize = true;
+            this.buttonTxToQip.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.buttonTxToQip.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.buttonTxToQip.Location = new System.Drawing.Point(146, 22);
+            this.buttonTxToQip.Name = "buttonTxToQip";
+            this.buttonTxToQip.Size = new System.Drawing.Size(66, 23);
+            this.buttonTxToQip.TabIndex = 3;
+            this.buttonTxToQip.Text = "apply QnP";
+            this.buttonTxToQip.UseVisualStyleBackColor = true;
+            this.buttonTxToQip.Click += new System.EventHandler(this.buttonTxToQip_Click);
             // 
             // listBoxConversation
             // 
@@ -950,7 +993,7 @@
             this.listBoxConversation.ItemHeight = 12;
             this.listBoxConversation.Location = new System.Drawing.Point(0, 165);
             this.listBoxConversation.Name = "listBoxConversation";
-            this.listBoxConversation.Size = new System.Drawing.Size(347, 119);
+            this.listBoxConversation.Size = new System.Drawing.Size(355, 127);
             this.listBoxConversation.TabIndex = 3;
             // 
             // checkedlbNextToSend
@@ -963,22 +1006,17 @@
             this.checkedlbNextToSend.Location = new System.Drawing.Point(0, 52);
             this.checkedlbNextToSend.MultiColumn = true;
             this.checkedlbNextToSend.Name = "checkedlbNextToSend";
-            this.checkedlbNextToSend.Size = new System.Drawing.Size(347, 90);
+            this.checkedlbNextToSend.Size = new System.Drawing.Size(355, 90);
             this.checkedlbNextToSend.Sorted = true;
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
-            // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonAbort;
-            this.ClientSize = new System.Drawing.Size(834, 468);
+            this.ClientSize = new System.Drawing.Size(847, 480);
             this.Controls.Add(this.splitContainerCqLeft);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.menuStrip);
@@ -1025,6 +1063,7 @@
             this.splitContainerCenter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerCenter)).EndInit();
             this.splitContainerCenter.ResumeLayout(false);
+            this.panelQipLabel.ResumeLayout(false);
             this.panelInProgress.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1106,6 +1145,9 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.CheckBox checkBoxOnlyCQs;
         private System.Windows.Forms.Label labelTxValue;
+        private System.Windows.Forms.ToolStripMenuItem fontToolStripMenuItem;
+        private System.Windows.Forms.Panel panelQipLabel;
+        private System.Windows.Forms.Button buttonTxToQip;
     }
 }
 

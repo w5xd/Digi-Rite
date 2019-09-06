@@ -81,14 +81,15 @@ namespace WriteLogDigiRite
         {  
             int addedIndex = tlp.Controls.Count / 2;
             QsoInProgressLabel lb = new QsoInProgressLabel(qp, colors);
-            lb.Font = lblFont;
             lb.BackColor = lblBackColor;
             lb.ForeColor = lblForeColor;
             lb.AutoSize = false;
             lb.isCurrentCycleCb = isCurrentCycleCb;
+            lb.Font = tlp.Font;
             QsoCb cb = new QsoCb();
             cb.GotFocus += lb.OnGetFocus;
             cb.LostFocus += lb.OnLostFocus;
+            cb.Font = tlp.Font;
 
             // set active and checked on add
             cb.Checked = true;
