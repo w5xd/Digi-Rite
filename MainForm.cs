@@ -554,6 +554,7 @@ namespace WriteLogDigiRite
                     {
                         toSendList.Add(li);
                         listBoxAlternatives.SetItemChecked(i, false);
+                        li.q.OnSentAlternativeMessage();
                     }
                     break;
                 }
@@ -906,15 +907,31 @@ namespace WriteLogDigiRite
 
         private void InitiateQsoFromMessage(RecentMessage rm, bool onHisFrequency)
         {
-            if (!qsoQueue.InitiateQso(rm, currentBand, onHisFrequency, () =>
-            {
-                string s = rm.Message.ToString();
-                // log the message
-                listBoxConversation.Items.Add(new ListBoxConversationItem(s, Conversation.Origin.INITIATE));
-                conversationLogFile.SendToLog(s);
-                ScrollListBoxToBottom(listBoxConversation);
-            }))
+            if (!qsoQueue.InitiateQso(rm, currentBand, onHisFrequency,
+                    () =>
+                    {
+                        string s = rm.Message.ToString();
+                        // log the message
+                        listBoxConversation.Items.Add(new ListBoxConversationItem(s, Conversation.Origin.INITIATE));
+                        conversationLogFile.SendToLog(s);
+                        ScrollListBoxToBottom(listBoxConversation);
+                    })
+                )
                 return;
+
+            // turn its check box ON since this is an interactive click
+            for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
+            {
+                QueuedToSendListItem qli = checkedlbNextToSend.Items[i] as QueuedToSendListItem;
+                if (null != qli)
+                {
+                    if (Object.ReferenceEquals(qli.q.Message, rm.Message))
+                    {
+                        checkedlbNextToSend.SetItemChecked(i, true);
+                        break;
+                    }
+                }
+            }
 
             RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
@@ -1184,8 +1201,13 @@ namespace WriteLogDigiRite
                 {
                     if (Object.ReferenceEquals(qli.q, q))
                     {
-                        checkedlbNextToSend.Items.RemoveAt(i);
-                        break;
+                        if (!checkedlbNextToSend.GetItemChecked(i))
+                        {
+                            checkedlbNextToSend.Items.RemoveAt(i);
+                            break;
+                        }
+                        else
+                            return;
                     }
                 }
             }
@@ -2052,7 +2074,7 @@ namespace WriteLogDigiRite
             {
                 if (!transmitAtZeroCalled)
                 {
-                    PreTransmit(cycleNumber, ((cycleNumber & 1) != 0) == radioButtonOdd.Checked);
+                    qsoQueue.OnCycleBeginning(cycleNumber);
                     VfoSetToTxMsec = UserVfoSplitToPtt;
                     int waveStartDeltaMsec = FT8_TX_AFTER_ZERO_MSEC - UserPttToSound - VfoSetToTxMsec;
                     if (waveStartDeltaMsec > 0)
@@ -2098,7 +2120,7 @@ namespace WriteLogDigiRite
                         new Action(() =>
                         {
                             cycleNumber = preTransmitCycleNumber;
-                            PreTransmit(cycleNumber, IsTransmit);
+                            qsoQueue.OnCycleBeginning(cycleNumber);
                             transmitAtZero(false, getTimeToReport); 
                         }), delayMsec);
                     transmitAtZeroCalled = true;
@@ -2114,7 +2136,7 @@ namespace WriteLogDigiRite
         /* having a clock to call the decoder simplifies
         ** keeping the demodulator on this gui thread.
         ** The timing of the clock is not important with
-        ** the exceptiont that the decoder needs to be called close
+        ** the exception that the decoder needs to be called close
         ** to the beginning of a cycle second...so call here 
         ** a "few" times per second. */
         private void timerFt8Clock_Tick(object sender, EventArgs e)
@@ -2231,6 +2253,12 @@ namespace WriteLogDigiRite
                                 cqListEven.Reset();
                             if (radioButtonEven.Checked == isOddCycle)
                                 toMe.Reset();
+                            if (isTransmitCycle)
+                            {  
+                                var q = qsosPanel.FirstActive;
+                                if (null != q)
+                                    fillAlternativeMessages(q);
+                            }
                         }
                         cqClearCalled = true;
                     }
@@ -2257,17 +2285,6 @@ namespace WriteLogDigiRite
                 finally
                 { inClockTick = false; }
             }));
-        }
-
-        private void PreTransmit(int cycleNumber, bool isTransmitCycle)
-        {
-            qsoQueue.OnCycleBeginning(cycleNumber);
-            if (!isTransmitCycle)
-            {   // this is our "listen" interval
-                var q = qsosPanel.FirstActive;
-                if (null != q)
-                    fillAlternativeMessages(q);
-            }
         }
 
 #endregion
