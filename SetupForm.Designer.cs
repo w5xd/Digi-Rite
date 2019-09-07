@@ -64,8 +64,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.radioButtonL = new System.Windows.Forms.RadioButton();
             this.radioButtonR = new System.Windows.Forms.RadioButton();
+            this.radioButtonL = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -127,7 +127,7 @@
             this.groupBox2.Controls.Add(this.radioButtonOutputMono);
             this.groupBox2.Controls.Add(this.radioButtonOutputRight);
             this.groupBox2.Controls.Add(this.radioButtonOutputLeft);
-            this.groupBox2.Location = new System.Drawing.Point(12, 256);
+            this.groupBox2.Location = new System.Drawing.Point(12, 253);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(276, 107);
             this.groupBox2.TabIndex = 11;
@@ -328,11 +328,11 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(44, 84);
+            this.label6.Location = new System.Drawing.Point(12, 84);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(104, 13);
+            this.label6.Size = new System.Drawing.Size(133, 13);
             this.label6.TabIndex = 3;
-            this.label6.Text = "Maximum audio freq:";
+            this.label6.Text = "Maximum audio frequency:";
             // 
             // label5
             // 
@@ -384,7 +384,7 @@
             // 
             // checkBoxUSB
             // 
-            this.checkBoxUSB.Location = new System.Drawing.Point(330, 228);
+            this.checkBoxUSB.Location = new System.Drawing.Point(330, 225);
             this.checkBoxUSB.Name = "checkBoxUSB";
             this.checkBoxUSB.Size = new System.Drawing.Size(117, 39);
             this.checkBoxUSB.TabIndex = 16;
@@ -495,34 +495,34 @@
             // 
             this.groupBox5.Controls.Add(this.radioButtonR);
             this.groupBox5.Controls.Add(this.radioButtonL);
-            this.groupBox5.Location = new System.Drawing.Point(15, 387);
+            this.groupBox5.Location = new System.Drawing.Point(15, 369);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(189, 50);
+            this.groupBox5.Size = new System.Drawing.Size(147, 69);
             this.groupBox5.TabIndex = 20;
             this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "My TX is his frequency on mouse";
-            // 
-            // radioButtonL
-            // 
-            this.radioButtonL.AutoSize = true;
-            this.radioButtonL.Location = new System.Drawing.Point(41, 20);
-            this.radioButtonL.Name = "radioButtonL";
-            this.radioButtonL.Size = new System.Drawing.Size(43, 17);
-            this.radioButtonL.TabIndex = 0;
-            this.radioButtonL.TabStop = true;
-            this.radioButtonL.Text = "Left";
-            this.radioButtonL.UseVisualStyleBackColor = true;
+            this.groupBox5.Text = "Mouse button to answer CQ on his frequency:";
             // 
             // radioButtonR
             // 
             this.radioButtonR.AutoSize = true;
-            this.radioButtonR.Location = new System.Drawing.Point(103, 20);
+            this.radioButtonR.Location = new System.Drawing.Point(67, 38);
             this.radioButtonR.Name = "radioButtonR";
             this.radioButtonR.Size = new System.Drawing.Size(50, 17);
             this.radioButtonR.TabIndex = 1;
             this.radioButtonR.TabStop = true;
             this.radioButtonR.Text = "Right";
             this.radioButtonR.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonL
+            // 
+            this.radioButtonL.AutoSize = true;
+            this.radioButtonL.Location = new System.Drawing.Point(18, 38);
+            this.radioButtonL.Name = "radioButtonL";
+            this.radioButtonL.Size = new System.Drawing.Size(43, 17);
+            this.radioButtonL.TabIndex = 0;
+            this.radioButtonL.TabStop = true;
+            this.radioButtonL.Text = "Left";
+            this.radioButtonL.UseVisualStyleBackColor = true;
             // 
             // SetupForm
             // 

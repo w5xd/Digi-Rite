@@ -145,6 +145,12 @@ namespace WriteLogDigiRite
             }
         }
 
+        public void OnSentAlternativeMessage()
+        {
+            CyclesSinceMessaged = 0;
+            messagedThisCycle = true;
+        }
+
         private bool AmTimedOut { get { return !messagedThisCycle && 
                     CyclesSinceMessaged >= MAX_CYCLES_WITHOUT_ANSWER; } }
 

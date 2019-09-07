@@ -64,8 +64,17 @@ namespace WriteLogDigiRite
             cb.Location = cbLocation;
         }
 
+        protected virtual void BeginPositioning()
+        {
+        }
+
+        protected virtual void RepositionItem(int slot, Control cb, Control lb)
+        {
+        }
+
         public void SizeChanged(object sender, EventArgs e)
         {
+            BeginPositioning();
             int PixelMargin = (int)(tlp.Font.Size / 2);
             if (PixelMargin < 1)
                 PixelMargin = 1;
@@ -107,7 +116,9 @@ namespace WriteLogDigiRite
                             which += LabelsThatFit - visibleCount;
                         }
                     }
+                    int slot = which;
                     PositionEntry(cb, lb, which++);
+                    RepositionItem(slot, cb, lb);
                 }
             }
         }

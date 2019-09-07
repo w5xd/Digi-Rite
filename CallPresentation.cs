@@ -47,6 +47,8 @@ namespace WriteLogDigiRite
                 }
                 SizeChanged(null,null);
             } }
+
+        #region manage slot assignments
         private int m_ctrlIdxOfFirstDupe;
         private int m_numVisibleDupes;
         private int m_numVisibleNonDupes;
@@ -61,6 +63,22 @@ namespace WriteLogDigiRite
             }
         }
         private Dictionary<int, DupeOnStreen> m_DupePresentationToCtrlIndexMap = new Dictionary<int, DupeOnStreen>();
+
+        protected override void BeginPositioning()
+        {
+            m_DupePresentationToCtrlIndexMap.Clear();
+        }
+
+        protected override void RepositionItem(int slot, Control cb, Control lb)
+        {
+            CqLabel cql = lb as CqLabel;
+            if (null == cql)
+                return;
+
+            if (cql.rm.Dupe) // remember where the dupes are onscreen, so can move them if run out of room
+                m_DupePresentationToCtrlIndexMap[slot] = new DupeOnStreen(cql, cb);
+        }
+        #endregion
 
         public void Add(RecentMessage rm, EnableCb enableCb)
         {
