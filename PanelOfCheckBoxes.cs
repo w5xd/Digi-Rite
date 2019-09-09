@@ -65,12 +65,10 @@ namespace WriteLogDigiRite
         }
 
         protected virtual void BeginPositioning()
-        {
-        }
+        {}
 
         protected virtual void RepositionItem(int slot, Control cb, Control lb)
-        {
-        }
+        {}
 
         public void SizeChanged(object sender, EventArgs e)
         {
@@ -125,10 +123,14 @@ namespace WriteLogDigiRite
 
         public void FontChanged(object sender, EventArgs e)
         {
-            cbSize.Height = (int)(cbOrigSize.Height * tlp.Font.Size / lblOrigFont.Size);
-            lblSize.Height = (int)(lbOrigSize.Height * tlp.Font.Size / lblOrigFont.Size);
-            cbSize.Width = (int)(cbOrigSize.Width * tlp.Font.Size / lblOrigFont.Size);
-            lblSize.Width = (int)(lbOrigSize.Width * tlp.Font.Size / lblOrigFont.Size);
+            float ratio = tlp.Font.Size / lblOrigFont.Size;
+            int origMargin = lbOrigSize.Height - lblOrigFont.Height;
+            if (origMargin < 0)
+                origMargin = 0;
+            cbSize.Height = (int)(0.5f + lblOrigFont.Height * ratio + origMargin);
+            lblSize.Height = (int)(0.5f + lblOrigFont.Height * ratio + origMargin);
+            cbSize.Width = (int)(0.5f + cbOrigSize.Width * ratio);
+            lblSize.Width = (int)(0.5f + lbOrigSize.Width * ratio);
             for (int i = 0; i < tlp.Controls.Count; i++)
             {
                 Control ctrl = tlp.Controls[i];

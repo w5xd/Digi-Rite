@@ -1,6 +1,6 @@
 ﻿namespace WriteLogDigiRite
 {
-    partial class XcvrForm
+    partial class RcvrForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         {
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XcvrForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RcvrForm));
             this.chartSpectrum = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.numericUpDownMaxFreq = new System.Windows.Forms.NumericUpDown();
             this.numericUpDownMinFreq = new System.Windows.Forms.NumericUpDown();
@@ -304,7 +304,7 @@
             // 
             this.eventLog1.SynchronizingObject = this;
             // 
-            // XcvrForm
+            // RcvrForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -313,8 +313,8 @@
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panelRightGain);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "XcvrForm";
-            this.Text = "DigiRite Transceive";
+            this.Name = "RcvrForm";
+            this.Text = "DigiRite Receive";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.XcvrForm_FormClosing);
             this.Load += new System.EventHandler(this.XcvrForm_Load);
             this.LocationChanged += new System.EventHandler(this.XcvrForm_LocationChanged);

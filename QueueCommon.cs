@@ -60,7 +60,8 @@ namespace WriteLogDigiRite
         }
 
         // interface method present but we don't implement. pass it down to subclass
-        public abstract void MessageForMycall(RecentMessage recentMessage, bool directlyToMe, string callQsled, short band, bool autoStart, IsConversationMessage onUsed);
+        public abstract void MessageForMycall(RecentMessage recentMessage, bool directlyToMe, string callQsled, 
+            short band, bool autoStart, IsConversationMessage onUsed);
 
         protected abstract void StartQso(QsoInProgress qp);
     }

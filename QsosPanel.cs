@@ -138,6 +138,7 @@ namespace WriteLogDigiRite
             lb.Size = lblSize;
             cb.Size = cbSize;
             PositionEntry(cb, lb, addedIndex);
+            qsoActiveChangedCb(qp);
         }
 
         public QsoInProgress FirstActive {
@@ -431,7 +432,6 @@ namespace WriteLogDigiRite
 
         public void removeAllInactive()
         {  removeByCondition((QsoInProgress q) => !q.Active); }
-
     }
 
     class QsoInProgressLabel : FocusDrawingHelper

@@ -4,6 +4,10 @@ using System.Linq;
 namespace WriteLogDigiRite
 {
     /* class QsoQueue
+     * This implementation is specialized to handle the contest exchange
+     * where there is only one message each to and from the other station
+     * that has what we need. See Qso2MessageExchange for the other implementation
+     * 
      * DigiRite can have multiple QSOs in progress at a time. 
      * "in progress" means we have either sent or received a message with the
      * station, but have not received the required two acknowledgements we 
