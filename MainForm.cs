@@ -23,7 +23,7 @@ namespace WriteLogDigiRite
         private XDft.GeneratorContext genContext;
         private DigiMode digiMode = DigiMode.FT8;
 
-        private XcvrForm rxForm;
+        private RcvrForm rxForm;
         private String myCall;
         private String myBaseCall; // in case myCall is nonstandard
         private int instanceNumber;
@@ -480,8 +480,8 @@ namespace WriteLogDigiRite
         private int MAX_MESSAGES_PER_CYCLE { get { return (int)numericUpDownStreams.Value; } }
 
         // empirically determined to "center" in the time slot
-        private const int FT8_TX_AFTER_ZERO_MSEC = 570;
-        private const int FT4_TX_AFTER_ZERO_MSEC = 270;
+        private const int FT8_TX_AFTER_ZERO_MSEC = 210;
+        private const int FT4_TX_AFTER_ZERO_MSEC = 210;
         private const ushort FT4_MULTIPLE_DECODE_OFFSET_MSEC = 400;
         private const int FT4_MULTIPLE_DECODE_COUNT = 1; // don't bother with sliding decode window with wsjtx-2.1.0-rc5
         private const short DEFAULT_DECODER_LOOKBACK_MSEC = 100;
@@ -1221,7 +1221,7 @@ namespace WriteLogDigiRite
 
         public void LogQso(QsoInProgress q)
         {
-            if ((null != iWlEntry) && (null != iWlDoc))
+            if ((null != iWlEntry) && (null != iWlDoc) && null != iWlDupingEntry)
             {
                 iWlDupingEntry.ClearEntry();
                 if (ReceivedRstFieldNumber > 0) // ClearEntry in WL defaults the RST. clear it out
@@ -1262,6 +1262,7 @@ namespace WriteLogDigiRite
                 iWlDupingEntry.ClearEntry();
             }
             q.MarkedAsLogged = true;
+            CurrentActiveQsoCalltoWriteLog();
         }
 
         private void LogFdQso(QsoInProgress q)
@@ -1387,8 +1388,8 @@ namespace WriteLogDigiRite
             catch (System.Exception )
             {  return INVALID_TIME_TENTHS;   }
         }
-#endif
         uint SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
+#endif
 
         #region Form events
         private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out int v)
@@ -1417,7 +1418,7 @@ namespace WriteLogDigiRite
                 }
             }
 #endif
-            rxForm = new XcvrForm(this, instanceNumber);
+            rxForm = new RcvrForm(this, instanceNumber);
             this.Text = String.Format("{0}-{1}", this.Text, instanceNumber);
 
             ClockLabel cl = new ClockLabel();
@@ -1488,7 +1489,7 @@ namespace WriteLogDigiRite
             qsosPanel.logAsIs += new QsosPanel.LogAsIs(LogQso);
             qsosPanel.isCurrentCycle += new QsosPanel.IsCurrentCycle((QsoInProgress q) =>
                 { return ((q.Message.CycleNumber & 1) != 0) == radioButtonEven.Checked; } );
-            qsosPanel.orderChanged += new QsosPanel.OrderChanged(() => checkedlbNextToSend.Sort());
+            qsosPanel.orderChanged += new QsosPanel.OrderChanged(OnQsoInProgressOrderChanged);
             cqListEven.Reset();
             cqListOdd.Reset();
             toMe.Reset();
@@ -1730,6 +1731,7 @@ namespace WriteLogDigiRite
                         throw new System.Exception("FT4_MULTIPLE_DECODE_COUNT must be an odd number");
                     if (demodulator.DemodulateSoundPreUtcZeroMsec > 1000)
                         throw new System.Exception("Demodulator cannot look back further than 1000msec");
+                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 50;
 #endif
                     demodulator.DemodulateDefaultSoundShiftMsec = FT4_DECODER_CENTER_OFFSET_MSEC;
                     ft4DecodeOffsetMsec = new ushort[FT4_MULTIPLE_DECODE_COUNT];
@@ -1745,7 +1747,6 @@ namespace WriteLogDigiRite
                     cl.CYCLE = 75;
                     rxForm.CYCLE = 75;
                     FT_CYCLE_TENTHS = 75;
-                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 50;
                     FT_GAP_HZ = 90;
                     MESSAGE_SEPARATOR = '+';
                     TUNE_LEN = 64;
@@ -1763,10 +1764,12 @@ namespace WriteLogDigiRite
                     cl.CYCLE = 150;
                     FT_CYCLE_TENTHS = 150;
                     rxForm.CYCLE = 150;
-                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
                     FT_GAP_HZ = 60;
                     MESSAGE_SEPARATOR = '~';
                     TUNE_LEN =19;
+#if DEBUG
+                    SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
+#endif
                     break;
             }
             DECODE_SEPARATOR = String.Format("{0}  ", MESSAGE_SEPARATOR);
@@ -2070,16 +2073,39 @@ namespace WriteLogDigiRite
 
         private void Ft8CheckTransmitAtZero(int cycleNumber, int msecIntoCycle)
         {
-            if (intervalTenths < TENTHS_IN_SECOND)
-            {
-                if (!transmitAtZeroCalled)
+            if (msecIntoCycle < 0)
+                return;
+            if (intervalTenths >= FT_CYCLE_TENTHS - TENTHS_IN_SECOND)
+            {   // during final second 
+                const int PREP_TRANSMIT_MSEC = 1050;
+                int FT_CYCLE_MSEC = FT_CYCLE_TENTHS * 100;
+                if (!transmitAtZeroCalled && (msecIntoCycle >= FT_CYCLE_MSEC - PREP_TRANSMIT_MSEC))
                 {
-                    qsoQueue.OnCycleBeginning(cycleNumber);
-                    VfoSetToTxMsec = UserVfoSplitToPtt;
-                    int waveStartDeltaMsec = FT8_TX_AFTER_ZERO_MSEC - UserPttToSound - VfoSetToTxMsec;
-                    if (waveStartDeltaMsec > 0)
-                        VfoSetToTxMsec += waveStartDeltaMsec;
-                    transmitAtZero();
+                    int preTransmitCycleNumber = cycleNumber + 1; // pretransmit for NEXT cycle
+                    bool IsTransmit = ((cycleNumber & 1) != 0) == radioButtonOdd.Checked;
+                    int nowToCycleStartMsec = FT_CYCLE_MSEC + 1 - msecIntoCycle; // now to start of next cycle
+                    var timeToReport = DateTime.UtcNow + TimeSpan.FromMilliseconds(nowToCycleStartMsec);
+                    int nowToCallXmit = nowToCycleStartMsec + FT8_TX_AFTER_ZERO_MSEC - UserPttToSound - UserVfoSplitToPtt;
+                    int delayMsec = 0;
+                    if (nowToCallXmit > 0)
+                    {
+                        VfoSetToTxMsec = UserVfoSplitToPtt; // normal case--we have time
+                        delayMsec = nowToCallXmit;
+                    }
+                    else
+                    {
+                        VfoSetToTxMsec = UserVfoSplitToPtt; // timer callback came too late--just will go out late
+                        delayMsec = 1;
+                    }
+                    var getTimeToReport = new GetNowTime(() => timeToReport);
+
+                    AfterNmsec(
+                        new Action(() =>
+                        {
+                            cycleNumber = preTransmitCycleNumber;
+                            qsoQueue.OnCycleBeginning(cycleNumber);
+                            transmitAtZero(false, getTimeToReport);
+                        }), delayMsec);
                     transmitAtZeroCalled = true;
                 }
             }
@@ -2232,7 +2258,7 @@ namespace WriteLogDigiRite
                             zeroIntervalCalled = true;
                             if ((null != iWlEntry) && (null != iWlDupingEntry))
                             {
-                                short mode = 0;  double tx = 0;   double rx = 0; short split = 0;
+                                short mode = 0; double tx = 0; double rx = 0; short split = 0;
                                 iWlEntry.GetLogFrequency(ref mode, ref rx, ref tx, ref split);
                                 mode = 6;
                                 iWlDupingEntry.SetLogFrequencyEx(mode, rx, tx, split);
@@ -2255,9 +2281,22 @@ namespace WriteLogDigiRite
                                 toMe.Reset();
                             if (isTransmitCycle)
                             {  
+                                // if there is an active QSO and
+                                // if there is not an already-checked alternative message
+                                // then fillAlternativeMessages
                                 var q = qsosPanel.FirstActive;
                                 if (null != q)
-                                    fillAlternativeMessages(q);
+                                {
+                                    bool isChecked = false;
+                                    for (int i = 0; i < listBoxAlternatives.Items.Count; i++)
+                                        if (listBoxAlternatives.GetItemChecked(i))
+                                        {
+                                            isChecked = true;
+                                            break;
+                                        }
+                                    if (!isChecked)
+                                        fillAlternativeMessages(q);
+                                }
                             }
                         }
                         cqClearCalled = true;
@@ -2285,6 +2324,45 @@ namespace WriteLogDigiRite
                 finally
                 { inClockTick = false; }
             }));
+        }
+
+        private string m_previousCallToWriteLog; // optimization to reduce out-of-process calls
+        private void CurrentActiveQsoCalltoWriteLog()
+        {
+            if (null == iWlEntry)
+                return;
+            var inProgress = qsosPanel.QsosInProgress;
+            for (int i = 0; i < inProgress.Count; i++)
+            {
+                QsoInProgress qp = inProgress[i];
+                if (null == qp)
+                    continue;
+                if (!qp.Active)
+                    continue;
+                if (qp.IsLogged)
+                    continue;
+                if (m_previousCallToWriteLog != qp.HisCall)
+                {
+                    m_previousCallToWriteLog = qp.HisCall;
+                    iWlEntry.ClearEntry();
+                    if (GridSquareReceivedFieldNumber >= 0)
+                    {
+                        foreach (var m in qp.MessageList)
+                        {
+                            XDpack77.Pack77Message.Exchange hisGrid = m.Pack77Message as XDpack77.Pack77Message.Exchange;
+                            if (hisGrid != null && !String.IsNullOrEmpty(hisGrid.GridSquare))
+                            {
+                                iWlEntry.SetFieldN((short)GridSquareReceivedFieldNumber, hisGrid.GridSquare);
+                                break;
+                            }
+                        }
+                    }
+                    iWlEntry.Callsign = qp.HisCall;
+                }
+                return;
+            }
+            m_previousCallToWriteLog = "";
+            iWlEntry.ClearEntry();
         }
 
 #endregion
@@ -2394,15 +2472,9 @@ namespace WriteLogDigiRite
                         continue;
                     listBoxAlternatives.SetItemChecked(i, false);
                 }
-            }
-        }
-
-        private void textBoxMessageEdit_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == '\r')
-            {   // user typed CR with focus in manual entry text box
-                e.Handled = true;
-                checkBoxManualEntry.Checked = true;
+                QueuedToSendListItem qli = listBoxAlternatives.Items[e.Index] as QueuedToSendListItem;
+                if (null != qli)
+                    textBoxMessageEdit.Text = qli.MessageText;
             }
         }
 
@@ -2413,6 +2485,15 @@ namespace WriteLogDigiRite
                 textBoxMessageEdit.Text = qli.MessageText;
         }
 
+        private void textBoxMessageEdit_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == '\r')
+            {   // user typed CR with focus in manual entry text box
+                e.Handled = true;
+                checkBoxManualEntry.Checked = true;
+            }
+        }
+     
         private void checkBoxRespondAny_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxRespondAny.Checked)
@@ -2431,6 +2512,13 @@ namespace WriteLogDigiRite
                 if ((null != qli) && Object.ReferenceEquals(qli.q, q))
                     checkedlbNextToSend.SetItemChecked(i, q.Active && checkBoxAutoXmit.Checked);
             }
+            CurrentActiveQsoCalltoWriteLog();
+        }
+
+        private void OnQsoInProgressOrderChanged()
+        {
+            checkedlbNextToSend.Sort();
+            CurrentActiveQsoCalltoWriteLog();
         }
 
         private void checkBoxShowMenu_CheckedChanged(object sender, EventArgs e)
@@ -2581,6 +2669,7 @@ namespace WriteLogDigiRite
             listBoxConversation.Font = font;
             listBoxConversation.ItemHeight = font.Height;
             textBoxMessageEdit.Font = font;
+            rxForm.SetFixedFont(font);
         }
 
         private void fontToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2595,7 +2684,7 @@ namespace WriteLogDigiRite
             }
         }
 
-        #region TX RX frequency
+#region TX RX frequency
 
         public int TxFrequency {
             get {
@@ -2654,6 +2743,6 @@ namespace WriteLogDigiRite
             }
         }
 
-        #endregion
+#endregion
     }
 }

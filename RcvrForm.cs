@@ -6,14 +6,14 @@ using System.Windows.Forms;
 
 namespace WriteLogDigiRite
 {
-    public partial class XcvrForm : Form
+    public partial class RcvrForm : Form
     {
         /* Show:
         ** a) incoming decoded messages. all of them.
         ** b) a spectrum (or waterfall if WriteLog is available)
         ** c) decoder parameter controls.
          */
-        public XcvrForm(MainForm mf, int inst)
+        public RcvrForm(MainForm mf, int inst)
         {
             mainForm = mf;
             instanceNumber = inst;
@@ -125,7 +125,12 @@ namespace WriteLogDigiRite
             }
 #endif
         }
-        
+
+        public void SetFixedFont(System.Drawing.Font font)
+        {
+            listBoxReceived.Font = font;
+        }
+
         XDft.Demodulator myDemod = null;
         public XDft.Demodulator demodParams {  set { 
                 myDemod = value;

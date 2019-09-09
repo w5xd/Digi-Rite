@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace WriteLogDigiRite
 {
+    // QsoInProgress
+    // Class that represents an attempt to work another station. It has:
+    //  a reference to the sequencer that decides what message should be sent based on our state and messages received
+    //  every message received as part of this QSO.
     public class QsoInProgress
     {
         private class QsoInProgressKey

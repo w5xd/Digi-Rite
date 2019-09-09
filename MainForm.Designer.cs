@@ -102,7 +102,6 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
-            this.panelQipLabel = new System.Windows.Forms.Panel();
             this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new WriteLogDigiRite.ConversationListBox();
             this.checkedlbNextToSend = new WriteLogDigiRite.ToSendListBox();
@@ -136,7 +135,6 @@
             this.splitContainerCenter.Panel2.SuspendLayout();
             this.splitContainerCenter.SuspendLayout();
             this.panelInProgress.SuspendLayout();
-            this.panelQipLabel.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonAbort
@@ -196,7 +194,7 @@
             this.checkBoxOnlyCQs.Name = "checkBoxOnlyCQs";
             this.checkBoxOnlyCQs.Size = new System.Drawing.Size(70, 17);
             this.checkBoxOnlyCQs.TabIndex = 2;
-            this.checkBoxOnlyCQs.Text = "Only CQs";
+            this.checkBoxOnlyCQs.Text = "&Only CQs";
             this.checkBoxOnlyCQs.ThreeState = true;
             this.checkBoxOnlyCQs.UseVisualStyleBackColor = true;
             this.checkBoxOnlyCQs.CheckedChanged += new System.EventHandler(this.checkBoxOnlyCQs_CheckedChanged);
@@ -211,7 +209,7 @@
             this.checkBoxCQboth.Name = "checkBoxCQboth";
             this.checkBoxCQboth.Size = new System.Drawing.Size(71, 17);
             this.checkBoxCQboth.TabIndex = 1;
-            this.checkBoxCQboth.Text = "Both CQs";
+            this.checkBoxCQboth.Text = "&Both CQs";
             this.checkBoxCQboth.UseVisualStyleBackColor = true;
             this.checkBoxCQboth.CheckedChanged += new System.EventHandler(this.checkBoxCQboth_CheckedChanged);
             // 
@@ -224,18 +222,19 @@
             this.checkBoxShowMenu.Name = "checkBoxShowMenu";
             this.checkBoxShowMenu.Size = new System.Drawing.Size(83, 17);
             this.checkBoxShowMenu.TabIndex = 3;
-            this.checkBoxShowMenu.Text = "Show Menu";
+            this.checkBoxShowMenu.Text = "&Show Menu";
             this.checkBoxShowMenu.UseVisualStyleBackColor = true;
             this.checkBoxShowMenu.CheckedChanged += new System.EventHandler(this.checkBoxShowMenu_CheckedChanged);
             // 
             // labelClock
             // 
-            this.labelClock.AutoSize = true;
-            this.labelClock.Location = new System.Drawing.Point(168, 216);
+            this.labelClock.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelClock.Location = new System.Drawing.Point(174, 218);
             this.labelClock.Name = "labelClock";
             this.labelClock.Size = new System.Drawing.Size(19, 13);
             this.labelClock.TabIndex = 11;
             this.labelClock.Text = "14";
+            this.labelClock.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // listToMe
             // 
@@ -290,7 +289,7 @@
             // label4
             // 
             this.label4.BackColor = System.Drawing.SystemColors.Control;
-            this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label4.Dock = System.Windows.Forms.DockStyle.Top;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.label4.Location = new System.Drawing.Point(0, 0);
             this.label4.Name = "label4";
@@ -358,7 +357,7 @@
             this.checkBoxAutoXmit.Name = "checkBoxAutoXmit";
             this.checkBoxAutoXmit.Size = new System.Drawing.Size(150, 17);
             this.checkBoxAutoXmit.TabIndex = 0;
-            this.checkBoxAutoXmit.Text = "Automatically transmit next";
+            this.checkBoxAutoXmit.Text = "Automatically transmit &next";
             this.checkBoxAutoXmit.UseVisualStyleBackColor = true;
             this.checkBoxAutoXmit.CheckedChanged += new System.EventHandler(this.checkBoxAutoXmit_CheckedChanged);
             // 
@@ -384,7 +383,7 @@
             // 
             // labelClockAnimation
             // 
-            this.labelClockAnimation.Location = new System.Drawing.Point(193, 207);
+            this.labelClockAnimation.Location = new System.Drawing.Point(193, 209);
             this.labelClockAnimation.Name = "labelClockAnimation";
             this.labelClockAnimation.Size = new System.Drawing.Size(30, 30);
             this.labelClockAnimation.TabIndex = 10;
@@ -393,7 +392,7 @@
             // 
             // buttonEqTx
             // 
-            this.buttonEqTx.Location = new System.Drawing.Point(122, 211);
+            this.buttonEqTx.Location = new System.Drawing.Point(122, 213);
             this.buttonEqTx.Name = "buttonEqTx";
             this.buttonEqTx.Size = new System.Drawing.Size(43, 23);
             this.buttonEqTx.TabIndex = 8;
@@ -404,7 +403,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 216);
+            this.label1.Location = new System.Drawing.Point(7, 218);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(20, 13);
             this.label1.TabIndex = 5;
@@ -417,7 +416,7 @@
             0,
             0,
             0});
-            this.numericUpDownRxFrequency.Location = new System.Drawing.Point(30, 212);
+            this.numericUpDownRxFrequency.Location = new System.Drawing.Point(30, 214);
             this.numericUpDownRxFrequency.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -441,7 +440,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(99, 216);
+            this.label10.Location = new System.Drawing.Point(99, 218);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(20, 13);
             this.label10.TabIndex = 7;
@@ -454,7 +453,7 @@
             this.listBoxAlternativesPanel.Margin = new System.Windows.Forms.Padding(0);
             this.listBoxAlternativesPanel.Name = "listBoxAlternativesPanel";
             this.listBoxAlternativesPanel.Size = new System.Drawing.Size(225, 126);
-            this.listBoxAlternativesPanel.TabIndex = 11;
+            this.listBoxAlternativesPanel.TabIndex = 4;
             // 
             // listBoxAlternatives
             // 
@@ -494,7 +493,7 @@
             this.textBoxMessageEdit.Location = new System.Drawing.Point(30, 22);
             this.textBoxMessageEdit.Name = "textBoxMessageEdit";
             this.textBoxMessageEdit.Size = new System.Drawing.Size(161, 22);
-            this.textBoxMessageEdit.TabIndex = 2;
+            this.textBoxMessageEdit.TabIndex = 3;
             this.textBoxMessageEdit.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxMessageEdit_KeyPress);
             // 
             // label6
@@ -503,8 +502,8 @@
             this.label6.Location = new System.Drawing.Point(0, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(225, 23);
-            this.label6.TabIndex = 0;
-            this.label6.Text = "&Manual edit. Enter to send";
+            this.label6.TabIndex = 2;
+            this.label6.Text = "Manual edit. &Enter to send";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // groupBox3
@@ -946,7 +945,7 @@
             // 
             this.splitContainerCenter.Panel1.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerCenter.Panel1.Controls.Add(this.panelInProgress);
-            this.splitContainerCenter.Panel1.Controls.Add(this.panelQipLabel);
+            this.splitContainerCenter.Panel1.Controls.Add(this.label4);
             this.splitContainerCenter.Panel1.Font = new System.Drawing.Font("Lucida Console", 9F);
             // 
             // splitContainerCenter.Panel2
@@ -968,16 +967,6 @@
             this.panelInProgress.Name = "panelInProgress";
             this.panelInProgress.Size = new System.Drawing.Size(355, 136);
             this.panelInProgress.TabIndex = 1;
-            // 
-            // panelQipLabel
-            // 
-            this.panelQipLabel.Controls.Add(this.label4);
-            this.panelQipLabel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panelQipLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.panelQipLabel.Location = new System.Drawing.Point(0, 0);
-            this.panelQipLabel.Name = "panelQipLabel";
-            this.panelQipLabel.Size = new System.Drawing.Size(355, 24);
-            this.panelQipLabel.TabIndex = 4;
             // 
             // timerCleanup
             // 
@@ -1064,7 +1053,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerCenter)).EndInit();
             this.splitContainerCenter.ResumeLayout(false);
             this.panelInProgress.ResumeLayout(false);
-            this.panelQipLabel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1146,7 +1134,6 @@
         private System.Windows.Forms.CheckBox checkBoxOnlyCQs;
         private System.Windows.Forms.Label labelTxValue;
         private System.Windows.Forms.ToolStripMenuItem fontToolStripMenuItem;
-        private System.Windows.Forms.Panel panelQipLabel;
         private System.Windows.Forms.Button buttonTxToQip;
     }
 }

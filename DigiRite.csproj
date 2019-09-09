@@ -129,11 +129,11 @@
     <Compile Include="ToSendListBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="XcvrForm.cs">
+    <Compile Include="RcvrForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="XcvrForm.Designer.cs">
-      <DependentUpon>XcvrForm.cs</DependentUpon>
+    <Compile Include="RcvrForm.Designer.cs">
+      <DependentUpon>RcvrForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SetupForm.cs">
       <SubType>Form</SubType>
@@ -157,8 +157,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="XcvrForm.resx">
-      <DependentUpon>XcvrForm.cs</DependentUpon>
+    <EmbeddedResource Include="RcvrForm.resx">
+      <DependentUpon>RcvrForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SetupForm.resx">
       <DependentUpon>SetupForm.cs</DependentUpon>
