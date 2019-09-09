@@ -174,6 +174,8 @@ namespace WriteLogDigiRite
                         if (!haveLoggedReport)
                         {
                             haveLoggedReport = true;
+                            if (haveGrid)
+                                haveLoggedGrid = true;
                             cb.LogQso();
                         }
                     }
@@ -199,6 +201,8 @@ namespace WriteLogDigiRite
                 if (!haveLoggedGrid && (haveReport || (directlyToMe && haveGrid)))
                 {
                     haveLoggedGrid = true;
+                    if (haveReport)
+                        haveLoggedReport = true;
                     lastSent = null;
                     if (!amLeader)
                         cb.SendAck(null);
