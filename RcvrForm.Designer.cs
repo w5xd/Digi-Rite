@@ -85,7 +85,7 @@
             series1.Name = "Amp";
             series1.SmartLabelStyle.Enabled = false;
             this.chartSpectrum.Series.Add(series1);
-            this.chartSpectrum.Size = new System.Drawing.Size(362, 340);
+            this.chartSpectrum.Size = new System.Drawing.Size(335, 340);
             this.chartSpectrum.TabIndex = 0;
             // 
             // numericUpDownMaxFreq
@@ -209,7 +209,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 340);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(609, 37);
+            this.panel1.Size = new System.Drawing.Size(729, 37);
             this.panel1.TabIndex = 0;
             // 
             // labelWaterfall
@@ -252,7 +252,7 @@
             this.listBoxReceived.ItemHeight = 12;
             this.listBoxReceived.Location = new System.Drawing.Point(0, 0);
             this.listBoxReceived.Name = "listBoxReceived";
-            this.listBoxReceived.Size = new System.Drawing.Size(243, 340);
+            this.listBoxReceived.Size = new System.Drawing.Size(390, 340);
             this.listBoxReceived.TabIndex = 0;
             this.listBoxReceived.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listBoxReceived_MouseDown);
             // 
@@ -269,8 +269,8 @@
             // splitContainerMain.Panel2
             // 
             this.splitContainerMain.Panel2.Controls.Add(this.chartSpectrum);
-            this.splitContainerMain.Size = new System.Drawing.Size(609, 340);
-            this.splitContainerMain.SplitterDistance = 243;
+            this.splitContainerMain.Size = new System.Drawing.Size(729, 340);
+            this.splitContainerMain.SplitterDistance = 390;
             this.splitContainerMain.TabIndex = 24;
             this.splitContainerMain.SplitterMoving += new System.Windows.Forms.SplitterCancelEventHandler(this.splitContainerMain_SplitterMoving);
             this.splitContainerMain.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainerMain_SplitterMoved);
@@ -282,7 +282,7 @@
             this.panelRightGain.Controls.Add(this.labelClock);
             this.panelRightGain.Controls.Add(this.trackBarRxGain);
             this.panelRightGain.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panelRightGain.Location = new System.Drawing.Point(609, 0);
+            this.panelRightGain.Location = new System.Drawing.Point(729, 0);
             this.panelRightGain.Name = "panelRightGain";
             this.panelRightGain.Size = new System.Drawing.Size(40, 377);
             this.panelRightGain.TabIndex = 1;
@@ -308,7 +308,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(649, 377);
+            this.ClientSize = new System.Drawing.Size(769, 377);
             this.Controls.Add(this.splitContainerMain);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panelRightGain);
