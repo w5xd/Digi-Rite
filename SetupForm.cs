@@ -19,6 +19,10 @@ namespace WriteLogDigiRite
         private bool maySelectDevices;
         private bool maySelectLR;
         private bool maySelectCallUsed;
+        private int contestExchangeOrig;
+        private MainForm.DigiMode digiModeOrig;
+        private bool mustResetState = false;
+        public bool MustResetState { get { return mustResetState; } }
 
         public int whichTxDevice;
         public int whichRxDevice;
@@ -40,6 +44,7 @@ namespace WriteLogDigiRite
 
         private void SetupForm_Load(object sender, EventArgs e)
         {
+            digiModeOrig = digiMode;
             BackColor = CustomColors.CommonBackgroundColor;
             groupBox2.BackColor =
             groupBox3.BackColor =
@@ -106,6 +111,7 @@ namespace WriteLogDigiRite
             textBoxMyGrid.Text = Properties.Settings.Default.MyGrid;
 
             comboBoxContest.SelectedIndex = Properties.Settings.Default.ContestExchange;
+            contestExchangeOrig = Properties.Settings.Default.ContestExchange;
 
             foreach (String s in MainForm.DefaultAcknowledgements)
                 comboBoxAckMsg.Items.Add(s);
@@ -133,6 +139,7 @@ namespace WriteLogDigiRite
                 radioButtonFt8.Checked = true;
             else 
                 radioButtonFt4.Checked = true;
+            digiModeOrig = digiMode;
 
             if ((PttToSound >= numericUpDownPttDelay.Minimum) &&
                 (PttToSound <= numericUpDownPttDelay.Maximum))
@@ -145,6 +152,20 @@ namespace WriteLogDigiRite
                 radioButtonR.Checked = true;
             else
                 radioButtonL.Checked = true;
+
+            textBoxCQ.Text = Properties.Settings.Default.CQmessage;
+            if (textBoxCQ.Text.Length == 0)
+                textBoxCQ.Text = "CQ";
+            textBoxExchangeToSend.Text = Properties.Settings.Default.ContestMessageToSend;
+
+            mustResetState = false;
+            tabPageExchange.BackColor = BackColor;
+            tabPageRestarts.BackColor = BackColor;
+            tabPageRigControl.BackColor = BackColor;
+            tabPageAudioDevices.BackColor = BackColor;
+            tabPageOther.BackColor = BackColor;
+
+            comboBoxContest_SelectedIndexChanged(null,null);
         }
 
         // make the user type one in that can be parsed
@@ -211,6 +232,8 @@ namespace WriteLogDigiRite
             Properties.Settings.Default.ContestExchange = comboBoxContest.SelectedIndex;
             Properties.Settings.Default.DefaultAcknowlegement = comboBoxAckMsg.SelectedIndex;
             Properties.Settings.Default.LeftClickIsMyTx = radioButtonR.Checked;
+            Properties.Settings.Default.CQmessage = textBoxCQ.Text.ToUpper();
+            Properties.Settings.Default.ContestMessageToSend = textBoxExchangeToSend.Text.ToUpper();
 
             DialogResult = DialogResult.OK;
             controlSplit = radioButtonSplitTX.Checked ? VfoControl.VFO_SPLIT : 
@@ -222,6 +245,12 @@ namespace WriteLogDigiRite
             digiMode = radioButtonFt8.Checked ? MainForm.DigiMode.FT8 : MainForm.DigiMode.FT4;
             PttToSound = (int)numericUpDownPttDelay.Value;
             VfoSplitToPtt = (int)numericUpDownVfoToPtt.Value;
+
+
+            if (digiMode != digiModeOrig)
+                mustResetState = true;
+            if (contestExchangeOrig != comboBoxContest.SelectedIndex)
+                mustResetState = true;
 
             Close();
         }
@@ -241,12 +270,96 @@ namespace WriteLogDigiRite
         {
             if (DialogResult == DialogResult.OK)
             {
+               if (textBoxCallUsed.Enabled && textBoxCallUsed.Text.Length == 0)
+                {
+                    tabControlTabs.SelectedTab = tabPageExchange;
+                    textBoxCallUsed.Focus();
+                    MessageBox.Show("Fill in callsign");
+                    e.Cancel = true;
+                    return;
+                }
+
                 if (!validateGridSquare(textBoxMyGrid.Text))
                 {
+                    tabControlTabs.SelectedTab = tabPageExchange;
+                    textBoxMyGrid.Focus();
                     MessageBox.Show("Invalid Grid Square");
                     e.Cancel = true;
+                    return;
                 }
+
+                 var split = textBoxCQ.Text.ToUpper().Split();
+                if ((split.Length < 1) || (split[0] != "CQ"))
+                {
+                    tabControlTabs.SelectedTab = tabPageExchange;
+                    MessageBox.Show("CQ message must start with CQ");
+                    textBoxCQ.Focus();
+                    e.Cancel = true;
+                    return;
+                }
+
+                if ((split.Length > 2) || 
+                    ((split.Length == 2) &&
+                        ((split[1].Length < 2) ||
+                        (split[1].Length > 4) ||
+                        (split[1].Any((char x) => { return !Char.IsLetter(x); })))))
+                {
+                    tabControlTabs.SelectedTab = tabPageExchange;
+                    MessageBox.Show("Directed CQ must be only one word, two, three or four letters");
+                    textBoxCQ.Focus();
+                    e.Cancel = true;
+                    return;
+                }
+
+                switch ((ExchangeTypes)comboBoxContest.SelectedIndex)
+                {
+                    case ExchangeTypes.ARRL_FIELD_DAY:
+                    case ExchangeTypes.ARRL_RTTY:
+                        if (String.IsNullOrEmpty(textBoxExchangeToSend.Text))
+                        {
+                            tabControlTabs.SelectedTab = tabPageExchange;
+                            MessageBox.Show("The exchange cannot be empty");
+                            textBoxExchangeToSend.Focus();
+                            e.Cancel = true;
+                            return;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
             }
+        }
+
+        private void textBoxCQ_TextChanged(object sender, EventArgs e)
+        {
+            string call = textBoxCallUsed.Text;
+            call.ToUpper();
+            if ((call.Length >= 4) && (textBoxCQ.Text.ToUpper().Contains(call)))
+                MessageBox.Show("On enter CQ and a directed CQ string of two to four letters. Do not enter your call.");
+        }
+
+        private void comboBoxContest_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var et = (ExchangeTypes)comboBoxContest.SelectedIndex;
+            textBoxExchangeToSend.Enabled = (et == ExchangeTypes.ARRL_FIELD_DAY) || (et == ExchangeTypes.ARRL_RTTY);
+
+            switch ((ExchangeTypes)comboBoxContest.SelectedIndex)
+            {
+                case ExchangeTypes.ARRL_FIELD_DAY:
+                    labelExchangeHint.Text = "number,class and section\r\ne.g. 1A STX";
+                    break;
+                case ExchangeTypes.ARRL_RTTY:
+                    labelExchangeHint.Text = "State, Province, or %";
+                    break;
+                default:
+                    labelExchangeHint.Text = "";
+                    break;
+            }
+
+            var hintLocation = labelExchangeHint.Location;
+            hintLocation.Y = textBoxExchangeToSend.Location.Y + textBoxExchangeToSend.Size.Height /2 - labelExchangeHint.Size.Height/2;
+            labelExchangeHint.Location = hintLocation;
         }
     }
 }
