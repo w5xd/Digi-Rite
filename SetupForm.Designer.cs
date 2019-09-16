@@ -65,10 +65,12 @@
             this.label8 = new System.Windows.Forms.Label();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.radioButtonR = new System.Windows.Forms.RadioButton();
+            this.radioButtonL = new System.Windows.Forms.RadioButton();
             this.tabControlTabs = new System.Windows.Forms.TabControl();
             this.tabPageRestarts = new System.Windows.Forms.TabPage();
             this.label9 = new System.Windows.Forms.Label();
             this.tabPageExchange = new System.Windows.Forms.TabPage();
+            this.labelExchangeHint = new System.Windows.Forms.Label();
             this.textBoxExchangeToSend = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.textBoxCQ = new System.Windows.Forms.TextBox();
@@ -76,8 +78,6 @@
             this.tabPageAudioDevices = new System.Windows.Forms.TabPage();
             this.tabPageRigControl = new System.Windows.Forms.TabPage();
             this.tabPageOther = new System.Windows.Forms.TabPage();
-            this.radioButtonL = new System.Windows.Forms.RadioButton();
-            this.labelExchangeHint = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -99,7 +99,7 @@
             this.groupBox1.Controls.Add(this.comboBoxWaveIn);
             this.groupBox1.Controls.Add(this.radioButtonInputRight);
             this.groupBox1.Controls.Add(this.radioButtonInputLeft);
-            this.groupBox1.Location = new System.Drawing.Point(60, 52);
+            this.groupBox1.Location = new System.Drawing.Point(67, 16);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(276, 71);
             this.groupBox1.TabIndex = 10;
@@ -145,7 +145,7 @@
             this.groupBox2.Controls.Add(this.radioButtonOutputMono);
             this.groupBox2.Controls.Add(this.radioButtonOutputRight);
             this.groupBox2.Controls.Add(this.radioButtonOutputLeft);
-            this.groupBox2.Location = new System.Drawing.Point(60, 136);
+            this.groupBox2.Location = new System.Drawing.Point(67, 100);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(276, 107);
             this.groupBox2.TabIndex = 11;
@@ -218,7 +218,7 @@
             // 
             // labelWriteLogLR
             // 
-            this.labelWriteLogLR.Location = new System.Drawing.Point(88, 14);
+            this.labelWriteLogLR.Location = new System.Drawing.Point(96, 224);
             this.labelWriteLogLR.Name = "labelWriteLogLR";
             this.labelWriteLogLR.Size = new System.Drawing.Size(214, 35);
             this.labelWriteLogLR.TabIndex = 9;
@@ -231,7 +231,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(53, 13);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Call &used:";
+            this.label1.Text = "&Call used:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // textBoxCallUsed
@@ -313,7 +313,7 @@
             this.groupBox3.Controls.Add(this.label5);
             this.groupBox3.Controls.Add(this.numericUpDownTxMaxHz);
             this.groupBox3.Controls.Add(this.radioButtonSplitTX);
-            this.groupBox3.Location = new System.Drawing.Point(82, 130);
+            this.groupBox3.Location = new System.Drawing.Point(82, 139);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(167, 135);
             this.groupBox3.TabIndex = 17;
@@ -403,9 +403,9 @@
             // 
             // checkBoxUSB
             // 
-            this.checkBoxUSB.Location = new System.Drawing.Point(87, 82);
+            this.checkBoxUSB.Location = new System.Drawing.Point(87, 89);
             this.checkBoxUSB.Name = "checkBoxUSB";
-            this.checkBoxUSB.Size = new System.Drawing.Size(117, 39);
+            this.checkBoxUSB.Size = new System.Drawing.Size(169, 31);
             this.checkBoxUSB.TabIndex = 16;
             this.checkBoxUSB.Text = "Always force rig to &USB mode";
             this.checkBoxUSB.UseVisualStyleBackColor = true;
@@ -450,7 +450,7 @@
             0,
             0,
             0});
-            this.numericUpDownPttDelay.Location = new System.Drawing.Point(211, 50);
+            this.numericUpDownPttDelay.Location = new System.Drawing.Point(211, 55);
             this.numericUpDownPttDelay.Minimum = new decimal(new int[] {
             10,
             0,
@@ -495,7 +495,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(88, 52);
+            this.label7.Location = new System.Drawing.Point(99, 57);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(103, 13);
             this.label7.TabIndex = 14;
@@ -504,17 +504,17 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(88, 18);
+            this.label8.Location = new System.Drawing.Point(37, 18);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(116, 13);
+            this.label8.Size = new System.Drawing.Size(165, 13);
             this.label8.TabIndex = 12;
-            this.label8.Text = "&VFO split to PTT msec:";
+            this.label8.Text = "&VFO split command to PTT msec:";
             // 
             // groupBox5
             // 
             this.groupBox5.Controls.Add(this.radioButtonR);
             this.groupBox5.Controls.Add(this.radioButtonL);
-            this.groupBox5.Location = new System.Drawing.Point(6, 6);
+            this.groupBox5.Location = new System.Drawing.Point(17, 19);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(147, 69);
             this.groupBox5.TabIndex = 20;
@@ -530,6 +530,18 @@
             this.radioButtonR.TabIndex = 1;
             this.radioButtonR.Text = "&Right";
             this.radioButtonR.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonL
+            // 
+            this.radioButtonL.AutoSize = true;
+            this.radioButtonL.Checked = true;
+            this.radioButtonL.Location = new System.Drawing.Point(18, 38);
+            this.radioButtonL.Name = "radioButtonL";
+            this.radioButtonL.Size = new System.Drawing.Size(43, 17);
+            this.radioButtonL.TabIndex = 0;
+            this.radioButtonL.TabStop = true;
+            this.radioButtonL.Text = "&Left";
+            this.radioButtonL.UseVisualStyleBackColor = true;
             // 
             // tabControlTabs
             // 
@@ -588,6 +600,15 @@
             this.tabPageExchange.Text = "Exchange";
             this.tabPageExchange.UseVisualStyleBackColor = true;
             // 
+            // labelExchangeHint
+            // 
+            this.labelExchangeHint.AutoSize = true;
+            this.labelExchangeHint.Location = new System.Drawing.Point(249, 131);
+            this.labelExchangeHint.Name = "labelExchangeHint";
+            this.labelExchangeHint.Size = new System.Drawing.Size(24, 13);
+            this.labelExchangeHint.TabIndex = 10;
+            this.labelExchangeHint.Text = "hint";
+            // 
             // textBoxExchangeToSend
             // 
             this.textBoxExchangeToSend.Location = new System.Drawing.Point(142, 127);
@@ -602,7 +623,7 @@
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(134, 13);
             this.label11.TabIndex = 6;
-            this.label11.Text = "&Contest exchange to send:";
+            this.label11.Text = "Contest &exchange to send:";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // textBoxCQ
@@ -663,27 +684,6 @@
             this.tabPageOther.TabIndex = 4;
             this.tabPageOther.Text = "Other";
             this.tabPageOther.UseVisualStyleBackColor = true;
-            // 
-            // radioButtonL
-            // 
-            this.radioButtonL.AutoSize = true;
-            this.radioButtonL.Checked = true;
-            this.radioButtonL.Location = new System.Drawing.Point(18, 38);
-            this.radioButtonL.Name = "radioButtonL";
-            this.radioButtonL.Size = new System.Drawing.Size(43, 17);
-            this.radioButtonL.TabIndex = 0;
-            this.radioButtonL.TabStop = true;
-            this.radioButtonL.Text = "&Left";
-            this.radioButtonL.UseVisualStyleBackColor = true;
-            // 
-            // labelExchangeHint
-            // 
-            this.labelExchangeHint.AutoSize = true;
-            this.labelExchangeHint.Location = new System.Drawing.Point(249, 131);
-            this.labelExchangeHint.Name = "labelExchangeHint";
-            this.labelExchangeHint.Size = new System.Drawing.Size(24, 13);
-            this.labelExchangeHint.TabIndex = 10;
-            this.labelExchangeHint.Text = "hint";
             // 
             // SetupForm
             // 

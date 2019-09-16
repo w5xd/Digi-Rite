@@ -305,7 +305,7 @@ namespace WriteLogDigiRite
                         (split[1].Any((char x) => { return !Char.IsLetter(x); })))))
                 {
                     tabControlTabs.SelectedTab = tabPageExchange;
-                    MessageBox.Show("Directed CQ must be only one word, two, three or four letters");
+                    MessageBox.Show("Directed CQ must be one word of two, three or four letters");
                     textBoxCQ.Focus();
                     e.Cancel = true;
                     return;
@@ -336,7 +336,7 @@ namespace WriteLogDigiRite
             string call = textBoxCallUsed.Text;
             call.ToUpper();
             if ((call.Length >= 4) && (textBoxCQ.Text.ToUpper().Contains(call)))
-                MessageBox.Show("On enter CQ and a directed CQ string of two to four letters. Do not enter your call.");
+                MessageBox.Show("Enter CQ and, optionally, a directed CQ string of two to four letters.\r\n\r\nYou call is taken from the box above.");
         }
 
         private void comboBoxContest_SelectedIndexChanged(object sender, EventArgs e)
@@ -353,7 +353,7 @@ namespace WriteLogDigiRite
                     labelExchangeHint.Text = "State, Province, or %";
                     break;
                 default:
-                    labelExchangeHint.Text = "";
+                    labelExchangeHint.Text = "Grid from above and/or\r\ncomputed dB report";
                     break;
             }
 
