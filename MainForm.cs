@@ -610,20 +610,8 @@ namespace WriteLogDigiRite
                 /* 77-bit pack is special w.r.t. CQ. can't sent directed CQ 
                 ** with call that won't fit in 28 of those bits. */
                 bool fullcallok = (myBaseCall == myCall);
-                if ((null != iWlDoc) && fullcallok)
-                {   // get CQ message from WriteLog if its there
-                    const short WRITELOG_CQ_MESSAGE_NUMBER = 9;
-                    var split = iWlDoc.GetFKeyMsgDigital(
-                        WRITELOG_CQ_MESSAGE_NUMBER).ToUpper().Split((char[])null);
-                    if ((split.Length >= 2) && (split[0] == "CQ"))
-                    {
-                        if ((split[1].Length <= 4) && split[1].All(Char.IsLetter))
-                        {
-                            string nextword = split[1];
-                            cq += " " + nextword;
-                        }
-                    }
-                }
+                if (fullcallok)
+                    cq = Properties.Settings.Default.CQmessage;
                 cq += " " + myCall;
                 if (fullcallok)
                     cq += " " + MyGrid4;
@@ -992,7 +980,6 @@ namespace WriteLogDigiRite
             {
                 // fill in from WriteLog if we can
                 const short WRITELOG_EXCHANGE_MESSAGE_NUMBER = 0;
-                string rawMessage = iWlDoc.GetFKeyMsgDigital(WRITELOG_EXCHANGE_MESSAGE_NUMBER).ToUpper();
                 iWlDupingEntry.Callsign = q.HisCall;
                 if (q.SentSerialNumber == 0)
                 {   // assign a serial number even if contest doesn't need it
@@ -1021,7 +1008,7 @@ namespace WriteLogDigiRite
                     {
                         case ExchangeTypes.ARRL_FIELD_DAY:
                             string entryclass = "";
-                            var fdsplit = rawMessage.Split((char[])null,
+                            var fdsplit = Properties.Settings.Default.ContestMessageToSend.Split((char[])null,
                                 StringSplitOptions.RemoveEmptyEntries);
                             bool founddigit = false;
                             foreach (string w in fdsplit)
@@ -1042,7 +1029,7 @@ namespace WriteLogDigiRite
 
                         case ExchangeTypes.ARRL_RTTY:
                             string part = null;
-                            String percentSearch = rawMessage;
+                            String percentSearch = Properties.Settings.Default.ContestMessageToSend;
                             String percentsRemoved = "";
                             for (; ; )
                             {   // is there a serial number in the message?
@@ -2559,7 +2546,8 @@ namespace WriteLogDigiRite
                 digiMode = form.digiMode;
                 UserPttToSound = form.PttToSound;
                 UserVfoSplitToPtt = form.VfoSplitToPtt;
-                changeDigiMode();
+                if (form.MustResetState)
+                    changeDigiMode();
                 if (SetupMaySelectDevices)
                 {
                     if (form.whichRxDevice >= 0)
@@ -2574,7 +2562,8 @@ namespace WriteLogDigiRite
                     qsoQueue.MyBaseCall = myBaseCall;
                 }
                 InitSoundInAndOut();
-                initQsoQueue();
+                if (form.MustResetState)
+                    initQsoQueue();
             }
         }
 

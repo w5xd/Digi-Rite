@@ -370,5 +370,29 @@ namespace WriteLogDigiRite.Properties {
                 this["LeftClickIsMyTx"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("CQ")]
+        public string CQmessage {
+            get {
+                return ((string)(this["CQmessage"]));
+            }
+            set {
+                this["CQmessage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ContestMessageToSend {
+            get {
+                return ((string)(this["ContestMessageToSend"]));
+            }
+            set {
+                this["ContestMessageToSend"] = value;
+            }
+        }
     }
 }

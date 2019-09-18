@@ -89,5 +89,11 @@
     <Setting Name="LeftClickIsMyTx" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="CQmessage" Type="System.String" Scope="User">
+      <Value Profile="(Default)">CQ</Value>
+    </Setting>
+    <Setting Name="ContestMessageToSend" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

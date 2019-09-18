@@ -31,10 +31,20 @@ namespace WriteLogDigiRite
                             if (qsi1.qp.QsoPriority(qsi1.q) <
                                 qsi0.qp.QsoPriority(qsi0.q))
                             {
+                                var qsi1Check = GetItemChecked(counter);
+                                var qsi0Check = GetItemChecked(counter-1);
                                 object temp = Items[counter];
                                 this.Items[counter] = this.Items[counter - 1];
                                 this.Items[counter - 1] = temp;
                                 swapped = true;
+                                if (qsi1Check != qsi0Check)
+                                {
+                                    // The CheckedListBox ItemChecked stayed
+                                    // at the old item index (surprise!)
+                                    // fix that
+                                    SetItemChecked(counter, qsi0Check);
+                                    SetItemChecked(counter - 1, qsi1Check);
+                                }
                             }
                         }
                         counter -= 1;
