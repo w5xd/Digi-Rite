@@ -5,8 +5,12 @@ using System.Runtime.InteropServices;
 namespace WriteLogDigiRite
 {
     [ComVisible(true), 
-        Guid("00000000-0000-0000-0000-000000000000"), // FIXME! 
-        ProgId("YourApp.YourAuto")  // FIXME! 
+	    // FIXME
+	    // These are the GUID and ProgId that the DigiRite Installer msi at
+        // at writelog.com place in the Windows registry. If you use these, you
+        // replace the installed one when invoked from WriteLog
+        Guid("4CC973B6-9BFB-3E4B-8157-E55774DD50C0"), 
+        ProgId("WriteLog.Ft8Auto")  
         ] 
     public class Ft8Auto
     {
