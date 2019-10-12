@@ -5,11 +5,6 @@ Copyright (c) 2019 by WriteLog Contesting Software, LLC
 
 DigiRite is a radio contesting accessory for FT8 messaging. It optionally integrates with WriteLog, but also can run stand alone. It is published open source. Other contest logging program authors are free to use DigiRite's sources to build their own integrated FT8 solution under the terms of the <a href='COPYING'>GPL</a>.
 
-Looking for a download to install? Install kits built by the WriteLog team and digitally signed
-are available <i><b>only</b></i> at 
-<a href='https://writelog.com/digirite'>https://writelog.com/digirite</a>. Because this program is published
-open source, imitations are easy to build. You have been warned.
-
 <blockquote>
 The algorithms, source code, look-and-feel of WSJT-X and related programs, and protocol specifications for the modes FSK441, FT8, JT4, JT6M JT9, JT65, JTMS, QRA64, ISCAT, MSK144 are Copyright (C) 2001-2018 by one or more of the following authors: Joseph Taylor, K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo, IV3NWV; Grea Bream, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR; Philip Karn, KA9Q; and other members of the WSJT Development Group.
 </blockquote> 
