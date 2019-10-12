@@ -29,10 +29,11 @@ together that make that happen.</li>
 <li>MainForm.cs<br/>
 WriteLog invokes the SetWlEntry method on Ft8Auto, which forwards
 to the eponymous method on MainForm. </li>
+</ol>
 
 For reference in case you want to use a similar startup sequence, the 
 WriteLog-specific startup for item (2) is:
-<ol type"a">
+<ol type="a">
     <li>DigiRite.exe is registered as a COM automation server.
          See Register.exe in this solution.</li>
     <li>DigiRite's COM GUID for Ft8Auto is installed  to the place in
@@ -46,8 +47,10 @@ WriteLog-specific startup for item (2) is:
     <li> COM instances an Ft8Auto object per the code in Program.cs</li>
     <li>WriteLog calls SetWlEntry on the create object</li>
 </ol>
-     ...and away we go.
-     see the #region  Logger customization below
+
+and away we go.
+     
+Also see the #region  Logger customization in MainForm.cs
 
 This author, W5XD, is indifferent to your choice of whether to retain
 binary compatiblity so that your customization can serve both WriteLog
