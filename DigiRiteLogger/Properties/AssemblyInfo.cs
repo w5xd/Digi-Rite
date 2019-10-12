@@ -5,15 +5,14 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DigiRite")]
+[assembly: AssemblyTitle("DigiRiteLogger")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("WriteLog Contesting Software LLC")]
-[assembly: AssemblyProduct("DigiRite")]
-[assembly: AssemblyCopyright("Copyright © 2019 WriteLog Contesting Software, LLC")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("DigiRiteLogger")]
+[assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
@@ -21,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("45480f0a-3c72-45f1-b3d1-f6bdfdd040c0")]
+[assembly: Guid("23b67ec2-ac1e-4849-b431-231641e3d85b")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,6 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.0.33")]
-[assembly: AssemblyFileVersion("1.1.0.33")]
-[assembly: AssemblyInformationalVersion("1.1.33")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

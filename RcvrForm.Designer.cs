@@ -1,4 +1,4 @@
-﻿namespace WriteLogDigiRite
+﻿namespace DigiRite
 {
     partial class RcvrForm
     {

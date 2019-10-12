@@ -2,18 +2,22 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     [ComVisible(true), 
 	/* FIXME
         ** If you want to modify DigiRite and simply replace the executable WriteLog invokes,
         ** you need do NOTHING here.
-        ** If you want to add an alternative that WriteLog invokes, you must change
-        ** the GUID and ProgId below and arrange for your new exe to be COM registered.
-        ** If you don't want to integrate with WriteLog at all, you may eliminate this
-        ** class altogether from this project and figure out how to get DigiRite connected
-        ** to your application your own way.
         **
+        ** If you want to add an alternative exe that WriteLog invokes, you must change
+        ** the GUID and ProgId below and arrange for your new exe to be COM registered.
+        **
+        ** If you don't want to integrate with WriteLog at all, you may ignore this
+        ** class altogether from this project and figure out how to get DigiRite connected
+        ** to your application your own way. Leave this class unchanged (and leave the code that
+        ** registers it as a COM server in Program.cs) and your customized DigiRite retains
+        ** binary compatibility such that WriteLog will find it.
+        ** 
 	    ** These are the GUID and ProgId that the DigiRite Installer msi at
         ** at writelog.com place in the Windows registry. If you use these, you
         ** replace the installed one when invoked from WriteLog 

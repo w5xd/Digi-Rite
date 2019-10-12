@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{45480F0A-3C72-45F1-B3D1-F6BDFDD040C0}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>WriteLogDigiRite</RootNamespace>
+    <RootNamespace>DigiRite</RootNamespace>
     <AssemblyName>DigiRite</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -76,10 +76,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WriteLogClrTypes">
-      <HintPath>WriteLogApi\WriteLogClrTypes.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="WriteLogIWaterfall">
       <HintPath>WriteLogApi\WriteLogIWaterfall.dll</HintPath>
     </Reference>
@@ -178,12 +174,20 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="ReadMe.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DigiRiteLogger\DigiRiteLogger.csproj">
+      <Project>{23b67ec2-ac1e-4849-b431-231641e3d85b}</Project>
+      <Name>DigiRiteLogger</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

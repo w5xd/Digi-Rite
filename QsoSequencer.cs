@@ -1,4 +1,4 @@
-﻿namespace WriteLogDigiRite
+﻿namespace DigiRite
 {
     public class QsoSequencer : IQsoSequencer
     {

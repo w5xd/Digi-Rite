@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiRite", "DigiRite.csproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Register", "Register\Register.vcxproj", "{E7532A90-E8E5-4D02-9008-78A3BEC5F9CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiRiteLogger", "DigiRiteLogger\DigiRiteLogger.csproj", "{23B67EC2-AC1E-4849-B431-231641E3D85B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{E7532A90-E8E5-4D02-9008-78A3BEC5F9CC}.Release|x64.Build.0 = Release|x64
 		{E7532A90-E8E5-4D02-9008-78A3BEC5F9CC}.Release|x86.ActiveCfg = Release|Win32
 		{E7532A90-E8E5-4D02-9008-78A3BEC5F9CC}.Release|x86.Build.0 = Release|Win32
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Debug|x64.ActiveCfg = Debug|x64
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Debug|x64.Build.0 = Debug|x64
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Debug|x86.ActiveCfg = Debug|x86
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Debug|x86.Build.0 = Debug|x86
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Release|x64.ActiveCfg = Release|x64
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Release|x64.Build.0 = Release|x64
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Release|x86.ActiveCfg = Release|x86
+		{23B67EC2-AC1E-4849-B431-231641E3D85B}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

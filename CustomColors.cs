@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     public static class CustomColors
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     // There are multiple queing implementations. One is optimized for
     // contest-style everything-in-one-exchange and the other
