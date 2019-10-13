@@ -188,7 +188,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
-            copy $(SolutionDir)\Digi-XDft\$(CopyArchitecture)\$(ConfigurationName)\*.* $(TargetDir)
+            copy "$(SolutionDir)\Digi-XDft\$(CopyArchitecture)\$(ConfigurationName)\*.*" "$(TargetDir)"
 </PostBuildEvent>
   </PropertyGroup>
 </Project>
