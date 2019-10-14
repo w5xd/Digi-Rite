@@ -97,6 +97,7 @@
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AltMessageShortcuts.cs" />
+    <Compile Include="AssemblyVersionInfo.cs" />
     <Compile Include="CallPresentation.cs" />
     <Compile Include="ClockLabel.cs">
       <SubType>Component</SubType>
