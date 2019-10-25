@@ -1185,7 +1185,9 @@ namespace DigiRite
                 if (iExc == null)
                     continue;
                 // find received message with a grid square in it
-                gridsquare = iExc.GridSquare;
+                string gs = iExc.GridSquare;
+                if (!String.IsNullOrEmpty(gs))
+                    gridsquare = gs;
                 // find received message with an RST
                 int db = iExc.SignaldB;
                 if (db > XDpack77.Pack77Message.Message.NO_DB)

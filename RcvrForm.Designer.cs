@@ -27,6 +27,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RcvrForm));
@@ -47,6 +48,9 @@
             this.panelRightGain = new System.Windows.Forms.Panel();
             this.trackBarRxGain = new System.Windows.Forms.TrackBar();
             this.eventLog1 = new System.Diagnostics.EventLog();
+            this.contextMenuStripOnReceived = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyItemToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.chartSpectrum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxFreq)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinFreq)).BeginInit();
@@ -58,6 +62,7 @@
             this.panelRightGain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRxGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).BeginInit();
+            this.contextMenuStripOnReceived.SuspendLayout();
             this.SuspendLayout();
             // 
             // chartSpectrum
@@ -254,7 +259,7 @@
             this.listBoxReceived.Name = "listBoxReceived";
             this.listBoxReceived.Size = new System.Drawing.Size(390, 340);
             this.listBoxReceived.TabIndex = 0;
-            this.listBoxReceived.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listBoxReceived_MouseDown);
+            this.listBoxReceived.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listBoxReceived_MouseUp);
             // 
             // splitContainerMain
             // 
@@ -304,6 +309,28 @@
             // 
             this.eventLog1.SynchronizingObject = this;
             // 
+            // contextMenuStripOnReceived
+            // 
+            this.contextMenuStripOnReceived.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.clearToolStripMenuItem,
+            this.copyItemToClipboardToolStripMenuItem});
+            this.contextMenuStripOnReceived.Name = "contextMenuStripOnReceived";
+            this.contextMenuStripOnReceived.Size = new System.Drawing.Size(197, 48);
+            // 
+            // clearToolStripMenuItem
+            // 
+            this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            this.clearToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.clearToolStripMenuItem.Text = "Clear list";
+            this.clearToolStripMenuItem.Click += new System.EventHandler(this.clearToolStripMenuItem_Click);
+            // 
+            // copyItemToClipboardToolStripMenuItem
+            // 
+            this.copyItemToClipboardToolStripMenuItem.Name = "copyItemToClipboardToolStripMenuItem";
+            this.copyItemToClipboardToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.copyItemToClipboardToolStripMenuItem.Text = "Copy item to clipboard";
+            this.copyItemToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyItemToClipboardToolStripMenuItem_Click);
+            // 
             // RcvrForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -332,6 +359,7 @@
             this.panelRightGain.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRxGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).EndInit();
+            this.contextMenuStripOnReceived.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -355,5 +383,8 @@
         private System.Windows.Forms.Panel panelRightGain;
         private System.Windows.Forms.TrackBar trackBarRxGain;
         private System.Diagnostics.EventLog eventLog1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripOnReceived;
+        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyItemToClipboardToolStripMenuItem;
     }
 }
