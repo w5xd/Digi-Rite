@@ -2457,7 +2457,7 @@ namespace DigiRite
                 QsoInProgress qp = inProgress[i];
                 if (null == qp)
                     continue;   
-                if (qp.TransmitFrequency != qp.Message.Hz)
+                if (qp.TransmitFrequency != qp.Message.Hz || ModifierKeys.HasFlag(Keys.Control))
                     qp.TransmitFrequency = 0;
             }
         }
