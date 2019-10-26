@@ -315,7 +315,8 @@
             this.clearToolStripMenuItem,
             this.copyItemToClipboardToolStripMenuItem});
             this.contextMenuStripOnReceived.Name = "contextMenuStripOnReceived";
-            this.contextMenuStripOnReceived.Size = new System.Drawing.Size(197, 48);
+            this.contextMenuStripOnReceived.Size = new System.Drawing.Size(197, 70);
+            this.contextMenuStripOnReceived.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuStripOnReceived_Closing);
             // 
             // clearToolStripMenuItem
             // 
