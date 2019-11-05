@@ -73,7 +73,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="WriteLogClrTypes">
-      <HintPath>C:\Program Files (x86)\WriteLog\Programs\WriteLogClrTypes.dll</HintPath>
+      <HintPath>..\WriteLogApi\WriteLogClrTypes.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="XDpack77Message">
