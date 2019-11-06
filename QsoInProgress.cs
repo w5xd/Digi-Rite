@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     // QsoInProgress
     // Class that represents an attempt to work another station. It has:

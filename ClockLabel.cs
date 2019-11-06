@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     class ClockLabel : Label
     {

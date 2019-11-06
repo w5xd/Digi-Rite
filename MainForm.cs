@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     public enum ExchangeTypes { GRID_SQUARE, DB_REPORT, ARRL_FIELD_DAY, ARRL_RTTY, GRID_SQUARE_PLUS_REPORT};
 
@@ -65,104 +65,24 @@ namespace WriteLogDigiRite
             labelPtt.Text = "";
         }
 
-        #region WriteLog automation
-        // unused if WriteLog is not present
-        private WriteLogClrTypes.ISingleEntry iWlEntry = null;
-        private WriteLogClrTypes.ISingleEntry iWlDupingEntry = null;
+        #region Logger customization
+
+        private DigiRiteLogger.IDigiRiteLogger logger;
+
+        // currentBand is only used to distinguish messages from a CALL
+        // that are part of different QSOs because they are on a different band.
+        // Even that distinction rarely happens because DigiRite typically
+        // discards old messages from old QSOs over time. But if you happen to
+        // work a CALL on one band, changes bands, and immediately work the same
+        // CALL, you want currentBand to be different when you change bands, else
+        // the new messages from CALL will be assigned to the QSO on the old band.
         private short currentBand = 0;
-        private WriteLogClrTypes.IWriteL iWlDoc = null;
-        private System.IO.Ports.SerialPort pttPort = null;
-
-        public void SetWlEntry(object wl)
-        {
-            labelPtt.Text = "";
-            if (pttPort != null)
-                pttPort.Dispose();
-            pttPort = null;
-            if (wl == null)
-            {
-                iWlEntry = null;
-                iWlDoc = null;
-                iWlDupingEntry = null;
-            }
-            else
-            {
-                iWlEntry = (WriteLogClrTypes.ISingleEntry)(wl);
-                iWlDoc = (WriteLogClrTypes.IWriteL)iWlEntry.GetParent();
-                iWlDupingEntry = iWlDoc.CreateEntry();
-                SetupExchangeFieldNumbers();
-                string RttyRegKeyName = "Software\\W5XD\\writelog.ini\\RttyRite";
-                if (instanceNumber > 1)
-                    RttyRegKeyName += instanceNumber.ToString();
-                Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RttyRegKeyName);
-                if (null != rk)
-                {
-                    object Port = rk.GetValue("Port");
-                    if (null != Port)
-                    {
-                        int port;
-                        if (Int32.TryParse(Port.ToString(), out port) && port > 0)
-                        {
-                            try
-                            {
-                                string portname = "COM" + port.ToString();
-                                pttPort = new System.IO.Ports.SerialPort(portname);
-                                pttPort.Handshake = System.IO.Ports.Handshake.None;
-                                pttPort.RtsEnable = false;
-                                pttPort.Open();
-                                labelPtt.Text = "ptt on " + portname;
-                            }
-                            catch (System.Exception)
-                            {
-                                pttPort = null;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private int SentRstFieldNumber = -1;
-        private int ReceivedRstFieldNumber = -1;
-        private int GridSquareReceivedFieldNumber = -1;
-        private int GridSquareSentFieldNumber = -1;
-        private int DgtlFieldNumber = -1;
-
-        private void SetupExchangeFieldNumbers()
-        {
-            if (null == iWlDoc)
-                return;
-            WriteLogClrTypes.IQsoCollection qsoc = iWlDoc.GetQsoCollection() as WriteLogClrTypes.IQsoCollection;
-            string[] names = qsoc.GetColumnAdifNames();
-            int appWriteLogGrid = -1;
-            for (int i = 0; i < names.Length; i++)
-            {
-                if (names[i] == "RST_SENT")
-                    SentRstFieldNumber = i + 1;
-                else if (names[i] == "RST_RCVD")
-                    ReceivedRstFieldNumber = i + 1;
-                else if (names[i] == "GRIDSQUARE")
-                    GridSquareReceivedFieldNumber = i + 1;
-                else if (names[i] == "APP_WRITELOG_MYGRID")
-                    GridSquareSentFieldNumber = i + 1;
-                else if (names[i] == "APP_WRITELOG_GRID")
-                    appWriteLogGrid = i + 1;
-            }
-            if (GridSquareReceivedFieldNumber <= 0)
-                GridSquareReceivedFieldNumber = appWriteLogGrid;
-            string[] titles = qsoc.GetColumnTitles();
-            for (int i = 0; i < titles.Length; i++)
-            {
-                if (titles[i].ToUpper().IndexOf("DGTL") >= 0)
-                {
-                    DgtlFieldNumber = i + 1;
-                    break;
-                }
-            }
-#if DEBUG
-            if (DgtlFieldNumber > 0)
-                iWlEntry.SetFieldN((short)DgtlFieldNumber, "FT8");
-#endif
+        
+        public void SetWlEntry(object e)
+        {   // WriteLog is the only logger that calls here.
+            var wl = new DigiRiteLogger.WriteLog(instanceNumber);
+            labelPtt.Text = wl.SetWlEntry(e);
+            logger = wl;
         }
         #endregion
 
@@ -391,39 +311,21 @@ namespace WriteLogDigiRite
                             watchDogTime = DateTime.UtcNow;
 
                         short mult = 0;
-                        int dupe = 0;
+                        bool dupe = false;
                         String fromCall = toFromCall?.FromCall;
                         RecentMessage recentMessage;
-                        if (fromCall != null && null != iWlDupingEntry)
+                        if (fromCall != null && null != logger)
                         {   // dupe check if we can
-                            iWlDupingEntry.ClearEntry();
-                            if (DgtlFieldNumber > 0)
-                                iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
-                            if (ReceivedRstFieldNumber > 0) // ClearEntry in WL defaults the RST. clear it out
-                                iWlDupingEntry.SetFieldN((short)ReceivedRstFieldNumber, "");
-                            if (GridSquareReceivedFieldNumber > 0)
-                            {
-                                XDpack77.Pack77Message.Exchange hisGrid = rm.Pack77Message as XDpack77.Pack77Message.Exchange;
-                                if (hisGrid != null && !String.IsNullOrEmpty(hisGrid.GridSquare))
-                                    iWlDupingEntry.SetFieldN((short)GridSquareReceivedFieldNumber, hisGrid.GridSquare);
-                            }
-                            iWlDupingEntry.Callsign = fromCall;
-                            dupe = iWlDupingEntry.Dupe();
-                            if (dupe == 0)
-                            {
-                                mult = iWlDupingEntry.IsNewMultiplier((short)-1);
-                                if (mult <= 0 && GridSquareReceivedFieldNumber > 0)
-                                    mult = iWlDupingEntry.IsNewMultiplier((short)GridSquareReceivedFieldNumber);
-                            }
+                            logger.CheckDupeAndMult(fromCall, digiMode == DigiMode.FT8 ? "FT8" : "FT4", rm.Pack77Message, out dupe, out mult);
                         }
-                        recentMessage = new RecentMessage(rm, dupe != 0, mult > 0);
+                        recentMessage = new RecentMessage(rm, dupe, mult > 0);
 
                         bool isConversation = false;
                         string callQsled = (rm.Pack77Message as XDpack77.Pack77Message.QSL)?.CallQSLed;
                         if (!String.IsNullOrEmpty(toCall))
                             qsoQueue.MessageForMycall(recentMessage, directlyToMe,
                                     callQsled, currentBand,
-                                    checkBoxRespondAny.Checked && dupe == 0,
+                                    checkBoxRespondAny.Checked && !dupe,
                                     new IsConversationMessage((origin) =>
                                         {   // qsoQueue liked this message. log it
                                             isConversation = true;
@@ -435,7 +337,7 @@ namespace WriteLogDigiRite
                         if (!isConversation)
                         {   // nobody above claimed this message
                             if (directlyToMe)
-                                toMe.Add(new RecentMessage(rm, dupe != 0, mult > 0), (CheckState x) => { return true; });
+                                toMe.Add(new RecentMessage(rm, dupe, mult > 0), (CheckState x) => { return true; });
                             else if ((fromCall != null) &&
                                 !String.Equals(fromCall, myCall) &&  // decoder is hearing our own
                                 !String.Equals(fromCall, myBaseCall) &&  // transmissions
@@ -801,16 +703,17 @@ namespace WriteLogDigiRite
 
         private int RigVfoSplitForTx(int minAudioTx, int maxAudioTx, List<XDft.Tone> tones = null)
         {
-            if (iWlEntry == null)
+            if (logger == null)
                 return minAudioTx; // can't do rig control
 
-            iWlEntry.SetTransmitFocus();
+            logger.SetTransmitFocus();
 
             if (controlVFOsplit == VfoControl.VFO_NONE)
                 return minAudioTx;
 
-            short mode = 0;  short split = 0;double tx = 0;  double rx = 0;  // where is the rig now?
-            iWlEntry.GetLogFrequency(ref mode, ref rx, ref tx, ref split);
+            bool split;
+            double txKHz; double rxKHz;
+            logger.GetRigFrequency(out rxKHz, out txKHz, out split);
 
             // want all outputs below TxHighFreqLimit
             // ...and, more importantly, above half that.
@@ -838,15 +741,15 @@ namespace WriteLogDigiRite
                 || (offset == 0))
             {   //un-split the rig if the needed range is beyond
                 // the setup parameters, or no offset is needed
-                if (split != 0)
-                    iWlEntry.SetLogFrequencyEx(mode, rx, rx, 0);
+                if (split)
+                    logger.SetRigFrequency(rxKHz, rxKHz, false);
                 return minAudioTx;
             }
 
             bool rigIsAlreadyOk = false;  // check if the rig has an acceptable split already
-            if (split != 0)
+            if (split)
             {
-                int currentOffset = (int)(1000 * (rx - tx));
+                int currentOffset = (int)(1000 * (rxKHz - txKHz));
                 if ((minAudioTx + currentOffset >= minFreq) &&
                     maxAudioTx + currentOffset <= maxFreq)
                 {   // the rig's state is OK already
@@ -858,17 +761,17 @@ namespace WriteLogDigiRite
             // offset is what we'll set
             if (!rigIsAlreadyOk)
             {
-                double rxDuringTx = rx;
-                double txDuringTx = rx - .001f * offset;
+                double rxDuringTx = rxKHz;
+                double txDuringTx = rxKHz - .001f * offset;
                 if (controlVFOsplit == VfoControl.VFO_SPLIT)
-                    iWlEntry.SetLogFrequencyEx(mode, rxDuringTx, txDuringTx, 1);
+                    logger.SetRigFrequency(rxDuringTx, txDuringTx, true);
                 else if (controlVFOsplit == VfoControl.VFO_SHIFT)
                 {
                     rxDuringTx = txDuringTx;
-                    iWlEntry.SetLogFrequencyEx(mode, rxDuringTx, txDuringTx, 0);
+                    logger.SetRigFrequency(rxDuringTx, txDuringTx, false);
                     vfoOnTxEnd = () =>
                     {
-                        iWlEntry.SetLogFrequencyEx(mode, rx, rx, 0);
+                        logger.SetRigFrequency(rxKHz, rxKHz, false);
                     };
                 }
             }
@@ -976,16 +879,13 @@ namespace WriteLogDigiRite
             else if (mycallNeedsBrackets)
                 mycall = String.Format(BracketFormat, mycall);
 
-            if (null != iWlDoc)
+            if (null != logger)
             {
-                // fill in from WriteLog if we can
-                const short WRITELOG_EXCHANGE_MESSAGE_NUMBER = 0;
-                iWlDupingEntry.Callsign = q.HisCall;
+                // fill in from logger if we can
                 if (q.SentSerialNumber == 0)
                 {   // assign a serial number even if contest doesn't need it
-                    iWlDupingEntry.SerialNumber = 0; // get a fresh one
-                    uint serialToSend = iWlDupingEntry.SerialNumber;
-                    // WriteLog may give us the same serial number since we're just one radio
+                    uint serialToSend = logger.GetSendSerialNumber(q.HisCall);
+                    // logger may give us the same serial number since we're just one radio
                     Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
                     var inProgress = qsosPanel.QsosInProgress;
                     for (int i = 0; i < inProgress.Count; i++)
@@ -1002,103 +902,95 @@ namespace WriteLogDigiRite
                         serialToSend += 1;
                     q.SentSerialNumber = serialToSend;
                 }
-                try
+                switch (excSet)
                 {
-                    switch (excSet)
-                    {
-                        case ExchangeTypes.ARRL_FIELD_DAY:
-                            string entryclass = "";
-                            var fdsplit = Properties.Settings.Default.ContestMessageToSend.Split((char[])null,
-                                StringSplitOptions.RemoveEmptyEntries);
-                            bool founddigit = false;
-                            foreach (string w in fdsplit)
+                    case ExchangeTypes.ARRL_FIELD_DAY:
+                        string entryclass = "";
+                        var fdsplit = Properties.Settings.Default.ContestMessageToSend.Split((char[])null,
+                            StringSplitOptions.RemoveEmptyEntries);
+                        bool founddigit = false;
+                        foreach (string w in fdsplit)
+                        {
+                            if (!founddigit)
                             {
-                                if (!founddigit)
+                                if (Char.IsDigit(w[0]))
                                 {
-                                    if (Char.IsDigit(w[0]))
-                                    {
-                                        founddigit = true;
-                                        entryclass = w;
-                                    }
+                                    founddigit = true;
+                                    entryclass = w;
                                 }
-                                else if (w.All(Char.IsLetter))
-                                    return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
-                                        addAck ? "R " : "", entryclass, w);
                             }
+                            else if (w.All(Char.IsLetter))
+                                return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                                    addAck ? "R " : "", entryclass, w);
+                        }
+                        break;
+
+                    case ExchangeTypes.ARRL_RTTY:
+                        string part = null;
+                        String percentSearch = Properties.Settings.Default.ContestMessageToSend;
+                        String percentsRemoved = "";
+                        for (; ; )
+                        {   // is there a serial number in the message?
+                            int percentPos = percentSearch.IndexOf('%');
+                            if (percentPos < 0)
+                            {
+                                percentsRemoved += percentSearch;
+                                break;  // no serial number
+                            }
+                            if ((percentPos < percentSearch.Length - 1) &&
+                                Char.IsLetter(percentSearch[percentPos + 1]))
+                            {
+                                percentsRemoved += percentSearch.Substring(0, percentPos);
+                                percentSearch = percentSearch.Substring(percentPos + 2);
+                                continue; // this one is not a serial number
+                            }
+                            part = String.Format("{0:0000}", q.SentSerialNumber);
                             break;
+                        }
+                        if (String.IsNullOrEmpty(part))
+                        {
+                            var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (string w in rttysplit)
+                                if (w.All(Char.IsLetter))
+                                {
+                                    part = w.ToUpper();
+                                    break;
+                                }
+                        }
+                        return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                            addAck ? "R " : "", q.Message.RST, part);
 
-                        case ExchangeTypes.ARRL_RTTY:
-                            string part = null;
-                            String percentSearch = Properties.Settings.Default.ContestMessageToSend;
-                            String percentsRemoved = "";
-                            for (; ; )
-                            {   // is there a serial number in the message?
-                                int percentPos = percentSearch.IndexOf('%');
-                                if (percentPos < 0)
-                                {
-                                    percentsRemoved += percentSearch;
-                                    break;  // no serial number
-                                }
-                                if ((percentPos < percentSearch.Length - 1) &&
-                                    Char.IsLetter(percentSearch[percentPos + 1]))
-                                {
-                                    percentsRemoved += percentSearch.Substring(0, percentPos);
-                                    percentSearch = percentSearch.Substring(percentPos + 2);
-                                    continue; // this one is not a serial number
-                                }
-                                part = String.Format("{0:0000}", q.SentSerialNumber);
-                                break;
-                            }
-                            if (String.IsNullOrEmpty(part))
+                    case ExchangeTypes.GRID_SQUARE:
+                        {
+                            string sentgrid = logger.GridSquareSendingOverride();
+                            if (sentgrid.Length >= 4)
                             {
-                                var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
-                                foreach (string w in rttysplit)
-                                    if (w.All(Char.IsLetter))
-                                    {
-                                        part = w.ToUpper();
-                                        break;
-                                    }
+                                q.SentGrid = sentgrid;
+                                return String.Format("{0} {1} {2} {3}",
+                                    hiscall, mycall,
+                                    addAck ? "R" : "", sentgrid);
                             }
-                            return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
-                                addAck ? "R " : "", q.Message.RST, part);
+                        }
+                        break;
 
-                        case ExchangeTypes.GRID_SQUARE:
-                            if (GridSquareSentFieldNumber > 0)
-                            {
-                                string sentgrid = iWlEntry.GetFieldN((short)GridSquareSentFieldNumber).ToUpper();
-                                if (sentgrid.Length >= 4)
-                                {
-                                    q.SentGrid = sentgrid;
-                                    return String.Format("{0} {1} {2} {3}",
-                                        hiscall, mycall,
-                                        addAck ? "R" : "", sentgrid);
-                                }
-                            }
-                            break;
-
-                        case ExchangeTypes.DB_REPORT:
-                            break; // handle below
-                    }
-                }
-                finally
-                {
-                    iWlDupingEntry.Callsign = "";
+                    case ExchangeTypes.DB_REPORT:
+                        break; // handle below
                 }
             }
-            // if WriteLog is not running, or doesn't handle the exchange.
+            // if logger is not running, or doesn't handle the exchange.
             switch (excSet)
             {
                 case ExchangeTypes.DB_REPORT:
                     int dB = q.Message.SignalDB;
                     return String.Format("{0} {1} {2}{3:+00;-00;+00}",
                         hiscall,
-                        mycall, 
+                        mycall,
                         addAck ? "R" : "", dB);
             }
 
             return String.Format("{0} {1} {2}{3}",
                 hiscall,
-                mycall, 
+                mycall,
                 addAck ? "R " : "", MyGrid4);
         }
 
@@ -1208,29 +1100,12 @@ namespace WriteLogDigiRite
 
         public void LogQso(QsoInProgress q)
         {
-            if ((null != iWlEntry) && (null != iWlDoc) && null != iWlDupingEntry)
+            if (null != logger)
             {
-                iWlDupingEntry.ClearEntry();
-                if (ReceivedRstFieldNumber > 0) // ClearEntry in WL defaults the RST. clear it out
-                    iWlDupingEntry.SetFieldN((short)ReceivedRstFieldNumber, "");
                 var excSet = Properties.Settings.Default.ContestExchange;
-                {
-                    short mode = 0;double tx = 0;  double rx = 0; short split = 0;
-                    iWlEntry.GetLogFrequency(ref mode, ref rx, ref tx, ref split);
-                    mode = 6;
-                    iWlDupingEntry.SetLogFrequencyEx(mode, rx, tx, split);
-                }
-                // call, serial number,  RST and DGTL we set up front
-                iWlDupingEntry.Callsign = q.HisCall;
-                iWlDupingEntry.SerialNumber = q.SentSerialNumber;
-                // todo: set time of logged QSO to last message received
                 String date = String.Format("{0:yyyyMMdd}", q.TimeOfLastReceived);
                 String time = String.Format("{0:HHmmss}", q.TimeOfLastReceived);
-                iWlDupingEntry.SetDateTimeFromADIF(date, time);
-                if (null != q.SentGrid && GridSquareSentFieldNumber > 0)
-                    iWlDupingEntry.SetFieldN((short)GridSquareSentFieldNumber, q.SentGrid);
-                if (DgtlFieldNumber > 0)
-                    iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
+                logger.SetQsoItemsToLog(q.HisCall, q.SentSerialNumber, date, time, q.SentGrid, digiMode == DigiMode.FT8 ? "FT8" : "FT4");
                 switch ((ExchangeTypes)excSet)
                 {
                     case ExchangeTypes.ARRL_FIELD_DAY:
@@ -1246,15 +1121,15 @@ namespace WriteLogDigiRite
                         LogGridSquareQso(q);
                         break;
                 }
-                iWlDupingEntry.ClearEntry();
             }
             q.MarkedAsLogged = true;
-            CurrentActiveQsoCalltoWriteLog();
+            CurrentActiveQsoCalltoLogger();
         }
 
         private void LogFdQso(QsoInProgress q)
         {
             // start at latest and work backwards
+            string cat = "", sec = "";
             for (int i = q.MessageList.Count - 1; i >= 0; i -= 1)
             {
                 XDpack77.Pack77Message.ReceivedMessage rm = q.MessageList[i];
@@ -1263,17 +1138,17 @@ namespace WriteLogDigiRite
                 if (iexc == null)
                     continue;
                 var fields = iexc.Exchange.Split((char[])null);
-                iWlDupingEntry.SetFieldN(2, fields[0]);
-                iWlDupingEntry.SetFieldN(3, fields[1]);
+                cat = fields[0];
+                sec = fields[1];
                 break;
             }
-            iWlDupingEntry.EnterQso();
+            logger.LogFieldDayQso(cat,sec);
         }
 
         private void LogRttyRoundUpQso(QsoInProgress q)
         {
-            if (SentRstFieldNumber > 0)
-                iWlDupingEntry.SetFieldN((short)SentRstFieldNumber, q.Message.RST);
+            string recRst = "";
+            string recStateOrSer = "";
             // RCV RST and "QTH" which might be serial number
             for (int i = q.MessageList.Count - 1; i >= 0; i -= 1)
             {   // from most recent back to oldest
@@ -1285,11 +1160,11 @@ namespace WriteLogDigiRite
                 // found last RTTY Roundup message
                 string exc = iexc.Exchange;
                 var fields = exc.Split((char[])null);
-                iWlDupingEntry.SetFieldN(3, fields[0]); // received rst
-                iWlDupingEntry.SetFieldN(4, fields[1]); // received state/serial
+                recRst = fields[0];
+                recStateOrSer = fields[1];
                 break;
             }
-            iWlDupingEntry.EnterQso();
+            logger.LogRoundUpQso(q.Message.RST, recRst, recStateOrSer);
         }
 
         private void LogGridSquareQso(QsoInProgress q)
@@ -1298,47 +1173,27 @@ namespace WriteLogDigiRite
              * signal report exchange. Search the list of
              * messages in the QSO for both and add what we find to the log.
              */
-            if (SentRstFieldNumber > 0)
-            {   // the log has a column for RST
-                int incomingDB = q.Message.SignalDB;
-                string db = incomingDB.ToString("D2");
-                if (incomingDB>=0)
-                    db = "+" + db;
-                // put the received dB indicator in the log. might overwrite below.
-                iWlDupingEntry.SetFieldN((short) SentRstFieldNumber, db);
-            }
+            int incomingDB = q.Message.SignalDB;
+            string sentdB = incomingDB.ToString("D2");
+            if (incomingDB>=0)
+                sentdB = "+" + sentdB;
             string dbReport = null;
-            bool foundRstReport = false;
+            string gridsquare="";
             foreach (var m in q.MessageList)
             {
                 XDpack77.Pack77Message.Exchange iExc = m.Pack77Message as XDpack77.Pack77Message.Exchange;
                 if (iExc == null)
                     continue;
                 // find received message with a grid square in it
-                string gridsquare = iExc.GridSquare;
-                if (!String.IsNullOrEmpty(gridsquare) && (GridSquareReceivedFieldNumber > 0))
-                    iWlDupingEntry.SetFieldN((short)GridSquareReceivedFieldNumber, gridsquare);
+                string gs = iExc.GridSquare;
+                if (!String.IsNullOrEmpty(gs))
+                    gridsquare = gs;
                 // find received message with an RST
-                string rst = iExc.RST;
-                if (!String.IsNullOrEmpty(rst) && (ReceivedRstFieldNumber > 0))
-                {
-                    iWlDupingEntry.SetFieldN((short)ReceivedRstFieldNumber, rst);
-                    foundRstReport = true;
-                }
                 int db = iExc.SignaldB;
                 if (db > XDpack77.Pack77Message.Message.NO_DB)
                     dbReport = String.Format("{0:+00;-00;+00}", db);
             }
-            // if the exchange we used had an RST, we did it above. If not, use dB
-            if (!foundRstReport && !String.IsNullOrEmpty(dbReport) && (ReceivedRstFieldNumber > 0))
-                try
-                {
-                    iWlDupingEntry.SetFieldNnoValidate((short)ReceivedRstFieldNumber, dbReport); // novalidate cuz RTTY-enabled modules won't let this in
-                }
-                catch (System.Exception) {
-                    iWlDupingEntry.SetFieldNnoValidate((short)ReceivedRstFieldNumber, dbReport); // old versions of WL don't have SetFieldNnoValidate
-                } 
-            iWlDupingEntry.EnterQso();
+            logger.LogGridSquareQso(sentdB, gridsquare, dbReport);
         }
         
         #endregion
@@ -1392,7 +1247,7 @@ namespace WriteLogDigiRite
         {
 
 #if !DEBUG
-            if (null == iWlDoc)
+            if (null == logger)
             {
                 if (MessageBox.Show(
                     "Running without a logging program has limited functionality!\r\n\r\n" +
@@ -1443,7 +1298,7 @@ namespace WriteLogDigiRite
                 var sf = new SetupForm(
                     instanceNumber,
                     SetupMaySelectDevices, SetupMaySelectLR,
-                    null == iWlEntry);
+                    null == logger);
                 sf.controlSplit = controlVFOsplit;
                 sf.forceRigUsb = forceRigUsb;
                 sf.txHighLimit = TxHighFreqLimit;
@@ -1864,126 +1719,20 @@ namespace WriteLogDigiRite
                 XD.WaveDeviceEnumerator.waveOutDevices());
             RxInDevice = StringToIndex(Properties.Settings.Default["AudioInputDevice_" + instanceNumber.ToString()].ToString(),
                XD.WaveDeviceEnumerator.waveInDevices());
-            if (iWlEntry != null)
-            {   // we are connected to WriteLog's automation interface
-                var lr = iWlEntry.GetLeftRight();
-                if ((lr != 0) && (lr != 1))
-                {
-                    // instance #1 is allowed to select neither L nor R
-                    if ((instanceNumber == 1) && (lr == (short)-1))
-                        lr = 0; // put on left
-                    else if (lr > 1)
-                    { // Radio #3 or #4
-                        return false; // use setup form
-                    }
-                    else
-                    {
-                        MessageBox.Show("DigiRite requires the Entry Window to be set to either L or R");
-                        return false;
-                    }
-                }
-                SetupMaySelectDevices = false;
-                var RxInDevices = XD.WaveDeviceEnumerator.waveInDevices();
-                var TxOutDevices = XD.WaveDeviceEnumerator.waveOutDevices();
-                Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
-                    "Software\\W5XD\\writelog.ini\\OneDevicePerRadio");
-                if ((rk != null) && (rk.ValueCount > 1))
-                {
-                    // WL Sound Mixer is set up one-device-per-radio
-                    object v = null;
-                    RxInDevice = UInt32.MaxValue;
-                    TxOutDevice = UInt32.MaxValue;
-                    if (rk != null)
-                    {
-                        // RX side
-                        v = rk.GetValue(lr == 0 ? "LeftReceiverAudioDeviceId" : "RightReceiverAudioDeviceId");
-                        if (v != null)
-                        {
-                            string id = v.ToString().ToUpper();
-                            for (int i = 0; i < RxInDevices.Count; i++)
-                            {
-                                if (String.Equals(XD.WaveDeviceEnumerator.waveInInstanceId(i).ToUpper(), id))
-                                {
-#if DEBUG
-                                    // have a look at the user-friendly name of the device
-                                    var waveIns = XD.WaveDeviceEnumerator.waveInDevices();
-                                    if (i < waveIns.Count)
-                                    {
-                                        string name = waveIns[i];
-                                    }
-#endif
-                                    RxInDevice = (uint)i;
-                                    break;
-                                }
-                            }
-                            if (RxInDevice < 0)
-                                MessageBox.Show("Use WriteLog Sound Mixer to set the " + (lr == 0 ? "Left" : "Right") + " Rx audio in");
-                        }
-                        else
-                            MessageBox.Show("WriteLog Sound Mixer control is not set up for " + (lr == 0 ? "Left" : "Right") + " RX audio in");
-                        // TX side
-                        v = rk.GetValue(lr == 0 ? "LeftTransmitterAudioDeviceId" : "RightTransmitterAudioDeviceId");
-                        if (v != null)
-                        {
-                            string id = v.ToString().ToUpper();
-                            for (int i = TxOutDevices.Count-1; i >= 0 ; i -= 1)
-                            {
-                                if (XD.WaveDeviceEnumerator.waveOutInstanceId(i).ToUpper() == id)
-                                {
-                                    TxOutDevice = (uint)i;
-                                    break;
-                                }
-                            }
-                            if (TxOutDevice < 0)
-                                MessageBox.Show("Use WriteLog Sound Mixer to set the " + (lr == 0 ? "Left" : "Right") + " TX audio out");
-                        }
-                        else
-                            MessageBox.Show("WriteLog Sound Mixer control is not set up for " + (lr == 0 ? "Left" : "Right") + " RX audio in");
-                    }
-                }
-                else
-                {
-                    // WL Sound Mixer is set up for separate device per radio
-                    object v = null;
-                    rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\W5XD\\writelog.ini\\WlSound");
-                    if (rk != null)
-                        v = rk.GetValue("RxInDevice");
-                    if (v != null)
-                    {
-                        string RxInDeviceName = v.ToString().ToUpper();
-                        for (int i = RxInDevices.Count-1; i >= 0 ; i -= 1)
-                        {
-                            if (RxInDevices[i].ToUpper().Contains(RxInDeviceName))
-                            {
-                                RxInDevice = (uint)i;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                        MessageBox.Show("WriteLog Sound Mixer control is not set up for RX audio in");
-                    v = rk.GetValue("TxOutDevice");
-                    if (v != null)
-                    {
-                        string TxOutDeviceName = v.ToString().ToUpper();
-                        for (int i = 0; i < TxOutDevices.Count; i++)
-                        {
-                            if (TxOutDevices[i].ToUpper().Contains(TxOutDeviceName))
-                            {
-                                TxOutDevice = (uint)i;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                        MessageBox.Show("WriteLog Sound Mixer control is not set up for TX audio out");
-                    Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()] = (uint)lr;
-                    Properties.Settings.Default["AudioOutputChannel_" + instanceNumber.ToString()] = (uint)lr;
-                    SetupMaySelectLR = false;
-                }
-                MyCall = iWlDoc.CallUsed;
+            if (null != logger)
+            {
+                MyCall = logger.CallUsed;
                 if (!String.IsNullOrEmpty(myCall))
                     Properties.Settings.Default.CallUsed = myCall;
+                var wlSetup = logger as DigiRiteLogger.WriteLog;
+                if (null != wlSetup)// we are connected to WriteLog's automation interface
+                     return wlSetup.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
+                         (short lr) =>
+                         {
+                             Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()] = (uint)lr;
+                             Properties.Settings.Default["AudioOutputChannel_" + instanceNumber.ToString()] = (uint)lr;
+                             SetupMaySelectLR = false;
+                         });
             }
             else
                 return false;
@@ -2243,14 +1992,8 @@ namespace WriteLogDigiRite
                         if (!zeroIntervalCalled)
                         {   // only once per cycle
                             zeroIntervalCalled = true;
-                            if ((null != iWlEntry) && (null != iWlDupingEntry))
-                            {
-                                short mode = 0; double tx = 0; double rx = 0; short split = 0;
-                                iWlEntry.GetLogFrequency(ref mode, ref rx, ref tx, ref split);
-                                mode = 6;
-                                iWlDupingEntry.SetLogFrequencyEx(mode, rx, tx, split);
-                                currentBand = iWlEntry.GetBand();
-                            }
+                            if (null != logger)
+                                currentBand = logger.GetCurrentBand();
                         }
                      }
                     else
@@ -2297,16 +2040,8 @@ namespace WriteLogDigiRite
                         cl.Tenths = intervalTenths;
                         cl.AmTransmit = isTransmitCycle;
                     }
-                    if (forceRigUsb && (null != iWlEntry) && (null != iWlDupingEntry))
-                    {
-                        short mode = 0; double tx = 0; double rx = 0; short split = 0;
-                        iWlEntry.GetLogFrequency(ref mode, ref rx, ref tx, ref split);
-                        if (mode != 2)
-                        {
-                            mode = 2;
-                            iWlEntry.SetLogFrequencyEx(mode, rx, tx, split);
-                        }
-                    }
+                    if (forceRigUsb && (null != logger))
+                        logger.ForceRigToUsb();
                 }
                 finally
                 { inClockTick = false; }
@@ -2314,9 +2049,9 @@ namespace WriteLogDigiRite
         }
 
         private string m_previousCallToWriteLog; // optimization to reduce out-of-process calls
-        private void CurrentActiveQsoCalltoWriteLog()
+        private void CurrentActiveQsoCalltoLogger()
         {
-            if (null == iWlEntry)
+            if (null == logger)
                 return;
             var inProgress = qsosPanel.QsosInProgress;
             for (int i = 0; i < inProgress.Count; i++)
@@ -2331,30 +2066,27 @@ namespace WriteLogDigiRite
                 if (m_previousCallToWriteLog != qp.HisCall)
                 {
                     m_previousCallToWriteLog = qp.HisCall;
-                    iWlEntry.ClearEntry();
-                    if (GridSquareReceivedFieldNumber >= 0)
+                    string grid = "";
+                    foreach (var m in qp.MessageList)
                     {
-                        foreach (var m in qp.MessageList)
+                        XDpack77.Pack77Message.Exchange hisGrid = m.Pack77Message as XDpack77.Pack77Message.Exchange;
+                        if (hisGrid != null && !String.IsNullOrEmpty(hisGrid.GridSquare))
                         {
-                            XDpack77.Pack77Message.Exchange hisGrid = m.Pack77Message as XDpack77.Pack77Message.Exchange;
-                            if (hisGrid != null && !String.IsNullOrEmpty(hisGrid.GridSquare))
-                            {
-                                iWlEntry.SetFieldN((short)GridSquareReceivedFieldNumber, hisGrid.GridSquare);
-                                break;
-                            }
+                            grid = hisGrid.GridSquare;
+                            break;
                         }
                     }
-                    iWlEntry.Callsign = qp.HisCall;
+                    logger.SetCurrentCallAndGrid(qp.HisCall, grid);
                 }
                 return;
             }
             m_previousCallToWriteLog = "";
-            iWlEntry.ClearEntry();
+            logger.SetCurrentCallAndGrid("", "");
         }
 
-#endregion
+        #endregion
 
-#region foreign threads
+        #region foreign threads
         // The XDft8 assembly invokes our delegate on a foreign thread.
         private void Decoded(String s, int cycle)
         {   // BeginInvoke back onto form's thread
@@ -2370,11 +2102,9 @@ namespace WriteLogDigiRite
         private void OnAudioComplete(bool isBegin)
         {
             // tell writelog to turn on/off the PTT
-            if (null != iWlEntry)
+            if (null != logger)
             {
-                iWlEntry.SetXmitPtt((short)(isBegin ? 1 : 0));
-                if (null != pttPort)
-                    pttPort.RtsEnable = isBegin;
+                logger.SetPtt(isBegin);
                 if (!isBegin)
                     RigVfoSplitForTxOff();
             }
@@ -2499,13 +2229,13 @@ namespace WriteLogDigiRite
                 if ((null != qli) && Object.ReferenceEquals(qli.q, q))
                     checkedlbNextToSend.SetItemChecked(i, q.Active && checkBoxAutoXmit.Checked);
             }
-            CurrentActiveQsoCalltoWriteLog();
+            CurrentActiveQsoCalltoLogger();
         }
 
         private void OnQsoInProgressOrderChanged()
         {
             checkedlbNextToSend.Sort();
-            CurrentActiveQsoCalltoWriteLog();
+            CurrentActiveQsoCalltoLogger();
         }
 
         private void checkBoxShowMenu_CheckedChanged(object sender, EventArgs e)
@@ -2516,10 +2246,10 @@ namespace WriteLogDigiRite
 
         private void setupToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            bool maySelectCallUsed = null == iWlEntry;
+            bool maySelectCallUsed = null == logger;
             if (!maySelectCallUsed)
             {
-                String curCall = iWlDoc.CallUsed;
+                String curCall = logger.CallUsed;
                 if (!String.IsNullOrEmpty(curCall))
                 {
                     Properties.Settings.Default.CallUsed = curCall.ToUpper().Trim();
@@ -2727,7 +2457,7 @@ namespace WriteLogDigiRite
                 QsoInProgress qp = inProgress[i];
                 if (null == qp)
                     continue;   
-                if (qp.TransmitFrequency != qp.Message.Hz)
+                if (qp.TransmitFrequency != qp.Message.Hz || ModifierKeys.HasFlag(Keys.Control))
                     qp.TransmitFrequency = 0;
             }
         }

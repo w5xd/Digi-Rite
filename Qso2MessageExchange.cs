@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     // Sequencing for the case where a QSO consists of sending a grid square and then a signal
     // report, in that order.

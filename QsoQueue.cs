@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     /* class QsoQueue
      * This implementation is specialized to handle the contest exchange

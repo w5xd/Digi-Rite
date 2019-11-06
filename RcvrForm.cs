@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Forms;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     public partial class RcvrForm : Form
     {
@@ -334,19 +334,17 @@ namespace WriteLogDigiRite
             }
         }
 
-        private void listBoxReceived_MouseDown(object sender, MouseEventArgs e)
-        {   // right mouse in receiver list copies it to clipboard
+        private void listBoxReceived_MouseUp(object sender, MouseEventArgs e)
+        {
             if (e.Button == MouseButtons.Right)
             {
-                var index = listBoxReceived.IndexFromPoint(e.Location);
-                if (index != ListBox.NoMatches)
-                {
-                    var val = listBoxReceived.Items[index];
-                    System.Windows.Forms.Clipboard.SetText(val.ToString());
-                }
+                var item = listBoxReceived.IndexFromPoint(e.Location);
+                contextMenuStripOnReceived.Items[1].Enabled = item != ListBox.NoMatches;
+                listBoxReceived.SelectedIndex = item;
+                contextMenuStripOnReceived.Show(this, new System.Drawing.Point(e.X, e.Y));//place the menu at the pointer position
             }
         }
-
+           
         private void XcvrForm_FormClosing(object sender, FormClosingEventArgs e)
         {   // don't "close" this form. Minimize it.
             if (e.CloseReason == CloseReason.UserClosing)
@@ -415,6 +413,26 @@ namespace WriteLogDigiRite
         private void trackBarRxGain_Scroll(object sender, EventArgs e)
         {
             waveDevicePlayer.Gain = (float)(trackBarRxGain.Value / 100.0);
+        }
+
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            listBoxReceived.Items.Clear();
+        }
+
+        private void copyItemToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var listBoxMouseUpItem = listBoxReceived.SelectedIndex;
+            if (listBoxMouseUpItem != ListBox.NoMatches)
+            {
+                var val = listBoxReceived.Items[listBoxMouseUpItem];
+                System.Windows.Forms.Clipboard.SetText(val.ToString());
+            }
+        }
+
+        private void contextMenuStripOnReceived_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            listBoxReceived.SelectedIndex = ListBox.NoMatches;
         }
     }
 }

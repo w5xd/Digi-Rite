@@ -1,4 +1,4 @@
-﻿namespace WriteLogDigiRite
+﻿namespace DigiRite
 {
     partial class MainForm
     {
@@ -103,8 +103,8 @@
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
             this.timerCleanup = new System.Windows.Forms.Timer(this.components);
-            this.listBoxConversation = new WriteLogDigiRite.ConversationListBox();
-            this.checkedlbNextToSend = new WriteLogDigiRite.ToSendListBox();
+            this.listBoxConversation = new DigiRite.ConversationListBox();
+            this.checkedlbNextToSend = new DigiRite.ToSendListBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();

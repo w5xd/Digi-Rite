@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     class ToSendListBox : System.Windows.Forms.CheckedListBox
     {   /* Custom sort the checkListBoxToSend */

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     static class Program
     {
@@ -15,7 +15,7 @@ namespace WriteLogDigiRite
         [STAThread]
         static void Main(string[] args)
         {
-            const int UpgradedVersion = 48;  // increment every release
+            const int UpgradedVersion = 49;  // increment every release
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 #if DEBUG

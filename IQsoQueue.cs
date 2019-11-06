@@ -1,7 +1,7 @@
 ﻿/* the differences between contest and casual exchanges
  * is handled by classes that both comply with these interfaces. */
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     public delegate void IsConversationMessage(Conversation.Origin reason);
 

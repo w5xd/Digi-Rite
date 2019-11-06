@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WriteLogDigiRite
+namespace DigiRite
 {
     public class RecentMessage
     {
