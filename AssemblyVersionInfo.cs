@@ -11,4 +11,5 @@ using System.Reflection;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.1.0.33")]
 [assembly: AssemblyFileVersion("1.1.0.33")]
-[assembly: AssemblyInformationalVersion("1.1.33")]
+//    If you plan to give the built files ot another Op, please add your callsign in the Version string.
+[assembly: AssemblyInformationalVersion("1.1.33 built by - YOURCALLSIGN")]
