@@ -2,8 +2,20 @@
 //
 // This is NOT the preferred method of installing DigiRite!
 //  A standard Microsoft installer, .msi, that can be uninstalled is preferred.
-// But this open-source build-it-yourself version of DigiRite needs a way to
-// get WriteLog to use it.
+// Kit for such an installer is included here in InstallDigiRite.
+//  BUT...that kit requires more than just Visual Studio installed...
+// so this program is provided as an alternative...
+//
+// Recommendation to builder of DigiRite:
+//  Decide which deployment method to use: 
+//  Build the msi with the InstallDigiRite project and distribute the resulting msi file.
+//  OR
+//  Bundle the exe's into a zip file along with this Register.exe and distribute
+//  the resulting zip file.
+//
+// This Register.exe and the DigiRiteOpenSource.msi file can both be invoked
+// on the same PC but they work in "last one wins" mode. WriteLog will invoke
+// whichever one was most recently installed.
 //
 // Precondition: 
 //      Register.exe is in the same directory and 
