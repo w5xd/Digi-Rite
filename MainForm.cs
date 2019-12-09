@@ -49,6 +49,7 @@ namespace DigiRite
         private VfoControl controlVFOsplit = VfoControl.VFO_NONE;
         private bool forceRigUsb = false;
         private int TxHighFreqLimit = 0;
+        private uint noLoggerSerialNumber = 0;
 
 #if DEBUG
         List<string> simulatorLines;
@@ -879,12 +880,12 @@ namespace DigiRite
             else if (mycallNeedsBrackets)
                 mycall = String.Format(BracketFormat, mycall);
 
-            if (null != logger)
-            {
-                // fill in from logger if we can
+                 // fill in from logger if we can
                 if (q.SentSerialNumber == 0)
                 {   // assign a serial number even if contest doesn't need it
-                    uint serialToSend = logger.GetSendSerialNumber(q.HisCall);
+                    uint serialToSend = ++noLoggerSerialNumber;
+                    if (null != logger)
+                        serialToSend = logger.GetSendSerialNumber(q.HisCall);
                     // logger may give us the same serial number since we're just one radio
                     Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
                     var inProgress = qsosPanel.QsosInProgress;
@@ -961,7 +962,8 @@ namespace DigiRite
                             addAck ? "R " : "", q.Message.RST, part);
 
                     case ExchangeTypes.GRID_SQUARE:
-                        {
+                        if (null != logger)
+                        {   // logger can override sent grid
                             string sentgrid = logger.GridSquareSendingOverride();
                             if (sentgrid.Length >= 4)
                             {
@@ -976,7 +978,6 @@ namespace DigiRite
                     case ExchangeTypes.DB_REPORT:
                         break; // handle below
                 }
-            }
             // if logger is not running, or doesn't handle the exchange.
             switch (excSet)
             {

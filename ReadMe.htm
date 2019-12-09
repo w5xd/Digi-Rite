@@ -2,7 +2,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>DigiRite Readme 1.1.33</title>
+    <title>DigiRite Readme 1.1.34</title>
 </head>
 <body>
     <p>
@@ -473,11 +473,11 @@ Gj5SeP/R3X/79u3RqVMndO3aVRMa7dq1E9V8Ev4//l4G0r8Gp0wAAAAASUVORK5CYII=     " />
     </p>
     <h2>The Setup Tabs</h2>
     The first time you invoke DigiRite, it goes to its setup tabs.
-     <p>
+    <p>
         The Exchange must be one of those
         supported by FT8 (<a href='#ContestSetup'>details below</a>.) Currently that list is:
     </p>
-   <ul>
+    <ul>
         <li>Grid Square</li>
         <li>Signal report in DB</li>
         <li>ARRL RTTY Round UP</li>
@@ -704,7 +704,7 @@ U6ZMMSmML5H/D1zZ1Uf5nkz4AAAAAElFTkSuQmCC" />
     Changes in this Setup tab force DigiRite to cancel all QSO(s) in Progress.
     Entries in the other tabs may be changed without affecting QSO(s) in Progress.
     <h3 id='ExchangeItems'>Exchange items</h3>
-  <p>
+    <p>
         FT8/FT4 allow three acknowledgement messages. DigiRite treats them
         all as equivalent when it receives them. Choose the
         one you want DigiRite to send. RRR, 73 or RR73.
@@ -713,13 +713,14 @@ U6ZMMSmML5H/D1zZ1Uf5nkz4AAAAAElFTkSuQmCC" />
         DigiRite gets your CALL from Writelog. It usually figures out the CALL you want,
         but if its not right, do a Cabrillo Export in WriteLog to choose the
         CALL you are operating now and DigiRite will see that one.
-    </p>    
-    <p>The 77 bit packing allows a bare CQ message (as in pictured here) or, optionally,
+    </p>
+    <p>
+        The 77 bit packing allows a bare CQ message (as pictured here) or, optionally,
         a two, three, or four letter directed CQ. The directed CQ option is no available if
         you are operating as a "nonstandard" call.
     </p>
     <p align='center'>
-        <img  alt='SetupExchange.png'
+        <img alt='SetupExchange.png'
              src="data:image/png;base64,
 iVBORw0KGgoAAAANSUhEUgAAAZ0AAAGLCAIAAACTMthzAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
 jwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAChgSURBVHhe7Z1Niy1Hnp/Pxni+QsEsB7yQdheZ
@@ -904,37 +905,41 @@ sHG24jU7WPxzTe/Pr7mxtZXXbMfjNUXz82vhJVrzBYCeRjNDxXJ6hcJHEN8bQCVsyWv7jaPy2iEH
 8zXYD3jtEDhqrzFfg42D1w4BvJavAFgHvHYIHLXXeA6FjeMUUCXZkR4yzNfyFQDrkLmgJrIjPWQ0
 /muN7Egz8BoA1AZeA4DawGsAUBt4DQBqA68BQG3gNQCoDbwGALWB1wCgNvAaANSG99oO4uchPrLx
 4Ycf/q2NDz744Gc/+9n7779/cXHxwx/+UIsunj9/7lsSxBGHBoIfEjZ8lhiO16//P7pzVqXxsaN0
-AAAAAElFTkSuQmCC"        
-        />
-        </p>
-    <p>The <i>Contest exchange to send</i> entry determines what DigiRite sends in its contest message, and only for ARRL Field Day and ARRL RTTY Round Up contests.
-        For Field Day, enter your Field Class and state/province. For Round Up, enter only your state. 
-        <p><i>Prior to its version 1.1.31, DigiRite took 
-            this contest exchange information from WriteLog's Setup/RTTY memories. That is no longer the case.</i></p>
+AAAAAElFTkSuQmCC" />
     </p>
-      <p>
+    <p>
+        The <i>Contest exchange to send</i> entry determines what DigiRite sends in its contest message, and only for ARRL Field Day and ARRL RTTY Round Up contests.
+        For Field Day, enter your Field Class and state/province. For Round Up, enter only your state.
+    <p>
+        <i>
+            Prior to its version 1.1.31, DigiRite took
+            this contest exchange information from WriteLog's Setup/RTTY memories. That is no longer the case.
+        </i>
+    </p>
+    </p>
+    <p>
         For FT8/FT4 operation outside of contests but with WriteLog, the
         "World Wide Digi Contest" module works well. If you also want WARC band checking,
         then <a href='#WARC-GENERAL-DX'>see below</a>.
     </p>
     <h3>Audio setup</h3>
-<p>
-    When started from WriteLog, the audio device setup items are disabled and instead
-    take their values from WriteLog.
-    Use WriteLog's Sound Board
-    Mixer to choose your sound devices. DigiRite knows whether you
-    brought it up from WriteLog's Left or Right Entry Window (or
-    rig number 3 or 4) and it knows whether your WriteLog Sound board mixers are set for
-    one-device-per-radio or two-radios-on-one-device. For the former,
-    you may choose a left or right channel, but for the latter, DigiRite
-    uses the channel as selected in the Sound Board Mixer.
-        </p>    <p>
+    <p>
+        When started from WriteLog, the audio device setup items are disabled and instead
+        take their values from WriteLog.
+        Use WriteLog's Sound Board
+        Mixer to choose your sound devices. DigiRite knows whether you
+        brought it up from WriteLog's Left or Right Entry Window (or
+        rig number 3 or 4) and it knows whether your WriteLog Sound board mixers are set for
+        one-device-per-radio or two-radios-on-one-device. For the former,
+        you may choose a left or right channel, but for the latter, DigiRite
+        uses the channel as selected in the Sound Board Mixer.
+    </p>    <p>
         Be sure to
         uncheck all of WriteLog Sound Board Mixer control's <i>Exclusive</i> check boxes on the
         sound devices
         you want to run with DigiRite (or turn off WriteLog's Echo Mic selection).
     </p>
-   
+
     <p align='center'>
         <img alt='SetupAudio.png'
              src="data:image/png;base64,
@@ -1107,17 +1112,18 @@ bxrFpaVa7reqV0ykUv9uVO97yuA1WA5z8JoeWTJIzMiSb/vOYMEAm5vZVsZr9lmsfh6qvo2YJ1bO
 1WhgKDftH6HiWxCfG0AmzMlry81KeS3lcL4GywGvpcBKe43zNZg5eC0F8Fq4AKAPeC0FVtprXIfC
 zDEKyJLgkaYM52vhAoA+BC7IieCRpoyM/1wTPNIAvAYAuYHXACA38BoA5AZeA4DcwGsAkBt4DQBy
 A68BQG7gNQDIDbwGALlhvbaAvFLkZZ2XXnrpP3VefPHFH//4xy+88MLBwcF3v/tdmTXZ3t62axKy
-wpGBYIeEjq2S9rz66v8Dm37tL5w/rVEAAAAASUVORK5CYII="        /></p>
-     <h3>Other setup</h3>
-  <p>
-        The <i>Mouse button to answer CQ on his frequency</i> 
-        means that, in DigiRite's CQ panels, if you left click to answer a CQ, 
+wpGBYIeEjq2S9rz66v8Dm37tL5w/rVEAAAAASUVORK5CYII=" />
+    </p>
+    <h3>Other setup</h3>
+    <p>
+        The <i>Mouse button to answer CQ on his frequency</i>
+        means that, in DigiRite's CQ panels, if you left click to answer a CQ,
         DigiRite transmits on the frequency it received the CQ rather than its own TX setting.
         The Left/Right mouse click behavior in the CQ panes is reversed by setting this to Right.
-    </p>    
+    </p>
     <p align='center'>
-        <img alt='SetupOther.png' 
-                         src="data:image/png;base64,
+        <img alt='SetupOther.png'
+             src="data:image/png;base64,
 iVBORw0KGgoAAAANSUhEUgAAAZ0AAAGLCAIAAACTMthzAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
 jwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAABytSURBVHhe7Z3LbyTHYYfnEiQ3n/kX5CDdFiuT
 4sWHGBKBPA62vJAc2xTJUIKVXe1J65tgIJGh1RrSn6C7ECzAwwp+XHRyAC100GGDYHPx0QIMxAEi
@@ -1248,10 +1254,10 @@ pxF3x2reZgqyu90sm3ad69CmmamTtpqatbzG995hdi7Fa3aw+Ouawc+vubF1KS+zXR+vKc3n18KL
 aM0bALoazQwVl9MzFJ6CeN8AKuGSvLbdXCuvlRzma7Ad8FoJXGuvMV+D2cFrJYDX8hUAFwGvlcC1
 9hrXoTA7TgFVkh1pyTBfy1cAXITMBTWRHWnJaPzXmuxIM/AaANQGXgOA2sBrAFAbeA0AagOvAUBt
 4DUAqA28BgC1gdcAoDbwGgDUhvfaFeTtkDs2t2/f/mebt95668c//vGbb755enr6ne98Rzdd9vf3
-fUtCrnE0EPyQsPGlZDx37/4/cSd9UUadjKgAAAAASUVORK5CYII="/>
+fUtCrnE0EPyQsPGlZDx37/4/cSd9UUadjKgAAAAASUVORK5CYII=" />
     </p>
-  
-  
+
+
     <h2>Rig Control Details</h2>
     <h3>VFO split to PTT msec</h3>
     DigiRite allows this much time for the rig to respond to a command to go to split mode.
@@ -4763,20 +4769,24 @@ VFRUVFRU1q4oE1JRUVFRUVFZu2KYkEKxBvGKV/yelRefdXZOXLMjjzvjWf/t+YFA+eo+ePazn/2K
     </p><p>
         All of those panes, i.e. both the <i>CQ</i> panes and the <i>Messages to me</i> pane, are sorted.
         The primary sort index is non-dupes sort before all dupes, and secondary index is the order
-    the decoder presented the message, but the sorting has a twist in order to minimize the chance
-    that a target of a mouse click moves because of a new decode message. Non-dupes are presented starting at the
-    top left, and in the order they
-    are decoded. Dupes are presented in reverse order, starting at the right and bottom of the panel and working
-    back towards the beginning. The special case where there are more decodes than will fit has one possible
-    exception to the rule that a click target won't move:
-    <ul>
-        <li>A non-dupe decode that won't fit in the panel, takes the place of the most recently presented dupe message.
-        This is the <b>only</b> case where the target for a click can change after it is presented. If you were
-        trying to click on the dupe, and a non-dupe decoded right before you clicked, then the non-dupe takes
-        precedence.</li>
-        <li>A dupe decode that won't fit in the panel is presented at the end, but its at most partially visible
-        because it won't fit.</li>
-    </ul>
+        the decoder presented the message, but the sorting has a twist in order to minimize the chance
+        that a target of a mouse click moves because of a new decode message. Non-dupes are presented starting at the
+        top left, and in the order they
+        are decoded. Dupes are presented in reverse order, starting at the right and bottom of the panel and working
+        back towards the beginning. The special case where there are more decodes than will fit has one possible
+        exception to the rule that a click target won't move:
+        <ul>
+            <li>
+                A non-dupe decode that won't fit in the panel, takes the place of the most recently presented dupe message.
+                This is the <b>only</b> case where the target for a click can change after it is presented. If you were
+                trying to click on the dupe, and a non-dupe decoded right before you clicked, then the non-dupe takes
+                precedence.
+            </li>
+            <li>
+                A dupe decode that won't fit in the panel is presented at the end, but its at most partially visible
+                because it won't fit.
+            </li>
+        </ul>
     </p>
     <p align="center">
         <img alt="MainScreen.png"
@@ -6796,7 +6806,7 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         both a grid square and a dB report, in that order. This sequencing is typical
         of casual not-in-a-contest QSOs.
     </p>
-    
+
     <p>
         DigiRite&#39;s auto-sequencing, for the first four selections above,
         only supports a contest-style fixed exchange.
@@ -6851,7 +6861,7 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
     <p>
         If you change your TX frequency, the TX frequencies of existing QSO(s) in Progress is unaffected.
         However, an additional click on the <i>Apply QnP</i> button resets the TX frequency of
-        all QSO(s) in Progress to the current TX, except those previously selected to reply on the 
+        all QSO(s) in Progress to the current TX, except those previously selected to reply on the
         RX frequency of the other station. Hold down Ctrl when you click and <b>all</b> QSO(s) in
         Progress are moved.
     </p>
@@ -6865,12 +6875,12 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         This reassignment lasts the duration of that QSO in progress.
     </p>
 
-   <h2 id='WARC-GENERAL-DX'>WARC band logging</h2>
-    <p >
+    <h2 id='WARC-GENERAL-DX'>WARC band logging</h2>
+    <p>
         For WARC band FT8/FT4 operation outside of contests and with WriteLog, the
         "General DXCC tracking log keeper" can be made to log what FT8 sends and receives.
         That module, by default, does not log
-        a grid square, nor the digital submode. You may add the appopriate columns to log them. 
+        a grid square, nor the digital submode. You may add the appopriate columns to log them.
         There are two columns that are useful to add.
         Use WriteLog's Exchange Format Setup and:
     </p>
@@ -6887,7 +6897,8 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         a grid square if exchanged in its GRID column, and "FT8" in the DGTL
         column.
     </p>    <h2>Other details</h2>
-    <p id='DoFileSave'>Before you invoke
+    <p id='DoFileSave'>
+        Before you invoke
         DigiRite, you should use WriteLog's File/Save menu to start the
         log file. Otherwise, when DigiRite attempts to log its first QSO,
         WriteLog will put up a dialog box warning you about logging a QSO
@@ -6951,6 +6962,10 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         erased and started over every time you restart DigiRite.
     </p>
     <h3>Update History</h3>
+    1.1.34
+    <ul>
+        <li>For one-message contest exchange, fix failure to log when answering CQ.</li>
+    </ul>
     1.1.33
     <ul>
         <li>Internal changes to clearly mark WriteLog interfaces</li>
@@ -6959,11 +6974,15 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
     </ul>
     1.1.32
     <ul>
-        <li>Get CQ message content and contest message content in own dialog settings rather than fish around
-            in WriteLog's messages</li>
+        <li>
+            Get CQ message content and contest message content in own dialog settings rather than fish around
+            in WriteLog's messages
+        </li>
         <li>Refactor Settings dialog into tabs.</li>
-        <li>Fix sequencing bug that poorly assigns priority of responses to receiving messages from some but not all of the
-            partners in multiple QSO(s) in Progress.</li>
+        <li>
+            Fix sequencing bug that poorly assigns priority of responses to receiving messages from some but not all of the
+            partners in multiple QSO(s) in Progress.
+        </li>
     </ul>
     1.1.30
     <ul>
@@ -6972,8 +6991,10 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         <li>Add Apply QnP button (move QSOs in Progress TX frequency to current.)</li>
         <li>Add option to reverse left/right mouse click on CQ behavior.</li>
         <li>Fix failure to send checked Alternative message on Active QSO in Progress</li>
-        <li>Simplify use with <i>Automatically Transmit next</i> set off. Timing of filling alternative message pane,
-            and other small timing changes.        </li>
+        <li>
+            Simplify use with <i>Automatically Transmit next</i> set off. Timing of filling alternative message pane,
+            and other small timing changes.
+        </li>
         <li>Populate the associated WriteLog Entry Window with the callsign from the highest priority active QSO in progress.</li>
         <li>Fixed bug that set decoder audio origin 500msec too early for FT4 odd cycle decodes.</li>
         <li>Fix double-logging of certain message sequences for <i>Grid Square &amp; dB Report</i> setting.</li>
