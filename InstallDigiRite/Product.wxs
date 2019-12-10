@@ -18,11 +18,21 @@
 !!
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="DigiRite open source" Language="1033" Version="1.1.34.0" 
-             Manufacturer="builders name here" UpgradeCode="ac196bff-3463-4788-8638-d730254967f4">
+    <?define VersionNumber = 1.1.34.0 ?>
+    <Product Manufacturer="builders name here" 
+             Name="DigiRite open source" 
+             Version="$(var.VersionNumber)" 
+             UpgradeCode="ac196bff-3463-4788-8638-d730254967f4"
+             Language="1033" Id="*" >
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+        <Upgrade Id='ac196bff-3463-4788-8638-d730254967f4'>
+            <!-- When installed against our own upgrade code, uninstall previous first-->
+            <UpgradeVersion Property='PREVIOUSFOUND'
+              Minimum='0.0.0.0' IncludeMinimum='yes' Maximum='$(var.VersionNumber)' IncludeMaximum='yes' 
+              OnlyDetect='no' />
+        </Upgrade>
         <PropertyRef Id="WIX_IS_NETFRAMEWORK_462_OR_LATER_INSTALLED"/>
         <Condition Message="This application requires Windows 7 or later">VersionNT >= 601</Condition>
         <Condition Message="This application requires .NET Framework 4.6.2. Please install the .NET Framework then run this installer again.">
