@@ -69,8 +69,12 @@
             }
             else
             {   // if they do, then ack this one
-                qsoSequencerCallbacks.SendAck(false,  () => { HaveSentAck = true;});
-                OnReceivedAck(); // state is such this call only logs--does not send
+                bool prevLogged = haveLogged; // redundant exchanges received only log once
+                qsoSequencerCallbacks.SendAck(false,  () => {
+                        HaveSentAck = true; 
+                        if (!prevLogged)
+                            LogQso();}
+                );
                 State = System.Math.Max(3, State);
             }
         }
