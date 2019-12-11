@@ -78,7 +78,7 @@ namespace DigiRite
         // CALL, you want currentBand to be different when you change bands, else
         // the new messages from CALL will be assigned to the QSO on the old band.
         private short currentBand = 0;
-        
+        public DigiMode CurrentMode { get { return digiMode; } }
         public void SetWlEntry(object e)
         {   // WriteLog is the only logger that calls here.
             var wl = new DigiRiteLogger.WriteLog(instanceNumber);
@@ -2098,7 +2098,7 @@ namespace DigiRite
         {   // get back on the form's thread
             BeginInvoke(new Action<bool>(OnAudioComplete), isBeginning);
         }
-#endregion
+        #endregion
 
         private void OnAudioComplete(bool isBegin)
         {

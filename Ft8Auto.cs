@@ -66,5 +66,11 @@ namespace DigiRite
         {
             Program.applicationContext.SetWlEntry(wl, idx);
         }
+
+        [ComVisible(true)]
+        public string GetCurrentMode()
+        {
+            return Program.applicationContext.GetCurrentMode();
+        }
     }
 }
