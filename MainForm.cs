@@ -339,10 +339,11 @@ namespace DigiRite
                         {   // nobody above claimed this message
                             if (directlyToMe)
                                 toMe.Add(new RecentMessage(rm, dupe, mult > 0), (CheckState x) => { return true; });
-                            else if ((fromCall != null) &&
-                                !String.Equals(fromCall, myCall) &&  // decoder is hearing our own
-                                !String.Equals(fromCall, myBaseCall) &&  // transmissions
-                                String.Equals("ALL", callQsled))
+                            else if (!String.Equals(fromCall, myCall) &&  // decoder is hearing our own
+                                        !String.Equals(fromCall, myBaseCall) &&  // transmissions
+                                    (String.Equals(toCall, "QRZ") || 
+                                        String.Equals(toCall, "DE") ||
+                                        String.Equals(callQsled, "ALL")))
                             {
                                 CallPresentation cqList = (cycle & 1) == 0 ? cqListEven : cqListOdd;
                                 cqList.Add(recentMessage, (CheckState cqOnly) => {
