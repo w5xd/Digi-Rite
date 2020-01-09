@@ -186,6 +186,8 @@ namespace DigiRite
 
             rxForm.logFile = logFile;
 
+            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(instanceRegKeyName);
+
             uint channel = (uint)Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()];
             if (waveDevicePlayer != null)
                 waveDevicePlayer.Dispose();
@@ -199,6 +201,8 @@ namespace DigiRite
             }
             else
             {
+                if (fromRegistryValue(rk, "RxInputGain", out float x) && x >= 0 && x <= 1)
+                    waveDevicePlayer.Gain = x;
                 rxForm.demodParams = demodulator;
                 waveDevicePlayer.Resume();
                 rxForm.Player = waveDevicePlayer;
@@ -214,16 +218,15 @@ namespace DigiRite
                 return false;
             }
             deviceTx.SoundSyncCallback = new XD.SoundBeginEnd(AudioBeginEnd);
+            if (fromRegistryValue(rk, "TxOutputGain", out float txg) && txg >= 0 && txg <= 1)
+                deviceTx.Gain = txg;
             float gain = deviceTx.Gain;
             bool gainOK = gain >= 0;
             labelTxValue.Text = "";
             if (gainOK)
             {   // not sure why the windows volume slider don't
                 // really work with linear commands, but here we go:
-                double g = trackBarTxGain.Maximum + Math.Log(gain) * AUDIO_SLIDER_SCALE / Math.Log(2);
-                int v = (int)g;
-                if (v < trackBarTxGain.Minimum)
-                    v = trackBarTxGain.Minimum;
+                int v = trackValueFromGain(gain);
                 trackBarTxGain.Value = v;
                 labelTxValue.Text = trackBarTxGain.Value.ToString();
             }
@@ -233,6 +236,20 @@ namespace DigiRite
             timerCleanup.Enabled = true;
             return true;
         }
+        #region TX output gain
+        int trackValueFromGain(float gain)
+        {
+            double g = trackBarTxGain.Maximum + Math.Log(gain) * AUDIO_SLIDER_SCALE / Math.Log(2);
+            int v = (int)g;
+            if (v < trackBarTxGain.Minimum)
+                v = trackBarTxGain.Minimum;
+            return v;
+        }
+        float gainFromTrackValue(int v)
+        {
+            return (float)Math.Pow(2.0, (v - trackBarTxGain.Maximum) / AUDIO_SLIDER_SCALE);
+        }
+        #endregion
 
         #region received message interactions
 
@@ -1245,6 +1262,15 @@ namespace DigiRite
             return Int32.TryParse(rv.ToString(), out v);
         }
 
+        private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out float v)
+        {
+            object rv = rk.GetValue(valueName);
+            v = 0;
+            if (rv == null)
+                return false;
+            return float.TryParse(rv.ToString(), out v);
+        }
+
         private void MainForm_Load(object sender, EventArgs e)
         {
 
@@ -1684,6 +1710,10 @@ namespace DigiRite
                     rk.SetValue("DigiMode", (digiMode == DigiMode.FT8 ? 0 : 1).ToString());
                     rk.SetValue("VfoSplitToPtt", UserVfoSplitToPtt.ToString());
                     rk.SetValue("PttToSound", UserPttToSound.ToString());
+                    if (null != deviceTx)
+                        rk.SetValue("TxOutputGain", deviceTx.Gain.ToString());
+                    if (null != waveDevicePlayer)
+                        rk.SetValue("RxInputGain", waveDevicePlayer.Gain.ToString());
                 }
             }
             if (demodulator != null)
@@ -2360,7 +2390,7 @@ namespace DigiRite
 
         private void trackBarTxGain_Scroll(object sender, EventArgs e)
         {
-            deviceTx.Gain = (float)Math.Pow(2.0, (trackBarTxGain.Value - trackBarTxGain.Maximum) / AUDIO_SLIDER_SCALE);
+            deviceTx.Gain = gainFromTrackValue(trackBarTxGain.Value);
             labelTxValue.Text = trackBarTxGain.Value.ToString();
         }
 
