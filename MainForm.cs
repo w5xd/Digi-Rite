@@ -78,7 +78,7 @@ namespace DigiRite
         // CALL, you want currentBand to be different when you change bands, else
         // the new messages from CALL will be assigned to the QSO on the old band.
         private short currentBand = 0;
-        
+        public DigiMode CurrentMode { get { return digiMode; } }
         public void SetWlEntry(object e)
         {   // WriteLog is the only logger that calls here.
             var wl = new DigiRiteLogger.WriteLog(instanceNumber);
@@ -339,10 +339,11 @@ namespace DigiRite
                         {   // nobody above claimed this message
                             if (directlyToMe)
                                 toMe.Add(new RecentMessage(rm, dupe, mult > 0), (CheckState x) => { return true; });
-                            else if ((fromCall != null) &&
-                                !String.Equals(fromCall, myCall) &&  // decoder is hearing our own
-                                !String.Equals(fromCall, myBaseCall) &&  // transmissions
-                                String.Equals("ALL", callQsled))
+                            else if (!String.Equals(fromCall, myCall) &&  // decoder is hearing our own
+                                        !String.Equals(fromCall, myBaseCall) &&  // transmissions
+                                    (String.Equals(toCall, "QRZ") || 
+                                        String.Equals(toCall, "DE") ||
+                                        String.Equals(callQsled, "ALL")))
                             {
                                 CallPresentation cqList = (cycle & 1) == 0 ? cqListEven : cqListOdd;
                                 cqList.Add(recentMessage, (CheckState cqOnly) => {
@@ -2098,7 +2099,7 @@ namespace DigiRite
         {   // get back on the form's thread
             BeginInvoke(new Action<bool>(OnAudioComplete), isBeginning);
         }
-#endregion
+        #endregion
 
         private void OnAudioComplete(bool isBegin)
         {

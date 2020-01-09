@@ -15,7 +15,7 @@ namespace DigiRite
         [STAThread]
         static void Main(string[] args)
         {
-            const int UpgradedVersion = 50;  // increment every release
+            const int UpgradedVersion = 51;  // increment every release
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 #if DEBUG
@@ -115,6 +115,51 @@ namespace DigiRite
                     toDispatch.BeginInvoke(new Action(() => {
                         mainForm.SendRttyMessage(toSend);
                     }));
+            }
+
+            public string GetCurrentMode()
+            {
+                /* THREAD SAFETY AND SYNCHRONIZATION ISSUE HERE.
+                ** A BeginInvoke followed by AsyncWaitHandle.WaitOne
+                ** WOULD BE a way to synchronize with the main thread.
+                ** But it deadlocks with WriteLog. How?
+                ** Our main thread calls into WL to do something (anything)
+                ** to the rig and WL calls back here to check whether the
+                ** mode should be overridden. 
+                ** but WaitOne() blocks forever because the .NET
+                ** dispatcher for thread Main doesn't dispatch
+                ** our action cause its in an outbound COM call.
+                **
+                ** .NET probably has some mechanism for this code here
+                ** to somehow inform the STA dispatcher for the main
+                ** thread that we really are on the same COM causality
+                ** as the outgoing COM call. But I couldn't find any
+                ** .NET+COM magic to do that. 
+                */
+#if false
+                // Thread safe, but deadlocks
+                string ret = "";
+                if (null != mainForm)
+                {
+                    var action = new Action(() =>
+                    {
+                        ret = mainForm.CurrentMode.ToString();
+                    });
+                    var result = toDispatch.BeginInvoke(action);
+                    result.AsyncWaitHandle.WaitOne();
+                    result.AsyncWaitHandle.Close();
+                }
+                return ret;
+#else
+                // Beware thread safety...but doesn't deadlock
+                // and the enum itself can safely be accessed from outside
+                // its own thread.
+                var form = mainForm;
+                if (null != form)
+                    return form.CurrentMode.ToString();
+                else
+                    return "";
+#endif
             }
 
             void OnFormClosed(object sender, EventArgs e)
