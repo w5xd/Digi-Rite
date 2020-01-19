@@ -333,7 +333,7 @@ namespace DigiRite
                 cl.AmTransmit = isTransmit;
             }
         }
-
+        private int listBoxReceivedSelectedItemIndex = -1;
         private void listBoxReceived_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -341,6 +341,7 @@ namespace DigiRite
                 var item = listBoxReceived.IndexFromPoint(e.Location);
                 contextMenuStripOnReceived.Items[1].Enabled = item != ListBox.NoMatches;
                 listBoxReceived.SelectedIndex = item;
+                listBoxReceivedSelectedItemIndex = item;
                 contextMenuStripOnReceived.Show(this, new System.Drawing.Point(e.X, e.Y));//place the menu at the pointer position
             }
         }
@@ -422,10 +423,9 @@ namespace DigiRite
 
         private void copyItemToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var listBoxMouseUpItem = listBoxReceived.SelectedIndex;
-            if (listBoxMouseUpItem != ListBox.NoMatches)
+            if (listBoxReceivedSelectedItemIndex != ListBox.NoMatches)
             {
-                var val = listBoxReceived.Items[listBoxMouseUpItem];
+                var val = listBoxReceived.Items[listBoxReceivedSelectedItemIndex];
                 System.Windows.Forms.Clipboard.SetText(val.ToString());
             }
         }
