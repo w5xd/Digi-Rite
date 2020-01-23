@@ -25,6 +25,7 @@
         private bool HaveTheirs  = false;
         private bool HaveAck  = false;
         private bool HaveSentAck = false;
+        private bool AckMoreAcks = false;
         private bool HaveLoggedQso { get { return HaveTheirs & HaveAck; } }
         private uint State  = 0;
         private const uint FINISHED_STATE = 4;
@@ -95,14 +96,21 @@
                 if (!haveLogged)
                 {   // we only ack the ack once
                     if (!HaveSentAck)
-                        qsoSequencerCallbacks.SendAck(true, 
-                            () => { 
-                                HaveSentAck = true; 
+                        qsoSequencerCallbacks.SendAck(true,
+                            () =>
+                            {
+                                HaveSentAck = true;
                                 LogQso();
-                                });
+                            });
                     else
-                        LogQso();                        
+                    {
+                        qsoSequencerCallbacks.SendAck(true, null);
+                        AckMoreAcks = true;
+                        LogQso();
+                    }
                 }
+                else if (AckMoreAcks)
+                    qsoSequencerCallbacks.SendAck(true, null);
                 else
                     retval = false;
             }

@@ -204,9 +204,14 @@ namespace DigiRite
                     if (haveReport)
                         haveLoggedReport = true;
                     lastSent = null;
-                    if (!amLeader)
-                        cb.SendAck(null);
+                    cb.SendAck(null);
                     cb.LogQso();
+                    return;
+                }
+                if (amLeader && directlyToMe && String.Equals(qsl.CallQSLed, "ALL"))
+                {
+                    lastSent = null;
+                    cb.SendAck(null);
                     return;
                 }
                 OnReceivedNothing(); // didn't get what I wanted

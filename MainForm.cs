@@ -343,7 +343,7 @@ namespace DigiRite
                         if (!String.IsNullOrEmpty(toCall))
                             qsoQueue.MessageForMycall(recentMessage, directlyToMe,
                                     callQsled, currentBand,
-                                    checkBoxRespondAny.Checked && !dupe,
+                                    checkBoxRespondAny.Checked || (checkBoxRespondNonDupe.Checked && !dupe),
                                     new IsConversationMessage((origin) =>
                                         {   // qsoQueue liked this message. log it
                                             isConversation = true;
@@ -2243,14 +2243,29 @@ namespace DigiRite
             }
         }
      
+        private void checkBoxRespondNonDupe_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxRespondNonDupe.Checked)
+            {
+                if (checkBoxRespondAny.Checked)
+                    checkBoxRespondAny.Checked = false;
+                watchDogTime = DateTime.UtcNow;
+                checkBoxAutoXmit.Checked = true;
+            }
+            splitContainerAnswerUpCqsDown.Panel1Collapsed = checkBoxRespondNonDupe.Checked;
+        }
+
         private void checkBoxRespondAny_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxRespondAny.Checked)
             {
+                if (checkBoxRespondNonDupe.Checked)
+                    checkBoxRespondNonDupe.Checked = false;
                 watchDogTime = DateTime.UtcNow;
                 checkBoxAutoXmit.Checked = true;
             }
             splitContainerAnswerUpCqsDown.Panel1Collapsed = checkBoxRespondAny.Checked;
+
         }
 
         private void OnQsoActiveChanged(QsoInProgress q)
@@ -2494,6 +2509,8 @@ namespace DigiRite
             }
         }
 
-#endregion
+        #endregion
+
+        
     }
 }
