@@ -345,7 +345,7 @@ namespace DigiRite
                             qsoQueue.MessageForMycall(recentMessage, directlyToMe,
                                     callQsled, currentBand,
                                     checkBoxRespondAny.Checked || (checkBoxRespondNonDupe.Checked && !dupe),
-                                    new IsConversationMessage((origin) =>
+                                    new IsConversationMessage((Conversation.Origin origin) =>
                                         {   // qsoQueue liked this message. log it
                                             isConversation = true;
                                             string toLog = s.Substring(0, v + 3) + msg;

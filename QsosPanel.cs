@@ -101,6 +101,7 @@ namespace DigiRite
                 {   // switch modes. qso is out of the gui and into loggedInactive
                     Remove(qp);
                     loggedInactive[qp.GetKey()] = qp;
+                    qp.InLoggedInactiveState = true;
                     qp.OnChangedCb = new QsoInProgress.OnChanged(() => OnLoggedInactiveChanged(qp));
                 }
                 else
@@ -215,6 +216,7 @@ namespace DigiRite
                 qp.OnChangedCb = null;
                 loggedInactive.Remove(qp.GetKey());
                 Add(qp);
+                qp.InLoggedInactiveState = false;
             }
         }
 

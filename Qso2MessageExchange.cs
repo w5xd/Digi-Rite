@@ -45,7 +45,7 @@ namespace DigiRite
                 InitiateQso(recentMessage, band, false);
             } else if (null != inProgress)
             {
-                if ((null != inProgress.Sequencer) && !inProgress.Sequencer.IsFinished)
+                if ((null != inProgress.Sequencer) && !inProgress.Sequencer.IsFinished && !inProgress.InLoggedInactiveState)
                     onUsed(Conversation.Origin.TO_OTHER); // make it show up in the conversation history
             }
         }
