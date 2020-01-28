@@ -226,7 +226,11 @@ namespace DigiRite
                         }
                     }
                     else
+                    {
                         holdingForAnotherQso = false;
+                        if (!AmTimedOut && callsQsled == "ALL")
+                            return true;
+                    }
                     return false;
                 }
                 holdingForAnotherQso = false;

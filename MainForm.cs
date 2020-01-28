@@ -56,6 +56,7 @@ namespace DigiRite
         int simulatorTimeOrigin = -1;
         DateTime simulatorStart;
         int simulatorNext = 0;
+        bool autoAnswerAllCQsFromSimulator = false;
 #endif
 
         public MainForm(int instanceNumber)
@@ -369,6 +370,10 @@ namespace DigiRite
                                     // else if its not a CQ , return false
                                     else return null != toCall && toCall.Length >= 2 && toCall.Substring(0, 2) == "CQ"; }
                                     );
+#if DEBUG
+                                if (autoAnswerAllCQsFromSimulator)
+                                    cqList.InitiateQsoCb(recentMessage);
+#endif
                             }
                         }
                     }
@@ -851,6 +856,7 @@ namespace DigiRite
             {   // start late if we can
                 transmitAtZero(true);
             }
+            checkBoxAutoXmit.Checked = true;
         }
 
         int MAX_UNANSWERED_MINUTES = 5;
@@ -1651,14 +1657,30 @@ namespace DigiRite
             switch (contest)
             {
                 case ExchangeTypes.GRID_SQUARE_PLUS_REPORT:
-                    // the two-message exchanges per QSO sequencing is different
                     qsoQueue = new Qso2MessageExchange(qsosPanel, this);
                     break;
                 case ExchangeTypes.GRID_SQUARE:
                     qsoQueue = new QsoQueueGridSquare(qsosPanel, this, !needBrackets(myCall));
                     break;
-                default:
-                    qsoQueue = new QsoQueue(qsosPanel, this);
+                case ExchangeTypes.ARRL_FIELD_DAY:
+                    qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        var sm = m as XDpack77.Pack77Message.ArrlFieldDayMessage;
+                        return null != sm;
+                    });
+                    break;
+                case ExchangeTypes.ARRL_RTTY:
+                    qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        var sm = m as XDpack77.Pack77Message.RttyRoundUpMessage;
+                        return null != sm;
+                    });
+                    break;
+                case ExchangeTypes.DB_REPORT:
+                    qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        var sm = m as XDpack77.Pack77Message.StandardMessage;
+                        if ((null != sm) && sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB)
+                            return true;
+                        return false;
+                    });
                     break;
             }
             qsoQueue.MyCall = myCall;
@@ -2450,7 +2472,7 @@ namespace DigiRite
             }
         }
 
-#region TX RX frequency
+        #region TX RX frequency
 
         public int TxFrequency {
             get {

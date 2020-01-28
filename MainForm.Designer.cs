@@ -42,8 +42,9 @@
             this.timerSpectrum = new System.Windows.Forms.Timer(this.components);
             this.panel5 = new System.Windows.Forms.Panel();
             this.checkBoxRespondAny = new System.Windows.Forms.CheckBox();
-            this.label2 = new System.Windows.Forms.Label();
             this.checkBoxRespondNonDupe = new System.Windows.Forms.CheckBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.checkBoxInProgress = new System.Windows.Forms.CheckBox();
             this.labelInProgress = new System.Windows.Forms.Label();
@@ -261,8 +262,9 @@
             // panel5
             // 
             this.panel5.Controls.Add(this.checkBoxRespondAny);
-            this.panel5.Controls.Add(this.label2);
             this.panel5.Controls.Add(this.checkBoxRespondNonDupe);
+            this.panel5.Controls.Add(this.label14);
+            this.panel5.Controls.Add(this.label2);
             this.panel5.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel5.Location = new System.Drawing.Point(3, 0);
             this.panel5.Name = "panel5";
@@ -271,32 +273,45 @@
             // 
             // checkBoxRespondAny
             // 
-            this.checkBoxRespondAny.Location = new System.Drawing.Point(182, 4);
+            this.checkBoxRespondAny.Dock = System.Windows.Forms.DockStyle.Left;
+            this.checkBoxRespondAny.Location = new System.Drawing.Point(192, 0);
             this.checkBoxRespondAny.Name = "checkBoxRespondAny";
-            this.checkBoxRespondAny.Size = new System.Drawing.Size(85, 17);
-            this.checkBoxRespondAny.TabIndex = 2;
-            this.checkBoxRespondAny.Text = "Work dupes";
+            this.checkBoxRespondAny.Size = new System.Drawing.Size(54, 24);
+            this.checkBoxRespondAny.TabIndex = 3;
+            this.checkBoxRespondAny.Text = "any";
             this.checkBoxRespondAny.UseVisualStyleBackColor = true;
             this.checkBoxRespondAny.CheckedChanged += new System.EventHandler(this.checkBoxRespondAny_CheckedChanged);
             // 
-            // label2
-            // 
-            this.label2.Location = new System.Drawing.Point(8, 1);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(39, 20);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "To &me";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // checkBoxRespondNonDupe
             // 
-            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(51, 4);
+            this.checkBoxRespondNonDupe.Dock = System.Windows.Forms.DockStyle.Left;
+            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(115, 0);
             this.checkBoxRespondNonDupe.Name = "checkBoxRespondNonDupe";
-            this.checkBoxRespondNonDupe.Size = new System.Drawing.Size(125, 17);
-            this.checkBoxRespondNonDupe.TabIndex = 1;
-            this.checkBoxRespondNonDupe.Text = "Auto QSO non-dupe";
+            this.checkBoxRespondNonDupe.Size = new System.Drawing.Size(77, 24);
+            this.checkBoxRespondNonDupe.TabIndex = 2;
+            this.checkBoxRespondNonDupe.Text = "non-dupe";
             this.checkBoxRespondNonDupe.UseVisualStyleBackColor = true;
             this.checkBoxRespondNonDupe.CheckedChanged += new System.EventHandler(this.checkBoxRespondNonDupe_CheckedChanged);
+            // 
+            // label14
+            // 
+            this.label14.Dock = System.Windows.Forms.DockStyle.Left;
+            this.label14.Location = new System.Drawing.Point(52, 0);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(63, 24);
+            this.label14.TabIndex = 1;
+            this.label14.Text = "Auto QSO:";
+            this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label2
+            // 
+            this.label2.Dock = System.Windows.Forms.DockStyle.Left;
+            this.label2.Location = new System.Drawing.Point(0, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(52, 24);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "To &me.";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label4
             // 
@@ -1148,6 +1163,7 @@
         private System.Windows.Forms.ToolStripMenuItem fontToolStripMenuItem;
         private System.Windows.Forms.Button buttonTxToQip;
         private System.Windows.Forms.CheckBox checkBoxRespondAny;
+        private System.Windows.Forms.Label label14;
     }
 }
 

@@ -22,10 +22,11 @@
             qsoSequencerCallbacks = callbacks;
             State = 0;
         }
+        private const uint MAXIMUM_ACK_OF_ACK = 3;
         private bool HaveTheirs  = false;
         private bool HaveAck  = false;
         private bool HaveSentAck = false;
-        private bool AckMoreAcks = false;
+        private uint AckMoreAcks = 0;
         private bool HaveLoggedQso { get { return HaveTheirs & HaveAck; } }
         private uint State  = 0;
         private const uint FINISHED_STATE = 4;
@@ -105,12 +106,15 @@
                     else
                     {
                         qsoSequencerCallbacks.SendAck(true, null);
-                        AckMoreAcks = true;
+                        AckMoreAcks = MAXIMUM_ACK_OF_ACK;
                         LogQso();
                     }
                 }
-                else if (AckMoreAcks)
+                else if (AckMoreAcks > 0)
+                {
+                    AckMoreAcks -= 1;
                     qsoSequencerCallbacks.SendAck(true, null);
+                }
                 else
                     retval = false;
             }

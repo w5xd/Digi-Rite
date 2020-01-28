@@ -180,6 +180,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="decoded-auto-answer.txt" />
+    <Content Include="decoded-tests.txt" />
     <Content Include="ReadMe.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

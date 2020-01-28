@@ -111,6 +111,7 @@ namespace DigiRite
             void LogQso();
             void SendAck(QsoSequencer.MessageSent ms);
         }
+        private const uint MAXIMUM_ACK_OF_ACK = 3;
         private bool haveGrid  = false;
         private bool haveReport  = false;
         private bool haveLoggedGrid = false;
@@ -118,6 +119,10 @@ namespace DigiRite
         private bool amLeader = false;
         private bool amLeaderSet = false;
         private bool haveSentReport = false;
+        private bool haveSentGrid = false;
+        private bool haveAckOfGrid = false;
+        private bool haveAckOfReport = false;
+        private uint AckMoreAcks = 0;
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
         private ExchangeSent lastSent;
@@ -146,29 +151,34 @@ namespace DigiRite
             if (!amLeaderSet)
                 amLeader = directlyToMe;
             amLeaderSet = true;
-            if (null != exc)
+            XDpack77.Pack77Message.Roger roger = msg as XDpack77.Pack77Message.Roger;
+            bool ack = (null != roger) && (roger.Roger);
+            if (null != exc && (!haveGrid || directlyToMe))
             {
                 string gs = exc.GridSquare;
                 int rp = exc.SignaldB;
+                var qslm = msg as XDpack77.Pack77Message.StandardMessage;
                 if (!String.IsNullOrEmpty(gs))
                 {   // received a grid
                     haveGrid = true;
                     ExchangeSent es;
-                    if (amLeader)
-                        es = ()=> cb.SendExchange(ExchangeTypes.DB_REPORT, false, () => { haveSentReport = true; }); 
+                    if (ack)
+                        haveAckOfGrid = true;
+                    if (amLeader || ack)
+                        es = ()=> cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () => { haveSentReport = true; }); 
                     else
-                        es = ()=>cb.SendExchange(ExchangeTypes.GRID_SQUARE, false, null);
+                        es = ()=>cb.SendExchange(ExchangeTypes.GRID_SQUARE, directlyToMe && haveGrid, () => { haveSentGrid = true; });
                     lastSent = es;
                     es();
                     return;
                 }
                 else if (rp > XDpack77.Pack77Message.Message.NO_DB)
                 {   // received a dB report
-                    XDpack77.Pack77Message.Roger roger = msg as XDpack77.Pack77Message.Roger;
-                    bool ack = (null != roger) && (roger.Roger);
                     haveReport = true;
                     lastSent = null;
-                    if (amLeader && ack && haveSentReport)
+                    if (ack && haveSentReport)
+                        haveAckOfReport = true;
+                    if (haveAckOfReport || (amLeader && ack && haveSentReport))
                     {
                         cb.SendAck(null);
                         if (!haveLoggedReport)
@@ -193,7 +203,11 @@ namespace DigiRite
             {
                 if (!haveGrid && !haveReport)
                 {
-                    ExchangeSent es = () => cb.SendExchange(amLeader ? ExchangeTypes.DB_REPORT : ExchangeTypes.GRID_SQUARE, false, null);
+                    ExchangeSent es = null;
+                    if (haveSentGrid)
+                        es = () => cb.SendExchange( ExchangeTypes.DB_REPORT , false, () => { haveSentReport = true; });
+                    else
+                        es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, false, () => { haveSentGrid = true; });
                     lastSent = es;
                     es();
                     return;
@@ -206,11 +220,13 @@ namespace DigiRite
                     lastSent = null;
                     cb.SendAck(null);
                     cb.LogQso();
+                    AckMoreAcks = MAXIMUM_ACK_OF_ACK;
                     return;
                 }
-                if (amLeader && directlyToMe && String.Equals(qsl.CallQSLed, "ALL"))
+                if (AckMoreAcks > 0 &&  directlyToMe && String.Equals(qsl.CallQSLed, "ALL"))
                 {
                     lastSent = null;
+                    AckMoreAcks -= 1;
                     cb.SendAck(null);
                     return;
                 }
