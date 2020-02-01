@@ -205,8 +205,8 @@ namespace DigiRite
                     }
                     return;
                 }
-                else // message has an exchange, but for some contest we don't know about
-                {
+                else if (null == msg as XDpack77.Pack77Message.StandardMessage)
+                {   // message has an exchange, but for some contest we don't know about
                     if (!haveReceivedWrongExchange)
                     {
                         haveReceivedWrongExchange = true;
