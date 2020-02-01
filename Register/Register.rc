@@ -1,8 +1,8 @@
 #include "winres.h"
 #include "verrsrc.h"
 1 VERSIONINFO
-FILEVERSION 	1, 1, 0, 35
-PRODUCTVERSION 	1, 1, 0, 35
+FILEVERSION 	1, 1, 36, 1
+PRODUCTVERSION 	1, 1, 36, 1
 FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
 FILEFLAGS 0x1L
@@ -18,9 +18,9 @@ FILESUBTYPE 0x0L
     BLOCK "040904B0"
         BEGIN
         VALUE "FileDescription", "DigiRite Registration\0"
-        VALUE "FileVersion", "1, 1, 0, 35"
-        VALUE "ProductVersion", "1, 1, 0, 35"
-        VALUE "LegalCopyright", "Copyright (c) 2019 by WriteLog Contesting Software, LLC"
+        VALUE "FileVersion", "1, 1, 36, 1"
+        VALUE "ProductVersion", "1, 1, 36, 1"
+        VALUE "LegalCopyright", "Copyright (c) 2020 by WriteLog Contesting Software, LLC"
         VALUE "CompanyName", "WriteLog Contesting Software, LLC"
         VALUE "InternalName", "Register.exe"
         VALUE "OriginalFilename", "Register.exe"

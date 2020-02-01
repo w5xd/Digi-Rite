@@ -27,6 +27,9 @@ namespace DigiRite
      * We forward each message to the appropriate QsoInProgress based on matching
      * hisCall.
      */
+
+    public delegate bool AcceptAck(XDpack77.Pack77Message.Message m);
+
     class QsoQueue : QueueCommon
     {
         private IQsoQueueCallBacks callbacks;
@@ -58,9 +61,12 @@ namespace DigiRite
             private QsoInProgress qso;
         }
 
-        public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb) : base(listBox)
+        private AcceptAck acceptAckFcn;
+
+        public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb, AcceptAck acceptAck) : base(listBox)
         {   
-            callbacks = cb;  
+            callbacks = cb; 
+            acceptAckFcn = acceptAck;
         }     
 
         // call here every for every incoming message that might be relevant to us
@@ -81,10 +87,13 @@ namespace DigiRite
                 onUsed(directlyToMe ? Conversation.Origin.TO_ME : Conversation.Origin.TO_OTHER);
                 // What's in the message? an exchange and/or an acknowledgement?
                 bool hasExchange = ExchangeFromMessage(rm.Pack77Message) != null;
-                XDpack77.Pack77Message.Roger roger = rm.Pack77Message as XDpack77.Pack77Message.Roger;
                 bool ack = false;
-                if (roger != null)
-                    ack = roger.Roger; // if the message has a roger bit, use it
+                if (acceptAckFcn(rm.Pack77Message))
+                    {
+                    XDpack77.Pack77Message.Roger roger = rm.Pack77Message as XDpack77.Pack77Message.Roger;
+                    if (roger != null)
+                        ack = roger.Roger; // if the message has a roger bit, use it
+                }
                 if (!hasExchange && !ack) // but if no exchange, allow QSL to also set ack
                 {   // if the message can QSO prior, see if can apply to us
                         if ((String.Equals("ALL", callQsled) && inProgress.CanAcceptAckNotToMe) || 
@@ -104,7 +113,7 @@ namespace DigiRite
                 InitiateQso(recentMessage, band, false);
             } else if (null != inProgress) 
             {
-                if ((null != inProgress.Sequencer) && !inProgress.Sequencer.IsFinished)
+                if ((null != inProgress.Sequencer) && !inProgress.Sequencer.IsFinished && !inProgress.InLoggedInactiveState)
                     onUsed(Conversation.Origin.TO_OTHER); // make it show up in the conversation history
             }
         }
@@ -163,7 +172,13 @@ namespace DigiRite
     class QsoQueueGridSquare : QsoQueue
     {
         protected bool gridSquareAck;
-        public QsoQueueGridSquare(QsosPanel listBox, IQsoQueueCallBacks cb, bool gridAck) : base(listBox, cb)
+        public QsoQueueGridSquare(QsosPanel listBox, IQsoQueueCallBacks cb, bool gridAck) : base(listBox, cb,
+            (XDpack77.Pack77Message.Message m) => { 
+                var sm = m as XDpack77.Pack77Message.StandardMessage;
+                if ((null != sm) && !String.IsNullOrEmpty(sm.GridSquare))
+                    return true;
+                return false;
+                })
         {
             gridSquareAck = gridAck;
         }

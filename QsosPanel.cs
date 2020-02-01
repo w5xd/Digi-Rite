@@ -101,6 +101,7 @@ namespace DigiRite
                 {   // switch modes. qso is out of the gui and into loggedInactive
                     Remove(qp);
                     loggedInactive[qp.GetKey()] = qp;
+                    qp.InLoggedInactiveState = true;
                     qp.OnChangedCb = new QsoInProgress.OnChanged(() => OnLoggedInactiveChanged(qp));
                 }
                 else
@@ -119,6 +120,24 @@ namespace DigiRite
             {
                 RightMouseDown(o, qp, target);
             });
+            cb.onAltUpDown = (object o, bool isUp) =>
+            {
+                // which one is it:
+                int index = 0;
+                for (int i = 0; i < tlp.Controls.Count; i++)
+                {
+                    if (Object.ReferenceEquals(tlp.Controls[i++], o) ||
+                        Object.ReferenceEquals(tlp.Controls[i], o))
+                    {
+                        if (isUp)
+                            MoveQsoUp(index);
+                        else
+                            MoveQsoDown(index);
+                        return;
+                    }
+                    index += 1;
+                }
+            };
 
             tlp.Controls.Add(lb);
             tlp.Controls.Add(cb);
@@ -215,6 +234,7 @@ namespace DigiRite
                 qp.OnChangedCb = null;
                 loggedInactive.Remove(qp.GetKey());
                 Add(qp);
+                qp.InLoggedInactiveState = false;
             }
         }
 
@@ -305,14 +325,7 @@ namespace DigiRite
                     Text = "Move QSO &Up",
                     Tag = new Action(() =>
                     {
-                        int i = index * 2;
-                        Control o1 = tlp.Controls[i];
-                        Control o2 = tlp.Controls[1 + i];
-                        tlp.Controls.SetChildIndex(o1, i-2);
-                        tlp.Controls.SetChildIndex(o2, i-1);
-                        SizeChanged(null, null);
-                        if (null != orderChangedCb)
-                            orderChangedCb();
+                        MoveQsoUp(index);
                     })
                 };
                 tsi.Click += inProgressContext_Click;
@@ -326,14 +339,7 @@ namespace DigiRite
                     Text = "Move QSO &Down",
                     Tag = new Action(() =>
                     {
-                        int i = index * 2;
-                        Control o1 = tlp.Controls[i];
-                        Control o2 = tlp.Controls[1 + i];
-                        tlp.Controls.SetChildIndex(o2, 3 + i);
-                        tlp.Controls.SetChildIndex(o1, 2 + i);
-                        SizeChanged(null,null);
-                        if (null != orderChangedCb)
-                            orderChangedCb();
+                        MoveQsoDown(index);
                     })
                 };
                 tsi.Click += inProgressContext_Click;
@@ -388,6 +394,34 @@ namespace DigiRite
                 control.PointToScreen(control.Location) + control.Size; /* keyboard */
             inProgressRightMouse.Show(pos);
             inProgressRightMouse.Visible = true;
+        }
+
+        private void MoveQsoUp(int index)
+        {
+            if (index == 0)
+                return;
+            int i = index * 2;
+            Control o1 = tlp.Controls[i];
+            Control o2 = tlp.Controls[1 + i];
+            tlp.Controls.SetChildIndex(o1, i - 2);
+            tlp.Controls.SetChildIndex(o2, i - 1);
+            SizeChanged(null, null);
+            if (null != orderChangedCb)
+                orderChangedCb();
+        }
+
+        private void MoveQsoDown(int index)
+        {
+            int i = index * 2;
+            if (i >= tlp.Controls.Count - 2)
+                return;
+            Control o1 = tlp.Controls[i];
+            Control o2 = tlp.Controls[1 + i];
+            tlp.Controls.SetChildIndex(o2, 3 + i);
+            tlp.Controls.SetChildIndex(o1, 2 + i);
+            SizeChanged(null, null);
+            if (null != orderChangedCb)
+                orderChangedCb();
         }
 
         private void inProgressContext_Click(object sender, EventArgs e)
@@ -510,10 +544,13 @@ namespace DigiRite
 
         protected override void OnClick(EventArgs e)
         { } // disable
+
     }
 
     class QsoCb : CheckBox
     {
+        public delegate void OnAltUpDown(object who, bool isUp);
+        public OnAltUpDown onAltUpDown;
         public MouseEventHandler onRightMouse;
         protected override void OnMouseDown(MouseEventArgs mevent)
         {
@@ -531,12 +568,21 @@ namespace DigiRite
         
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Alt && e.KeyCode == Keys.P)
+            if (e.Alt) // special handle alt keys
             {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                onRightMouse(this, null);
-                return;
+                switch (e.KeyCode)
+                {
+                    case Keys.P:
+                            e.Handled = true;
+                            e.SuppressKeyPress = true;
+                            onRightMouse(this, null);
+                            return;
+                    case Keys.Up:
+                    case Keys.Down:
+                        if (null != onAltUpDown)
+                            onAltUpDown(this, e.KeyCode == Keys.Up);
+                        return;
+                }
             }
             base.OnKeyDown(e);
         }

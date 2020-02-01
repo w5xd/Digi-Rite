@@ -56,6 +56,7 @@ namespace DigiRite
         int simulatorTimeOrigin = -1;
         DateTime simulatorStart;
         int simulatorNext = 0;
+        bool autoAnswerAllCQsFromSimulator = false;
 #endif
 
         public MainForm(int instanceNumber)
@@ -186,6 +187,8 @@ namespace DigiRite
 
             rxForm.logFile = logFile;
 
+            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(instanceRegKeyName);
+
             uint channel = (uint)Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()];
             if (waveDevicePlayer != null)
                 waveDevicePlayer.Dispose();
@@ -199,6 +202,8 @@ namespace DigiRite
             }
             else
             {
+                if (fromRegistryValue(rk, "RxInputGain", out float x) && x >= 0 && x <= 1)
+                    waveDevicePlayer.Gain = x;
                 rxForm.demodParams = demodulator;
                 waveDevicePlayer.Resume();
                 rxForm.Player = waveDevicePlayer;
@@ -214,16 +219,15 @@ namespace DigiRite
                 return false;
             }
             deviceTx.SoundSyncCallback = new XD.SoundBeginEnd(AudioBeginEnd);
+            if (fromRegistryValue(rk, "TxOutputGain", out float txg) && txg >= 0 && txg <= 1)
+                deviceTx.Gain = txg;
             float gain = deviceTx.Gain;
             bool gainOK = gain >= 0;
             labelTxValue.Text = "";
             if (gainOK)
             {   // not sure why the windows volume slider don't
                 // really work with linear commands, but here we go:
-                double g = trackBarTxGain.Maximum + Math.Log(gain) * AUDIO_SLIDER_SCALE / Math.Log(2);
-                int v = (int)g;
-                if (v < trackBarTxGain.Minimum)
-                    v = trackBarTxGain.Minimum;
+                int v = trackValueFromGain(gain);
                 trackBarTxGain.Value = v;
                 labelTxValue.Text = trackBarTxGain.Value.ToString();
             }
@@ -233,6 +237,20 @@ namespace DigiRite
             timerCleanup.Enabled = true;
             return true;
         }
+        #region TX output gain
+        int trackValueFromGain(float gain)
+        {
+            double g = trackBarTxGain.Maximum + Math.Log(gain) * AUDIO_SLIDER_SCALE / Math.Log(2);
+            int v = (int)g;
+            if (v < trackBarTxGain.Minimum)
+                v = trackBarTxGain.Minimum;
+            return v;
+        }
+        float gainFromTrackValue(int v)
+        {
+            return (float)Math.Pow(2.0, (v - trackBarTxGain.Maximum) / AUDIO_SLIDER_SCALE);
+        }
+        #endregion
 
         #region received message interactions
 
@@ -326,8 +344,8 @@ namespace DigiRite
                         if (!String.IsNullOrEmpty(toCall))
                             qsoQueue.MessageForMycall(recentMessage, directlyToMe,
                                     callQsled, currentBand,
-                                    checkBoxRespondAny.Checked && !dupe,
-                                    new IsConversationMessage((origin) =>
+                                    checkBoxRespondAny.Checked || (checkBoxRespondNonDupe.Checked && !dupe),
+                                    new IsConversationMessage((Conversation.Origin origin) =>
                                         {   // qsoQueue liked this message. log it
                                             isConversation = true;
                                             string toLog = s.Substring(0, v + 3) + msg;
@@ -352,6 +370,10 @@ namespace DigiRite
                                     // else if its not a CQ , return false
                                     else return null != toCall && toCall.Length >= 2 && toCall.Substring(0, 2) == "CQ"; }
                                     );
+#if DEBUG
+                                if (autoAnswerAllCQsFromSimulator)
+                                    cqList.InitiateQsoCb(recentMessage);
+#endif
                             }
                         }
                     }
@@ -834,6 +856,7 @@ namespace DigiRite
             {   // start late if we can
                 transmitAtZero(true);
             }
+            checkBoxAutoXmit.Checked = true;
         }
 
         int MAX_UNANSWERED_MINUTES = 5;
@@ -1245,6 +1268,15 @@ namespace DigiRite
             return Int32.TryParse(rv.ToString(), out v);
         }
 
+        private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out float v)
+        {
+            object rv = rk.GetValue(valueName);
+            v = 0;
+            if (rv == null)
+                return false;
+            return float.TryParse(rv.ToString(), out v);
+        }
+
         private void MainForm_Load(object sender, EventArgs e)
         {
 
@@ -1625,14 +1657,30 @@ namespace DigiRite
             switch (contest)
             {
                 case ExchangeTypes.GRID_SQUARE_PLUS_REPORT:
-                    // the two-message exchanges per QSO sequencing is different
                     qsoQueue = new Qso2MessageExchange(qsosPanel, this);
                     break;
                 case ExchangeTypes.GRID_SQUARE:
                     qsoQueue = new QsoQueueGridSquare(qsosPanel, this, !needBrackets(myCall));
                     break;
-                default:
-                    qsoQueue = new QsoQueue(qsosPanel, this);
+                case ExchangeTypes.ARRL_FIELD_DAY:
+                    qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        var sm = m as XDpack77.Pack77Message.ArrlFieldDayMessage;
+                        return null != sm;
+                    });
+                    break;
+                case ExchangeTypes.ARRL_RTTY:
+                    qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        var sm = m as XDpack77.Pack77Message.RttyRoundUpMessage;
+                        return null != sm;
+                    });
+                    break;
+                case ExchangeTypes.DB_REPORT:
+                    qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        var sm = m as XDpack77.Pack77Message.StandardMessage;
+                        if ((null != sm) && sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB)
+                            return true;
+                        return false;
+                    });
                     break;
             }
             qsoQueue.MyCall = myCall;
@@ -1684,6 +1732,10 @@ namespace DigiRite
                     rk.SetValue("DigiMode", (digiMode == DigiMode.FT8 ? 0 : 1).ToString());
                     rk.SetValue("VfoSplitToPtt", UserVfoSplitToPtt.ToString());
                     rk.SetValue("PttToSound", UserPttToSound.ToString());
+                    if (null != deviceTx)
+                        rk.SetValue("TxOutputGain", deviceTx.Gain.ToString());
+                    if (null != waveDevicePlayer)
+                        rk.SetValue("RxInputGain", waveDevicePlayer.Gain.ToString());
                 }
             }
             if (demodulator != null)
@@ -2213,14 +2265,29 @@ namespace DigiRite
             }
         }
      
+        private void checkBoxRespondNonDupe_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxRespondNonDupe.Checked)
+            {
+                if (checkBoxRespondAny.Checked)
+                    checkBoxRespondAny.Checked = false;
+                watchDogTime = DateTime.UtcNow;
+                checkBoxAutoXmit.Checked = true;
+            }
+            splitContainerAnswerUpCqsDown.Panel1Collapsed = checkBoxRespondNonDupe.Checked;
+        }
+
         private void checkBoxRespondAny_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxRespondAny.Checked)
             {
+                if (checkBoxRespondNonDupe.Checked)
+                    checkBoxRespondNonDupe.Checked = false;
                 watchDogTime = DateTime.UtcNow;
                 checkBoxAutoXmit.Checked = true;
             }
             splitContainerAnswerUpCqsDown.Panel1Collapsed = checkBoxRespondAny.Checked;
+
         }
 
         private void OnQsoActiveChanged(QsoInProgress q)
@@ -2360,7 +2427,7 @@ namespace DigiRite
 
         private void trackBarTxGain_Scroll(object sender, EventArgs e)
         {
-            deviceTx.Gain = (float)Math.Pow(2.0, (trackBarTxGain.Value - trackBarTxGain.Maximum) / AUDIO_SLIDER_SCALE);
+            deviceTx.Gain = gainFromTrackValue(trackBarTxGain.Value);
             labelTxValue.Text = trackBarTxGain.Value.ToString();
         }
 
@@ -2405,7 +2472,7 @@ namespace DigiRite
             }
         }
 
-#region TX RX frequency
+        #region TX RX frequency
 
         public int TxFrequency {
             get {
@@ -2464,6 +2531,8 @@ namespace DigiRite
             }
         }
 
-#endregion
+        #endregion
+
+        
     }
 }

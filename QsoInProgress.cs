@@ -41,6 +41,7 @@ namespace DigiRite
         private int ackMessage;
         private IQsoSequencer qsoSequencer=null;
         private bool messagedThisCycle = true; // when created, we're not starved
+        private bool messagedLastCycle = false;
         private bool holdingForAnotherQso = false;
         private bool active=true;
         private short band = 0;
@@ -77,6 +78,8 @@ namespace DigiRite
                 }
             get { return ackMessage; }
         }
+
+        public bool InLoggedInactiveState = false;
 
         public override String ToString()
         {
@@ -174,6 +177,8 @@ namespace DigiRite
                     if (null != OnChangedCb) OnChangedCb();
                 }
             }
+            if (wasReceiveCycle)
+                messagedLastCycle = messagedThisCycle;
             messagedThisCycle = false;
             return ret;
         }
@@ -226,7 +231,11 @@ namespace DigiRite
                         }
                     }
                     else
+                    {
                         holdingForAnotherQso = false;
+                        if (messagedLastCycle && !IsLogged && callsQsled == "ALL")
+                            return true;
+                    }
                     return false;
                 }
                 holdingForAnotherQso = false;
