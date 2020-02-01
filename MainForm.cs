@@ -188,54 +188,59 @@ namespace DigiRite
             rxForm.logFile = logFile;
 
             Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(instanceRegKeyName);
+            if (null == rk)
+                rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
+            using (rk)
+            {
 
-            uint channel = (uint)Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()];
-            if (waveDevicePlayer != null)
-                waveDevicePlayer.Dispose();
-            waveDevicePlayer = new XD.WaveDevicePlayer();
-            if (!waveDevicePlayer.Open(RxInDevice, channel, demodulator.GetRealTimeRxSink()))
-            {
-                MessageBox.Show("Failed to open wave input");
-                waveDevicePlayer.Dispose();
-                waveDevicePlayer = null;
-                return false;
-            }
-            else
-            {
-                if (fromRegistryValue(rk, "RxInputGain", out float x) && x >= 0 && x <= 1)
-                    waveDevicePlayer.Gain = x;
-                rxForm.demodParams = demodulator;
-                waveDevicePlayer.Resume();
-                rxForm.Player = waveDevicePlayer;
-            }
+                uint channel = (uint)Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()];
+                if (waveDevicePlayer != null)
+                    waveDevicePlayer.Dispose();
+                waveDevicePlayer = new XD.WaveDevicePlayer();
+                if (!waveDevicePlayer.Open(RxInDevice, channel, demodulator.GetRealTimeRxSink()))
+                {
+                    MessageBox.Show("Failed to open wave input");
+                    waveDevicePlayer.Dispose();
+                    waveDevicePlayer = null;
+                    return false;
+                }
+                else
+                {
+                    if (fromRegistryValue(rk, "RxInputGain", out float x) && x >= 0 && x <= 1)
+                        waveDevicePlayer.Gain = x;
+                    rxForm.demodParams = demodulator;
+                    waveDevicePlayer.Resume();
+                    rxForm.Player = waveDevicePlayer;
+                }
 
-            deviceTx = new XD.WaveDeviceTx();
-            channel = (uint)Properties.Settings.Default["AudioOutputChannel_" + instanceNumber.ToString()];
-            if (!deviceTx.Open(TxOutDevice, channel))
-            {
-                MessageBox.Show("Failed to open wave output");
-                deviceTx.Dispose();
-                deviceTx = null;
-                return false;
+                deviceTx = new XD.WaveDeviceTx();
+                channel = (uint)Properties.Settings.Default["AudioOutputChannel_" + instanceNumber.ToString()];
+                if (!deviceTx.Open(TxOutDevice, channel))
+                {
+                    MessageBox.Show("Failed to open wave output");
+                    deviceTx.Dispose();
+                    deviceTx = null;
+                    return false;
+                }
+                deviceTx.SoundSyncCallback = new XD.SoundBeginEnd(AudioBeginEnd);
+                if (fromRegistryValue(rk, "TxOutputGain", out float txg) && txg >= 0 && txg <= 1)
+                    deviceTx.Gain = txg;
+                float gain = deviceTx.Gain;
+                bool gainOK = gain >= 0;
+                labelTxValue.Text = "";
+                if (gainOK)
+                {   // not sure why the windows volume slider don't
+                    // really work with linear commands, but here we go:
+                    int v = trackValueFromGain(gain);
+                    trackBarTxGain.Value = v;
+                    labelTxValue.Text = trackBarTxGain.Value.ToString();
+                }
+                trackBarTxGain.Enabled = gainOK;
+                timerFt8Clock.Enabled = true;
+                timerSpectrum.Enabled = true;
+                timerCleanup.Enabled = true;
+                return true;
             }
-            deviceTx.SoundSyncCallback = new XD.SoundBeginEnd(AudioBeginEnd);
-            if (fromRegistryValue(rk, "TxOutputGain", out float txg) && txg >= 0 && txg <= 1)
-                deviceTx.Gain = txg;
-            float gain = deviceTx.Gain;
-            bool gainOK = gain >= 0;
-            labelTxValue.Text = "";
-            if (gainOK)
-            {   // not sure why the windows volume slider don't
-                // really work with linear commands, but here we go:
-                int v = trackValueFromGain(gain);
-                trackBarTxGain.Value = v;
-                labelTxValue.Text = trackBarTxGain.Value.ToString();
-            }
-            trackBarTxGain.Enabled = gainOK;
-            timerFt8Clock.Enabled = true;
-            timerSpectrum.Enabled = true;
-            timerCleanup.Enabled = true;
-            return true;
         }
         #region TX output gain
         int trackValueFromGain(float gain)
@@ -359,9 +364,7 @@ namespace DigiRite
                                 toMe.Add(new RecentMessage(rm, dupe, mult > 0), (CheckState x) => { return true; });
                             else if (!String.Equals(fromCall, myCall) &&  // decoder is hearing our own
                                         !String.Equals(fromCall, myBaseCall) &&  // transmissions
-                                    (String.Equals(toCall, "QRZ") || 
-                                        String.Equals(toCall, "DE") ||
-                                        String.Equals(callQsled, "ALL")))
+                                    ((rm.Pack77Message as XDpack77.Pack77Message.IsCQ)?.SolicitsAnswers ?? false))
                             {
                                 CallPresentation cqList = (cycle & 1) == 0 ? cqListEven : cqListOdd;
                                 cqList.Add(recentMessage, (CheckState cqOnly) => {
@@ -1040,6 +1043,42 @@ namespace DigiRite
         public string GetAckMessage(QsoInProgress q, bool ofAnAck)
         {  return GetAckMessage(q, ofAnAck, q.AckMessage); }
 
+        public void SendOnLoggedAck(QsoInProgress q, QsoSequencer.MessageSent ms)
+        {
+            int which = comboBoxOnLoggedMessage.SelectedIndex;
+            if (which <= 0) // none
+                return;
+            var toSend = GetAckMessage(q, true, which - 1);
+            SendMessage(toSend, q, ms);
+        }
+
+        public void SendMessage(string s, QsoInProgress q, QsoSequencer.MessageSent ms)
+        {
+            for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
+            {   // if there is a message on this QSO already, remove it.
+                QueuedToSendListItem qli = checkedlbNextToSend.Items[i] as QueuedToSendListItem;
+                if (null != qli)
+                {
+                    if (Object.ReferenceEquals(qli.q, q))
+                    {
+                        if (!checkedlbNextToSend.GetItemChecked(i))
+                        {
+                            checkedlbNextToSend.Items.RemoveAt(i);
+                            break;
+                        }
+                        else
+                            return;
+                    }
+                }
+            }
+            if (q.Active)
+            {
+                int idx = checkedlbNextToSend.Items.Add(new SortedQueuedToSendListItem(s, q, qsosPanel, ms));
+                checkedlbNextToSend.SetItemChecked(idx, checkBoxAutoXmit.Checked && q.Active);
+                checkedlbNextToSend.Sort();
+            }
+        }
+
         private void fillAlternativeMessages(QsoInProgress q)
         {
             listBoxAlternatives.Items.Clear();
@@ -1094,33 +1133,6 @@ namespace DigiRite
             }
 
             altMessageShortcuts.Populate();
-        }
-
-        public void SendMessage(string s, QsoInProgress q, QsoSequencer.MessageSent ms)
-        {
-            for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
-            {   // if there is a message on this QSO already, remove it.
-                QueuedToSendListItem qli = checkedlbNextToSend.Items[i] as QueuedToSendListItem;
-                if (null != qli)
-                {
-                    if (Object.ReferenceEquals(qli.q, q))
-                    {
-                        if (!checkedlbNextToSend.GetItemChecked(i))
-                        {
-                            checkedlbNextToSend.Items.RemoveAt(i);
-                            break;
-                        }
-                        else
-                            return;
-                    }
-                }
-            }
-            if (q.Active)
-            {
-                int idx = checkedlbNextToSend.Items.Add(new SortedQueuedToSendListItem(s, q, qsosPanel, ms));
-                checkedlbNextToSend.SetItemChecked(idx, checkBoxAutoXmit.Checked && q.Active);
-                checkedlbNextToSend.Sort();
-            }
         }
 
         public void LogQso(QsoInProgress q)
@@ -1261,8 +1273,10 @@ namespace DigiRite
         #region Form events
         private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out int v)
         {
-            object rv = rk.GetValue(valueName);
             v = 0;
+            if (null == rk)
+                return false;
+            object rv = rk.GetValue(valueName);
             if (rv == null)
                 return false;
             return Int32.TryParse(rv.ToString(), out v);
@@ -1270,8 +1284,10 @@ namespace DigiRite
 
         private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out float v)
         {
-            object rv = rk.GetValue(valueName);
             v = 0;
+            if (null == rk)
+                return false;
+            object rv = rk.GetValue(valueName);
             if (rv == null)
                 return false;
             return float.TryParse(rv.ToString(), out v);
@@ -1374,6 +1390,10 @@ namespace DigiRite
             toMe.SizeChanged(null, null);
             qsosPanel.SizeChanged(null, null);
 
+            foreach (var s in DefaultAcknowledgements)
+                comboBoxOnLoggedMessage.Items.Add(s);
+            comboBoxOnLoggedMessage.SelectedIndex = Properties.Settings.Default.OnLoggedAcknowedgeMessage;
+
             initQsoQueue();
             
             rxForm.logFile = logFile;
@@ -1383,160 +1403,161 @@ namespace DigiRite
             int decodeMin = 100;
             int decodeMax = 5000;
             if (null != rk)
-            {   // used saved settings
-                {
-                    int x;
-                    if (fromRegistryValue(rk, "ControlVfoSplit", out x) && x > 0)
+                using (rk)
+                {   // used saved settings
                     {
-                        int m;
-                        if (fromRegistryValue(rk, "MaxTxAudioFrequency", out m) && m > 0)
+                        int x;
+                        if (fromRegistryValue(rk, "ControlVfoSplit", out x) && x > 0)
                         {
-                            if (Enum.IsDefined(typeof(VfoControl), x))
+                            int m;
+                            if (fromRegistryValue(rk, "MaxTxAudioFrequency", out m) && m > 0)
                             {
-                                controlVFOsplit = (VfoControl)x;
-                                TxHighFreqLimit = m;
+                                if (Enum.IsDefined(typeof(VfoControl), x))
+                                {
+                                    controlVFOsplit = (VfoControl)x;
+                                    TxHighFreqLimit = m;
+                                }
                             }
                         }
                     }
-                }
-                {
-                    int x;
-                    if (fromRegistryValue(rk, "ForceRigUSB", out x) && x > 0)
-                        forceRigUsb = true;
-                }
-                {
-                    int x, y;
-                    if (fromRegistryValue(rk, "MainX", out x) && fromRegistryValue(rk, "MainY", out y))
                     {
-                        System.Drawing.Point cornerMe = new System.Drawing.Point(x, y);
-                        foreach (Screen s in Screen.AllScreens)
+                        int x;
+                        if (fromRegistryValue(rk, "ForceRigUSB", out x) && x > 0)
+                            forceRigUsb = true;
+                    }
+                    {
+                        int x, y;
+                        if (fromRegistryValue(rk, "MainX", out x) && fromRegistryValue(rk, "MainY", out y))
                         {
-                            if (s.WorkingArea.Contains(cornerMe))
+                            System.Drawing.Point cornerMe = new System.Drawing.Point(x, y);
+                            foreach (Screen s in Screen.AllScreens)
                             {
-                                StartPosition = FormStartPosition.Manual;
-                                Location = cornerMe;
-                                break;
+                                if (s.WorkingArea.Contains(cornerMe))
+                                {
+                                    StartPosition = FormStartPosition.Manual;
+                                    Location = cornerMe;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                {
-                    int w, h;
-                    if (fromRegistryValue(rk, "MainW", out w) && fromRegistryValue(rk, "MainH", out h))
                     {
-                        if (w < 280)
-                            w = 280;
-                        if (h < 280)
-                            h = 280;
-                        Size = new System.Drawing.Size(w, h);
-                    }
-                }
-
-                int mainSplitterDistance;
-                if (fromRegistryValue(rk, "MainSplit", out mainSplitterDistance))
-                {  
-                    if (mainSplitterDistance >= splitContainerCqLeft.Panel1MinSize && 
-                        mainSplitterDistance <= splitContainerCqLeft.Width - splitContainerCqLeft.Panel2MinSize)
-                        splitContainerCqLeft.SplitterDistance = mainSplitterDistance; 
-                }
-
-                int leftSplitterDistance;
-                if (fromRegistryValue(rk, "LeftVerticalSplit", out leftSplitterDistance))
-                {
-                    if (leftSplitterDistance >= splitContainerAnswerUpCqsDown.Panel1MinSize && 
-                        leftSplitterDistance <= splitContainerAnswerUpCqsDown.Height - splitContainerAnswerUpCqsDown.Panel2MinSize)
-                        splitContainerAnswerUpCqsDown.SplitterDistance = leftSplitterDistance;
-                }
-
-                {
-                    int x, y;
-                    if (fromRegistryValue(rk, "XcvrX", out x) && fromRegistryValue(rk, "XcvrY", out y))
-                    {
-                        System.Drawing.Point cornerXcvr = new System.Drawing.Point(x, y);
-                        foreach (Screen s in Screen.AllScreens)
+                        int w, h;
+                        if (fromRegistryValue(rk, "MainW", out w) && fromRegistryValue(rk, "MainH", out h))
                         {
-                            if (s.WorkingArea.Contains(cornerXcvr))
+                            if (w < 280)
+                                w = 280;
+                            if (h < 280)
+                                h = 280;
+                            Size = new System.Drawing.Size(w, h);
+                        }
+                    }
+
+                    int mainSplitterDistance;
+                    if (fromRegistryValue(rk, "MainSplit", out mainSplitterDistance))
+                    {
+                        if (mainSplitterDistance >= splitContainerCqLeft.Panel1MinSize &&
+                            mainSplitterDistance <= splitContainerCqLeft.Width - splitContainerCqLeft.Panel2MinSize)
+                            splitContainerCqLeft.SplitterDistance = mainSplitterDistance;
+                    }
+
+                    int leftSplitterDistance;
+                    if (fromRegistryValue(rk, "LeftVerticalSplit", out leftSplitterDistance))
+                    {
+                        if (leftSplitterDistance >= splitContainerAnswerUpCqsDown.Panel1MinSize &&
+                            leftSplitterDistance <= splitContainerAnswerUpCqsDown.Height - splitContainerAnswerUpCqsDown.Panel2MinSize)
+                            splitContainerAnswerUpCqsDown.SplitterDistance = leftSplitterDistance;
+                    }
+
+                    {
+                        int x, y;
+                        if (fromRegistryValue(rk, "XcvrX", out x) && fromRegistryValue(rk, "XcvrY", out y))
+                        {
+                            System.Drawing.Point cornerXcvr = new System.Drawing.Point(x, y);
+                            foreach (Screen s in Screen.AllScreens)
                             {
-                                rxForm.Location = cornerXcvr;
-                                break;
+                                if (s.WorkingArea.Contains(cornerXcvr))
+                                {
+                                    rxForm.Location = cornerXcvr;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                {
-                    int w, h;
-                    if (fromRegistryValue(rk, "XcvrW",  out w) && fromRegistryValue(rk, "XcvrH", out h))
                     {
-                        if (w < 280)
-                            w = 280;
-                        if (h < 280)
-                            h = 280;
-                        rxForm.Size = new System.Drawing.Size(w, h);
+                        int w, h;
+                        if (fromRegistryValue(rk, "XcvrW", out w) && fromRegistryValue(rk, "XcvrH", out h))
+                        {
+                            if (w < 280)
+                                w = 280;
+                            if (h < 280)
+                                h = 280;
+                            rxForm.Size = new System.Drawing.Size(w, h);
+                        }
                     }
-                }
 
-                int xcvrSplitterDistance;
-                if (fromRegistryValue(rk, "XcvrSplit", out xcvrSplitterDistance))
-                    try
-                    {  rxForm.SplitterDistance = xcvrSplitterDistance;   }
-                    finally { }
-                int txEven;
-                if (fromRegistryValue(rk, "TxEven", out txEven))
-                {
-                    if (txEven == 0)
-                        radioButtonOdd.Checked = true;
-                    else
-                        radioButtonEven.Checked = true;
-                }
-                int cqBoth;
-                if (fromRegistryValue(rk, "BothCQsShow", out cqBoth))
-                    checkBoxCQboth.Checked = cqBoth != 0;
-                int cqsOnly;
-                if (fromRegistryValue(rk, "OnlyCQsShow", out cqsOnly))
-                {
-                    switch (cqsOnly)
+                    int xcvrSplitterDistance;
+                    if (fromRegistryValue(rk, "XcvrSplit", out xcvrSplitterDistance))
+                        try
+                        { rxForm.SplitterDistance = xcvrSplitterDistance; }
+                        finally { }
+                    int txEven;
+                    if (fromRegistryValue(rk, "TxEven", out txEven))
                     {
-                        case 0: checkBoxOnlyCQs.CheckState = CheckState.Unchecked; break;
-                        case 1:    checkBoxOnlyCQs.CheckState = CheckState.Indeterminate;    break;
-                        case 2:  checkBoxOnlyCQs.CheckState = CheckState.Checked; break;
+                        if (txEven == 0)
+                            radioButtonOdd.Checked = true;
+                        else
+                            radioButtonEven.Checked = true;
                     }
-                }
-                int txFreq;
-                if (fromRegistryValue(rk, "TXfrequency", out txFreq))
-                    TxFrequency = txFreq;
-                int temp;
-                if (fromRegistryValue(rk, "DecodeMinHz", out temp))
-                {
-                    decodeMin = temp;
-                    if (decodeMin < 100)
-                        decodeMin = 100;
-                    if (decodeMin > 4500)
-                        decodeMin = 4500;
-                }
-                if (fromRegistryValue(rk, "DecodeMaxHz", out temp))
-                {
-                    decodeMax = temp;
-                    if (decodeMax < 100)
-                        decodeMax = 100;
-                    if (decodeMax > 5000)
-                        decodeMax = 5000;
-                    if (decodeMax <= decodeMin)
-                        decodeMax = decodeMin + FT_GAP_HZ;
-                }
+                    int cqBoth;
+                    if (fromRegistryValue(rk, "BothCQsShow", out cqBoth))
+                        checkBoxCQboth.Checked = cqBoth != 0;
+                    int cqsOnly;
+                    if (fromRegistryValue(rk, "OnlyCQsShow", out cqsOnly))
+                    {
+                        switch (cqsOnly)
+                        {
+                            case 0: checkBoxOnlyCQs.CheckState = CheckState.Unchecked; break;
+                            case 1: checkBoxOnlyCQs.CheckState = CheckState.Indeterminate; break;
+                            case 2: checkBoxOnlyCQs.CheckState = CheckState.Checked; break;
+                        }
+                    }
+                    int txFreq;
+                    if (fromRegistryValue(rk, "TXfrequency", out txFreq))
+                        TxFrequency = txFreq;
+                    int temp;
+                    if (fromRegistryValue(rk, "DecodeMinHz", out temp))
+                    {
+                        decodeMin = temp;
+                        if (decodeMin < 100)
+                            decodeMin = 100;
+                        if (decodeMin > 4500)
+                            decodeMin = 4500;
+                    }
+                    if (fromRegistryValue(rk, "DecodeMaxHz", out temp))
+                    {
+                        decodeMax = temp;
+                        if (decodeMax < 100)
+                            decodeMax = 100;
+                        if (decodeMax > 5000)
+                            decodeMax = 5000;
+                        if (decodeMax <= decodeMin)
+                            decodeMax = decodeMin + FT_GAP_HZ;
+                    }
 
-                if (fromRegistryValue(rk, "DigiMode", out temp))
-                {
-                    if (temp > 0)
-                        digiMode = DigiMode.FT4;
-                    else
-                        digiMode = DigiMode.FT8;
-                }
+                    if (fromRegistryValue(rk, "DigiMode", out temp))
+                    {
+                        if (temp > 0)
+                            digiMode = DigiMode.FT4;
+                        else
+                            digiMode = DigiMode.FT8;
+                    }
 
-                if (fromRegistryValue(rk, "VfoSplitToPtt", out temp))
-                    UserVfoSplitToPtt = temp;
-                if (fromRegistryValue(rk, "PttToSound", out temp))
-                    UserPttToSound = temp;
-            }
+                    if (fromRegistryValue(rk, "VfoSplitToPtt", out temp))
+                        UserVfoSplitToPtt = temp;
+                    if (fromRegistryValue(rk, "PttToSound", out temp))
+                        UserPttToSound = temp;
+                }
 
             changeDigiMode();
 
@@ -1584,6 +1605,26 @@ namespace DigiRite
             altMessageShortcuts = new AltMessageShortcuts(listBoxAlternativesPanel, listBoxAlternatives);
             logFile.SendToLog("Started");
             ApplyFontControls();
+#if DEBUG
+            {
+                Microsoft.Win32.RegistryKey sim = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\W5XD\\WriteLog\\DigiRite\\Simulator");
+                if (null != sim)
+                    using (sim)
+                    {
+                        int x;
+                        if (fromRegistryValue(sim, "AnswerAllCQs", out x) && x > 0)
+                            autoAnswerAllCQsFromSimulator = true;
+                        if (fromRegistryValue(sim, "AutoAnswerNonDupes", out x) && x > 0)
+                            checkBoxRespondNonDupe.Checked = true;
+                        if (fromRegistryValue(sim, "CqSetting", out x) && x > 0)
+                            comboBoxCQ.SelectedIndex = x;
+                        if (fromRegistryValue(sim, "EnableSimulation", out x) && x == 0)
+                            simulatorLines = null;
+                    }
+            }
+#endif
+
+
             finishedLoad = true;
         }
 
@@ -1659,21 +1700,27 @@ namespace DigiRite
                 case ExchangeTypes.GRID_SQUARE_PLUS_REPORT:
                     qsoQueue = new Qso2MessageExchange(qsosPanel, this);
                     break;
+
                 case ExchangeTypes.GRID_SQUARE:
                     qsoQueue = new QsoQueueGridSquare(qsosPanel, this, !needBrackets(myCall));
                     break;
+
                 case ExchangeTypes.ARRL_FIELD_DAY:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        // select our own contest messages
                         var sm = m as XDpack77.Pack77Message.ArrlFieldDayMessage;
                         return null != sm;
                     });
                     break;
+
                 case ExchangeTypes.ARRL_RTTY:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                        // select our own contest messages
                         var sm = m as XDpack77.Pack77Message.RttyRoundUpMessage;
                         return null != sm;
                     });
                     break;
+
                 case ExchangeTypes.DB_REPORT:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                         var sm = m as XDpack77.Pack77Message.StandardMessage;
@@ -1692,6 +1739,7 @@ namespace DigiRite
         {
             if (finishedLoad)
             {
+                Properties.Settings.Default.OnLoggedAcknowedgeMessage = (ushort)comboBoxOnLoggedMessage.SelectedIndex;
                 Properties.Settings.Default.ShowMenu = checkBoxShowMenu.Checked;
                 Properties.Settings.Default.Save();
                 Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
@@ -2138,9 +2186,9 @@ namespace DigiRite
             logger.SetCurrentCallAndGrid("", "");
         }
 
-        #endregion
+#endregion
 
-        #region foreign threads
+#region foreign threads
         // The XDft8 assembly invokes our delegate on a foreign thread.
         private void Decoded(String s, int cycle)
         {   // BeginInvoke back onto form's thread
@@ -2151,7 +2199,7 @@ namespace DigiRite
         {   // get back on the form's thread
             BeginInvoke(new Action<bool>(OnAudioComplete), isBeginning);
         }
-        #endregion
+#endregion
 
         private void OnAudioComplete(bool isBegin)
         {
@@ -2188,6 +2236,8 @@ namespace DigiRite
                     i += 1;
             }
         }
+
+#region form control events
 
         private void buttonAbort_Click(object sender, EventArgs e)
         {
@@ -2430,19 +2480,13 @@ namespace DigiRite
             deviceTx.Gain = gainFromTrackValue(trackBarTxGain.Value);
             labelTxValue.Text = trackBarTxGain.Value.ToString();
         }
-
-        int TUNE_LEN;
-        private void buttonTune_Click(object sender, EventArgs e)
+        
+        private void comboBoxCQ_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (sendInProgress)
-                return;
-            deviceTx.TransmitCycle = XD.Transmit_Cycle.PLAY_NOW;
-            int tuneFrequency = TxFrequency;
-            RigVfoSplitForTx(tuneFrequency, tuneFrequency + FT_GAP_HZ);
-            int[] it = new int[TUNE_LEN];
-            AfterNmsec(new Action(() =>
-                XDft.Generator.Play(genContext, it, tuneFrequency, deviceTx.GetRealTimeAudioSink())), UserVfoSplitToPtt);
+            if (comboBoxCQ.SelectedIndex != 0)
+                checkBoxAutoXmit.Checked = true;
         }
+        int TUNE_LEN;
 
         private void ApplyFontControls()
         {
@@ -2471,8 +2515,21 @@ namespace DigiRite
                 ApplyFontControls();
             }
         }
+        
+#endregion
 
-        #region TX RX frequency
+#region TX RX frequency
+        private void buttonTune_Click(object sender, EventArgs e)
+        {
+            if (sendInProgress)
+                return;
+            deviceTx.TransmitCycle = XD.Transmit_Cycle.PLAY_NOW;
+            int tuneFrequency = TxFrequency;
+            RigVfoSplitForTx(tuneFrequency, tuneFrequency + FT_GAP_HZ);
+            int[] it = new int[TUNE_LEN];
+            AfterNmsec(new Action(() =>
+                XDft.Generator.Play(genContext, it, tuneFrequency, deviceTx.GetRealTimeAudioSink())), UserVfoSplitToPtt);
+        }
 
         public int TxFrequency {
             get {
@@ -2531,8 +2588,7 @@ namespace DigiRite
             }
         }
 
-        #endregion
+#endregion
 
-        
     }
 }

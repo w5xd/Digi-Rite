@@ -8,6 +8,7 @@ namespace DigiRite
 {
     // Sequencing for the case where a QSO consists of sending a grid square and then a signal
     // report, in that order.
+    #region Queue
     class Qso2MessageExchange : QueueCommon
     {
         public interface IQsoQueueCallBacks
@@ -16,6 +17,7 @@ namespace DigiRite
             string GetAckMessage(QsoInProgress q, bool ofAnAck);
             void SendMessage(string toSend, QsoInProgress q, QsoSequencer.MessageSent ms);
             void LogQso(QsoInProgress q);
+            void SendOnLoggedAck(QsoInProgress q, QsoSequencer.MessageSent ms);
         };
 
         protected IQsoQueueCallBacks callbacks;
@@ -51,9 +53,9 @@ namespace DigiRite
         }
 
         // connect the Qso2MessageExchange with QsoInProgress on callbacks from the Qso2MessageSequencer
-        class QsoSequencerImpl : Qso2MessageSequencer.IQsoSequencerCallbacks
+        class QsoSequencerCbImpl : Qso2MessageSequencer.IQsoSequencerCallbacks
         {
-            public QsoSequencerImpl(Qso2MessageExchange queue, QsoInProgress q)
+            public QsoSequencerCbImpl(Qso2MessageExchange queue, QsoInProgress q)
             { qsoQueue = queue; qso = q; }
             public void LogQso()
             { qsoQueue.LogQso(qso); }
@@ -61,6 +63,7 @@ namespace DigiRite
             { qsoQueue.SendAck(qso, ms); }
             public void SendExchange(ExchangeTypes ext, bool withAck, QsoSequencer.MessageSent ms)
             { qsoQueue.SendExchange(qso, ext, withAck, ms); }
+            public void SendOnLoggedAck(QsoSequencer.MessageSent ms) { qsoQueue.callbacks.SendOnLoggedAck(qso, ms); } 
             public override String ToString()
             { return qso.ToString(); }
 
@@ -73,7 +76,7 @@ namespace DigiRite
 
         protected override void StartQso(QsoInProgress q)
         {
-            Qso2MessageSequencer qs = new Qso2MessageSequencer(new QsoSequencerImpl(this, q));
+            Qso2MessageSequencer qs = new Qso2MessageSequencer(new QsoSequencerCbImpl(this, q));
             q.Sequencer = qs;
             bool directlyToMe = false;
             XDpack77.Pack77Message.ToFromCall toFromCall = q.Message.Pack77Message as XDpack77.Pack77Message.ToFromCall;
@@ -102,7 +105,9 @@ namespace DigiRite
         public void SendAck(QsoInProgress q, QsoSequencer.MessageSent ms)
         { callbacks.SendMessage(callbacks.GetAckMessage(q, false), q, ms);  }
     }
+    #endregion
 
+    #region Sequencer
     class Qso2MessageSequencer : IQsoSequencer
     {
         public interface IQsoSequencerCallbacks
@@ -110,6 +115,7 @@ namespace DigiRite
             void SendExchange(ExchangeTypes exc, bool withAck, QsoSequencer.MessageSent ms);
             void LogQso();
             void SendAck(QsoSequencer.MessageSent ms);
+            void SendOnLoggedAck(QsoSequencer.MessageSent ms);
         }
         private const uint MAXIMUM_ACK_OF_ACK = 3;
         private bool haveGrid  = false;
@@ -120,7 +126,8 @@ namespace DigiRite
         private bool amLeaderSet = false;
         private bool haveSentReport = false;
         private bool haveSentGrid = false;
-        private bool haveAckOfGrid = false;
+        private bool haveReceivedWrongExchange = false;
+        private bool haveAckOfGrid = false; // compiler correctly says we never read this
         private bool haveAckOfReport = false;
         private uint AckMoreAcks = 0;
         private IQsoSequencerCallbacks cb;
@@ -165,9 +172,9 @@ namespace DigiRite
                     if (ack)
                         haveAckOfGrid = true;
                     if (amLeader || ack)
-                        es = ()=> cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () => { haveSentReport = true; }); 
+                        es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () => { haveSentReport = true; });
                     else
-                        es = ()=>cb.SendExchange(ExchangeTypes.GRID_SQUARE, directlyToMe && haveGrid, () => { haveSentGrid = true; });
+                        es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, directlyToMe && haveGrid, () => { haveSentGrid = true; });
                     lastSent = es;
                     es();
                     return;
@@ -191,45 +198,62 @@ namespace DigiRite
                     }
                     else
                     {
-                        ExchangeSent es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, true, ()=> { haveSentReport = true; });
+                        haveReceivedWrongExchange = true;
+                        ExchangeSent es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, true, () => { haveSentReport = true; });
                         lastSent = es;
                         es();
                     }
                     return;
                 }
+                else // message has an exchange, but for some contest we don't know about
+                {
+                    if (!haveReceivedWrongExchange)
+                    {
+                        haveReceivedWrongExchange = true;
+                        cb.LogQso();
+                    }
+                    cb.SendAck(null); // send a 73, log it, and get going
+                    lastSent = null;
+                    return;
+                }
+            }
+            if (!haveReceivedWrongExchange && !haveGrid && !haveReport)
+            {
+                ExchangeSent es = null;
+                if (haveSentGrid)
+                    es = () => cb.SendExchange( ExchangeTypes.DB_REPORT , false, () => { haveSentReport = true; });
+                else
+                    es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, false, () => { haveSentGrid = true; });
+                lastSent = es;
+                es();
+                return;
             }
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             if ((qsl != null) && String.Equals(qsl.CallQSLed, "ALL") || directlyToMe)
             {
-                if (!haveGrid && !haveReport)
-                {
-                    ExchangeSent es = null;
-                    if (haveSentGrid)
-                        es = () => cb.SendExchange( ExchangeTypes.DB_REPORT , false, () => { haveSentReport = true; });
-                    else
-                        es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, false, () => { haveSentGrid = true; });
-                    lastSent = es;
-                    es();
-                    return;
-                }
                 if (!haveLoggedGrid && (haveReport || (directlyToMe && haveGrid)))
                 {
                     haveLoggedGrid = true;
                     if (haveReport)
                         haveLoggedReport = true;
                     lastSent = null;
-                    cb.SendAck(null);
                     cb.LogQso();
                     AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                    cb.SendOnLoggedAck(() =>
+                        {  } // might not be sent
+                        ); 
+
                     return;
                 }
-                if (AckMoreAcks > 0 &&  directlyToMe && String.Equals(qsl.CallQSLed, "ALL"))
+                if (AckMoreAcks > 0 &&  directlyToMe)
                 {
                     lastSent = null;
                     AckMoreAcks -= 1;
                     cb.SendAck(null);
                     return;
                 }
+                if (haveReceivedWrongExchange)
+                    return;
                 OnReceivedNothing(); // didn't get what I wanted
             }
          }
@@ -245,4 +269,5 @@ namespace DigiRite
         }
 
     }
+    #endregion
 }

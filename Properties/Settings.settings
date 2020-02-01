@@ -95,5 +95,8 @@
     <Setting Name="ContestMessageToSend" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="OnLoggedAcknowedgeMessage" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

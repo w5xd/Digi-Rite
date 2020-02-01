@@ -394,5 +394,17 @@ namespace DigiRite.Properties {
                 this["ContestMessageToSend"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public ushort OnLoggedAcknowedgeMessage {
+            get {
+                return ((ushort)(this["OnLoggedAcknowedgeMessage"]));
+            }
+            set {
+                this["OnLoggedAcknowedgeMessage"] = value;
+            }
+        }
     }
 }

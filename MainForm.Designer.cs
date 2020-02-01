@@ -50,6 +50,8 @@
             this.labelInProgress = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.panel6 = new System.Windows.Forms.Panel();
+            this.label15 = new System.Windows.Forms.Label();
+            this.comboBoxOnLoggedMessage = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.checkBoxAutoXmit = new System.Windows.Forms.CheckBox();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -104,9 +106,9 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new DigiRite.ConversationListBox();
             this.checkedlbNextToSend = new DigiRite.ToSendListBox();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -146,7 +148,7 @@
             this.buttonAbort.Name = "buttonAbort";
             this.buttonAbort.Size = new System.Drawing.Size(58, 23);
             this.buttonAbort.TabIndex = 14;
-            this.buttonAbort.Text = "&Abort TX";
+            this.buttonAbort.Text = "Abort TX";
             this.buttonAbort.UseVisualStyleBackColor = true;
             this.buttonAbort.Click += new System.EventHandler(this.buttonAbort_Click);
             // 
@@ -224,7 +226,7 @@
             this.checkBoxShowMenu.Name = "checkBoxShowMenu";
             this.checkBoxShowMenu.Size = new System.Drawing.Size(83, 17);
             this.checkBoxShowMenu.TabIndex = 3;
-            this.checkBoxShowMenu.Text = "&Show Menu";
+            this.checkBoxShowMenu.Text = "Show &Menu";
             this.checkBoxShowMenu.UseVisualStyleBackColor = true;
             this.checkBoxShowMenu.CheckedChanged += new System.EventHandler(this.checkBoxShowMenu_CheckedChanged);
             // 
@@ -247,7 +249,7 @@
             this.listToMe.Location = new System.Drawing.Point(0, 0);
             this.listToMe.Name = "listToMe";
             this.listToMe.Size = new System.Drawing.Size(270, 92);
-            this.listToMe.TabIndex = 2;
+            this.listToMe.TabIndex = 0;
             // 
             // timerFt8Clock
             // 
@@ -274,7 +276,7 @@
             // checkBoxRespondAny
             // 
             this.checkBoxRespondAny.Dock = System.Windows.Forms.DockStyle.Left;
-            this.checkBoxRespondAny.Location = new System.Drawing.Point(192, 0);
+            this.checkBoxRespondAny.Location = new System.Drawing.Point(186, 0);
             this.checkBoxRespondAny.Name = "checkBoxRespondAny";
             this.checkBoxRespondAny.Size = new System.Drawing.Size(54, 24);
             this.checkBoxRespondAny.TabIndex = 3;
@@ -285,7 +287,7 @@
             // checkBoxRespondNonDupe
             // 
             this.checkBoxRespondNonDupe.Dock = System.Windows.Forms.DockStyle.Left;
-            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(115, 0);
+            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(109, 0);
             this.checkBoxRespondNonDupe.Name = "checkBoxRespondNonDupe";
             this.checkBoxRespondNonDupe.Size = new System.Drawing.Size(77, 24);
             this.checkBoxRespondNonDupe.TabIndex = 2;
@@ -296,7 +298,7 @@
             // label14
             // 
             this.label14.Dock = System.Windows.Forms.DockStyle.Left;
-            this.label14.Location = new System.Drawing.Point(52, 0);
+            this.label14.Location = new System.Drawing.Point(46, 0);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(63, 24);
             this.label14.TabIndex = 1;
@@ -308,9 +310,9 @@
             this.label2.Dock = System.Windows.Forms.DockStyle.Left;
             this.label2.Location = new System.Drawing.Point(0, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(52, 24);
+            this.label2.Size = new System.Drawing.Size(46, 24);
             this.label2.TabIndex = 0;
-            this.label2.Text = "To &me.";
+            this.label2.Text = "&To me.";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label4
@@ -360,6 +362,8 @@
             // 
             // panel6
             // 
+            this.panel6.Controls.Add(this.label15);
+            this.panel6.Controls.Add(this.comboBoxOnLoggedMessage);
             this.panel6.Controls.Add(this.label8);
             this.panel6.Controls.Add(this.checkBoxAutoXmit);
             this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
@@ -367,6 +371,26 @@
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(345, 52);
             this.panel6.TabIndex = 0;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(171, 8);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(71, 13);
+            this.label15.TabIndex = 3;
+            this.label15.Text = "2&nd ack msg:";
+            // 
+            // comboBoxOnLoggedMessage
+            // 
+            this.comboBoxOnLoggedMessage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxOnLoggedMessage.FormattingEnabled = true;
+            this.comboBoxOnLoggedMessage.Items.AddRange(new object[] {
+            "None"});
+            this.comboBoxOnLoggedMessage.Location = new System.Drawing.Point(246, 4);
+            this.comboBoxOnLoggedMessage.Name = "comboBoxOnLoggedMessage";
+            this.comboBoxOnLoggedMessage.Size = new System.Drawing.Size(56, 21);
+            this.comboBoxOnLoggedMessage.TabIndex = 2;
             // 
             // label8
             // 
@@ -382,9 +406,9 @@
             this.checkBoxAutoXmit.AutoSize = true;
             this.checkBoxAutoXmit.Location = new System.Drawing.Point(8, 6);
             this.checkBoxAutoXmit.Name = "checkBoxAutoXmit";
-            this.checkBoxAutoXmit.Size = new System.Drawing.Size(150, 17);
+            this.checkBoxAutoXmit.Size = new System.Drawing.Size(123, 17);
             this.checkBoxAutoXmit.TabIndex = 0;
-            this.checkBoxAutoXmit.Text = "Automatically transmit &next";
+            this.checkBoxAutoXmit.Text = "&Automatic sequence";
             this.checkBoxAutoXmit.UseVisualStyleBackColor = true;
             this.checkBoxAutoXmit.CheckedChanged += new System.EventHandler(this.checkBoxAutoXmit_CheckedChanged);
             // 
@@ -597,7 +621,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(1, 139);
+            this.label13.Location = new System.Drawing.Point(1, 144);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(25, 13);
             this.label13.TabIndex = 8;
@@ -672,10 +696,11 @@
             "Off",
             "On idle",
             "Use stream"});
-            this.comboBoxCQ.Location = new System.Drawing.Point(30, 135);
+            this.comboBoxCQ.Location = new System.Drawing.Point(30, 140);
             this.comboBoxCQ.Name = "comboBoxCQ";
             this.comboBoxCQ.Size = new System.Drawing.Size(116, 21);
             this.comboBoxCQ.TabIndex = 9;
+            this.comboBoxCQ.SelectedIndexChanged += new System.EventHandler(this.comboBoxCQ_SelectedIndexChanged);
             // 
             // groupBox1
             // 
@@ -995,6 +1020,11 @@
             this.panelInProgress.Size = new System.Drawing.Size(345, 136);
             this.panelInProgress.TabIndex = 1;
             // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
+            // 
             // listBoxConversation
             // 
             this.listBoxConversation.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -1021,11 +1051,6 @@
             this.checkedlbNextToSend.Sorted = true;
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
-            // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
             // 
             // MainForm
             // 
@@ -1164,6 +1189,8 @@
         private System.Windows.Forms.Button buttonTxToQip;
         private System.Windows.Forms.CheckBox checkBoxRespondAny;
         private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.ComboBox comboBoxOnLoggedMessage;
     }
 }
 

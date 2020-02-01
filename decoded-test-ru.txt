@@ -1,0 +1,74 @@
+#   DR should be in FT4 (to go faster). 
+#   In "RTTY RU" mode, with W5XD as the call in use. 
+#Build DR in DEBUG config. 
+# Set registry entries: Computer\HKEY_CURRENT_USER\Software\W5XD\WriteLog\DigiRite\Simulator
+#Windows Registry Editor Version 5.00
+#
+#[HKEY_CURRENT_USER\Software\W5XD\WriteLog\DigiRite\Simulator]
+#"AutoAnswerNonDupes"="1"
+#"AnswerAllCQs"="1"
+#"CqSetting"="1"
+#"EnableSimulation"="1"
+#
+#turn the RX device to something that is deaf to make DigiRite.log easier to compare.
+22:34:21 000000 -11  0.8 2050 +  CQ RU EA3ZD JN01                    comments beyond column 70
+22:34:37 TX: EA3ZD W5XD 549 TX                                       answer his CQ
+22:34:50 000015 -16  0.8 2049 +  W5XD EA3ZD R 549 0001               get his exchange and with a Roger
+22:34:52 TX: EA3ZD W5XD RR73                                         we must ack
+01:05:20 000030 -16  0.8 2050 +  W5XD W1AW 529 CT                    unsolicited call from W1AW
+01:05:22 TX: W1AW W5XD R 539 TX                                      send their exchange
+01:05:35 000045 -12  0.8 2049 +  W5XD W1AW 73                        They send 73
+01:05:37 TX: W1AW W5XD RR73                                          Redundant Ack. DR can be configured not to send OR
+01:05:37 TX: CQ W5XD EM10                                            If Extra Logged Message is set to NONE
+01:05:50 000100 -19  0.3 2346 +  CQ RU P49X FK52                     A CQ
+01:05:52 TX: P49X W5XD 529 TX                                        we answer it
+01:06:05 000115 -16  0.3 2346 +  W5XD P49X R 539 5031                get our exchange
+01:06:07 TX: P49X W5XD RRR                                           All done
+01:06:20 000130 -13  0.3 2346 +  CQ RU P49X FK52                     hear his CQ after our QSO
+01:06:22 TX: CQ W5XD EM10                                            we send one now
+01:06:35 000145 -20  0.3 2000 +  CQ RU F3ABC JN18                    Hear a CQ 
+01:06:37 TX: F3ABC W5XD 529 TX                                       answer theirs
+01:06:50 000200 -18  0.3 2345 +  W5XD F3ABC R 599 102                get an exchange with an R
+01:06:52 TX: F3ABC W5XD RRR                                          we're happy
+01:07:05 000215 -18  0.3 2345 +  XE3B F3ABC R 529 103                he sends to someone else
+01:07:07 TX: CQ W5XD EM10                                            start a CQ but
+01:07:20 000230 -18  0.3 2345 +  W5XD F3ABC R 599 102                F3ABC apparently didn't hear our RRR
+01:07:22 TX: F3ABC W5XD RRR                                          so send another
+01:07:35 000245 -18  0.3 2345 +  W5XD F4XYZ 529 0004                 now F4XYZ hears us
+01:07:37 TX: F4XYZ W5XD R 539 TX                                     we ack
+01:07:50 000300 -18  0.3 2345 +  W1AW F4XYZ R 589 0005               they send to someone else. not good enough for us  
+01:07:52 TX: F4XYZ W5XD R 539 TX                                     we insist
+01:08:05 000315 -18  0.3 2345 +  W5XD F4XYZ 73                       now we get an ack
+01:08:07 TX: F4XYZ W5XD RR73                                         Configurable redundant ACK
+01:08:07 TX: CQ W5XD EM10                                            CQ if so configured
+01:08:20 000330 -18  0.3 2345 +  W5XD F5ABC 539 0010                 get another call
+01:08:22 TX: F5ABC W5XD R 539 TX                                     send him our exchange
+01:08:35 000345 -18  0.3 2345 +  CQ RU F5ABC JN18                    He sends a CQ. we count that as an ACK 
+01:08:37 TX: CQ W5XD EM10                                            We CQ next cycle
+01:08:50 000400 -18  0.3 2345 +  W5XD F6XYZ 549 0201                 get an answer
+01:08:52 TX: F6XYZ W5XD R 539 TX                                     we acknowledge
+01:09:05 000415 -18  0.3 2345 +  W4XD F6XYZ 539 0202                 he sends to someone else
+01:09:07 TX: F6XYZ W5XD R 539 TX                                     we try again
+01:09:20 000430 -18  0.3 2345 +  CQ RU F6XYZ JN18                    now he is CQ. not good enough
+01:09:22 TX: F6ABC W5XD R 539 TX                                     try again
+01:09:37 TX: F6ABC W5XD R 539 TX                                     aint happening
+01:09:20 000500 -18  0.3 2345 +  W5XD F6XYZ RRR                      finally! 
+15:30:37 TX: F6XYZ W5XD 73
+01:09:52 TX: CQ W5XD EM10                                            back to CQ
+16:24:50 000530 -18  0.3 2345 +  W5XD F7ABC JN18                     not a contest exchange! 
+16:24:52 TX: F7ABC W5XD 539 TX                                       send him a contest
+16:25:05 000545 -18  0.3 2345 +  W5XD F7ABC JN18                     not a contest exchange! 
+16:25:07 TX: F7ABC W5XD 539 TX                                       try again
+16:25:20 000600 -18  0.3 2345 +  W5XD F7ABC JN18                     not a contest exchange! 
+16:25:22 TX: F7ABC W5XD 539 TX                                       we insist
+16:25:35 000615 -18  0.3 2345 +  W5XD F7ABC JN18                     not a contest exchange! 
+16:25:37 TX: F7ABC W5XD 539 TX                                       still insist
+16:25:35 000630 -18  0.3 2345 +  W5XD F7ABC JN18                     not a contest exchange! 
+16:25:50 000645 -18  0.3 2345 +  W5XD F7ABC R 559 0001               switches to correct exchange
+16:25:52 TX: F7ABC W5XD RRR
+16:26:07 TX: CQ W5XD EM10
+16:26:22 TX: CQ W5XD EM10
+16:26:37 TX: CQ W5XD EM10
+16:26:52 TX: CQ W5XD EM10
+
+
