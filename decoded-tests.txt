@@ -35,7 +35,7 @@
 19:55:07 TX: P49X W5XD R-18                                          ...our R should imply to him we logged him
 03:59:39 000245 -18  0.3 2345 +  W5XD P49X RR73                      he says "I have logged you, too"  
 19:55:22 TX: P49X W5XD RRR                                           we didn't need the RR73...should we reply?
-19:55:22 TX: CQ W5XD EM10                                            will do this on 2nd ack msg = None
+19:55:22 TX: CQ W5XD EM10                                            else on 2nd ack msg = None
 03:59:39 000300 -18  0.3 2345 +  W5XD P49X RR73                      he wants to hear something, apparently                     
 19:55:37 TX: P49X W5XD RRR                                           ..so we ack
 03:59:39 000315 -18  0.3 2345 +  CQ P49Y FK53
@@ -44,8 +44,9 @@
 14:35:22 TX: P49Y W5XD R-18                                          His R+02 doesn't ack our report--we send it now
 03:59:39 000345 -18  0.3 2345 +  W5XD P49Y RR73                      he says "I have logged you"
 19:56:22 TX: P49Y W5XD RRR
-03:59:39 000400 -18  0.3 2345 +  W5XD P49Y RR73                      
-19:56:37 TX: P49Y W5XD RRR
+18:45:07 TX: CQ W5XD EM10                                            if our 2nd ack is None
+03:59:39 000400 -18  0.3 2345 +  W5XD P49Y RR73                      he repeats...so we ack again
+19:56:37 TX: P49Y W5XD RRR                                           so we go ack even if we CQed before
 03:59:39 000415 -18  0.3 2345 +  CQ P49Z FK54 
 14:36:07 TX: P49Z W5XD EM10                                          We auto-answer...wish we could send "R EM10" to signal "we have your grid"
 14:36:22 TX: P49Z W5XD EM10                                          ...but wsjt-x uses the R to decide to end the QSO
@@ -87,11 +88,11 @@
 03:59:39 000930 -18  0.3 2345 +  CQ F5XYZ JN20                       auto-answer will get to this guy. later
 20:02:07 TX: F4DEF W5XD R-18
 03:59:39 000945 -18  0.3 2345 +  W5XD F5XYZ +02
-20:02:22 TX: F4DEF W5XD R-18                                         last one to timeout
+20:02:22 TX: F4DEF W5XD R-18                                         last one to timeout. don't log him
 20:02:37 TX: F5XYZ W5XD R-18                                         now try answer the later CQ
 20:02:52 TX: F5XYZ W5XD R-18
 20:03:07 TX: F5XYZ W5XD R-18
-20:03:22 TX: F5XYZ W5XD R-18
+20:03:22 TX: F5XYZ W5XD R-18                                         don't log this one either
 03:59:39 001115 -18  0.3 2345 +  CQ F5XYZ JN20                       
 03:59:39 001130 -18  0.3 2345 +  CQ RU K5ZD FI71                       Past here be RU exchanges. we muddle through cuz not in RU mode
 14:43:22 TX: K5ZD W5XD EM10                                            we're being stupid. should not answer CQ RU, but we're testing.
@@ -106,7 +107,8 @@
 03:59:39 001245 -18  0.3 2345 +  W5XD K1ZD 73                          he answered our 73 with one of his own
 15:19:07 TX: CQ W5XD EM10
 03:59:39 001300 -18  0.3 2345 +  W5XD K1ZD 73                          maybe he wants something from us? we ignore
-15:19:22 TX: CQ W5XD EM10
+15:19:22 TX: CQ W5XD EM10                                              if 2nd ack is None
+18:54:22 TX: K1ZD W5XD RR73
 03:59:39 001315 -18  0.3 2345 +  CQ RU K1ZD FI72                     
 15:19:37 TX: CQ W5XD EM10
 03:59:39 001330 -18  0.3 2345 +  W5XD W5TA 589 TX                       RU contest mode calling me. uh-oh          

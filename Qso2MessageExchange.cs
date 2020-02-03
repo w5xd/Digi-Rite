@@ -128,8 +128,10 @@ namespace DigiRite
         private bool haveSentGrid = false;
         private bool haveReceivedWrongExchange = false;
         private bool haveAckOfGrid = false; // compiler correctly says we never read this
+        private string ackOfAckGrid;
         private bool haveAckOfReport = false;
         private uint AckMoreAcks = 0;
+        private bool onLoggedAckEnabled = false;
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
         private ExchangeSent lastSent;
@@ -185,20 +187,23 @@ namespace DigiRite
                     lastSent = null;
                     if (ack && haveSentReport)
                         haveAckOfReport = true;
-                    if (haveAckOfReport || (amLeader && ack && haveSentReport))
+                    if (haveAckOfReport)
                     {
-                        cb.SendAck(null);
-                        if (!haveLoggedReport)
+                        ExchangeSent es = () => cb.SendAck(() =>
                         {
-                            haveLoggedReport = true;
-                            if (haveGrid)
-                                haveLoggedGrid = true;
-                            cb.LogQso();
-                        }
+                            if (!haveLoggedReport)
+                            {
+                                haveLoggedReport = true;
+                                if (haveGrid)
+                                    haveLoggedGrid = true;
+                                cb.LogQso();
+                            }
+                        });
+                        lastSent = es;
+                        es();
                     }
                     else
                     {
-                        haveReceivedWrongExchange = true;
                         ExchangeSent es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, true, () => { haveSentReport = true; });
                         lastSent = es;
                         es();
@@ -238,24 +243,25 @@ namespace DigiRite
                         haveLoggedReport = true;
                     lastSent = null;
                     cb.LogQso();
+                    ackOfAckGrid = qsl.QslText; // see if they repeat exact message
                     AckMoreAcks = MAXIMUM_ACK_OF_ACK;
                     cb.SendOnLoggedAck(() =>
-                        {  } // might not be sent
-                        ); 
-
+                    { onLoggedAckEnabled = true;}); 
                     return;
                 }
-                if (AckMoreAcks > 0 &&  directlyToMe)
-                {
+                if (AckMoreAcks > 0 &&  directlyToMe && String.Equals(qsl.QslText, ackOfAckGrid))
+                {   // only repeat this if they send exact same message
                     lastSent = null;
                     AckMoreAcks -= 1;
-                    cb.SendAck(null);
+                    if (onLoggedAckEnabled)
+                        cb.SendOnLoggedAck(null);
+                    else
+                        cb.SendAck(null);
                     return;
                 }
-                if (haveReceivedWrongExchange)
-                    return;
-                OnReceivedNothing(); // didn't get what I wanted
+                return;
             }
+            OnReceivedNothing(); // didn't get what I wanted
          }
 
         public bool OnReceivedNothing()

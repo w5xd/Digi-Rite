@@ -181,6 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="decoded-test-ru.txt" />
+    <Content Include="decoded-test-wwdigi.txt" />
     <Content Include="decoded-tests.txt" />
     <Content Include="ReadMe.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

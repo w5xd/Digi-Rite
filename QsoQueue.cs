@@ -182,9 +182,10 @@ namespace DigiRite
             (XDpack77.Pack77Message.Message m) => { 
                 // select exchanges with a grid square
                 var sm = m as XDpack77.Pack77Message.StandardMessage;
+                bool ret = false;
                 if ((null != sm) && !String.IsNullOrEmpty(sm.GridSquare))
-                    return true;
-                return false;
+                    ret = true;
+                return ret;
                 })
         {
             gridSquareAck = gridAck;
