@@ -707,10 +707,10 @@ namespace DigiRite
             {
                 QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
                 QsoInProgress qp;
-                if (null != qli && (null != (qp = qli.q)) && inProgress.Any((q) => Object.ReferenceEquals(q, qp) && q.Active))
+                if (null != qli && (null != (qp = qli.q)) && inProgress.Any((q) => Object.ReferenceEquals(q, qp)))
                 {   // if the QSO remains active in progress, but still in this list, it didn't get sent,
                     // mark it unchecked so user can see that.
-                    checkedlbNextToSend.SetItemChecked(j, false);
+                    checkedlbNextToSend.SetItemChecked(j, qp.Active);
                     j += 1;
                 }
                 else
@@ -1071,12 +1071,9 @@ namespace DigiRite
                     }
                 }
             }
-            if (q.Active)
-            {
-                int idx = checkedlbNextToSend.Items.Add(new SortedQueuedToSendListItem(s, q, qsosPanel, ms));
-                checkedlbNextToSend.SetItemChecked(idx, checkBoxAutoXmit.Checked && q.Active);
-                checkedlbNextToSend.Sort();
-            }
+            int idx = checkedlbNextToSend.Items.Add(new SortedQueuedToSendListItem(s, q, qsosPanel, ms));
+            checkedlbNextToSend.SetItemChecked(idx, checkBoxAutoXmit.Checked && q.Active);
+            checkedlbNextToSend.Sort();
         }
 
         private void fillAlternativeMessages(QsoInProgress q)
