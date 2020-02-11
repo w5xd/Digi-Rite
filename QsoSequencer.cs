@@ -11,9 +11,11 @@
              void SendExchange(bool withAck, MessageSent ms);
              void SendAck(bool ofAnAck, MessageSent ms);
              void LogQso();
+             void SendOnLoggedAck(MessageSent ms);
         }
 
         private bool haveLogged = false; // only invoke the LogQso callback once
+        private bool haveLoggedExchange = false;
 
         private IQsoSequencerCallbacks qsoSequencerCallbacks;
 
@@ -23,11 +25,11 @@
             State = 0;
         }
         private const uint MAXIMUM_ACK_OF_ACK = 3;
-        private bool HaveTheirs  = false;
+        private bool HaveTheirExchange  = false;
         private bool HaveAck  = false;
         private bool HaveSentAck = false;
         private uint AckMoreAcks = 0;
-        private bool HaveLoggedQso { get { return HaveTheirs & HaveAck; } }
+        private bool HaveLoggedQso { get { return HaveTheirExchange & HaveAck; } }
         private uint State  = 0;
         private const uint FINISHED_STATE = 4;
 
@@ -35,7 +37,7 @@
         public void Initiate(bool ack = false)
         {
             qsoSequencerCallbacks.SendExchange(ack, null); // Beware--no guarantee actually sent
-            HaveTheirs = ack;
+            HaveTheirExchange = ack;
             State = 1;
         }
 
@@ -49,12 +51,12 @@
         
         public bool OnReceivedNothing()
         {
-            if (!HaveTheirs || !HaveAck || !HaveSentAck)
+            if (!HaveTheirExchange || !HaveAck || !HaveSentAck)
             {
                 MessageSent ms = null;
-                if (HaveTheirs)
+                if (HaveTheirExchange)
                     ms = () => { HaveSentAck = true; };
-                qsoSequencerCallbacks.SendExchange(HaveTheirs, ms);
+                qsoSequencerCallbacks.SendExchange(HaveTheirExchange, ms);
                 return true;
             }
             return false;
@@ -62,7 +64,7 @@
 
         public void OnReceivedExchange(bool withAck)
         {
-            HaveTheirs = true;
+            HaveTheirExchange = true;
             HaveAck |= withAck;
             if (!withAck)
             {   // if they don't have ours, send it
@@ -71,7 +73,7 @@
             }
             else
             {   // if they do, then ack this one
-                bool prevLogged = haveLogged; // redundant exchanges received only log once
+                bool prevLogged = haveLoggedExchange; // redundant exchanges received only log once
                 qsoSequencerCallbacks.SendAck(false,  () => {
                         HaveSentAck = true; 
                         if (!prevLogged)
@@ -84,6 +86,8 @@
         private void LogQso()
         {
             haveLogged = true;
+            if (HaveTheirExchange)
+                haveLoggedExchange = true;
             qsoSequencerCallbacks.LogQso();
             State = 4;
         }
@@ -92,9 +96,9 @@
         {
             bool retval = true;
             HaveAck = true;
-            if (HaveTheirs)
+            if (HaveTheirExchange)
             {
-                if (!haveLogged)
+                if (!haveLoggedExchange)
                 {   // we only ack the ack once
                     if (!HaveSentAck)
                         qsoSequencerCallbacks.SendAck(true,
@@ -105,8 +109,8 @@
                             });
                     else
                     {
-                        qsoSequencerCallbacks.SendAck(true, null);
                         AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                        qsoSequencerCallbacks.SendOnLoggedAck(null );
                         LogQso();
                     }
                 }
@@ -124,6 +128,17 @@
                 State = 1;
             }
             return retval;
+        }
+
+        public void OnReceivedWrongExchange()
+        {
+            if (!haveLogged)
+            {
+                LogQso();
+                AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+            }
+            if (AckMoreAcks-- > 0)
+                qsoSequencerCallbacks.SendExchange(false, null);
         }
     }
 }

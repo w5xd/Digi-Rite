@@ -15,7 +15,7 @@ namespace DigiRite
         [STAThread]
         static void Main(string[] args)
         {
-            const int UpgradedVersion = 57;  // increment every release
+            const int UpgradedVersion = 62;  // increment every release
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 #if DEBUG

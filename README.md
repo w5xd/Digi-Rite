@@ -1,7 +1,7 @@
 # Digi-Rite
 Digital mode implementation for FT8.
 
-Copyright (c) 2019 by WriteLog Contesting Software, LLC
+Copyright (c) 2020 by WriteLog Contesting Software, LLC
 
 DigiRite is a radio contesting accessory for FT8 messaging. It optionally integrates with WriteLog, but also can run stand alone. It is published open source. Other contest logging program authors are free to use DigiRite's sources to build their own integrated FT8 solution under the terms of the <a href='COPYING'>GPL</a>.
 

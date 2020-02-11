@@ -1,16 +1,28 @@
-#DR should be in FT4 (to go faster). Use its debug auto-answer-all-cq's mode. 
+#DR should be in FT4 (to go faster). 
 #In "dB report + grid" mode, with W5XD as the call in use. 
-#turn your TX gain all the way down to make DigiRite.log easier to compare.
+#Build DR in DEBUG config. 
+# Set registry entries: Computer\HKEY_CURRENT_USER\Software\W5XD\WriteLog\DigiRite\Simulator
+#Windows Registry Editor Version 5.00
+#
+#[HKEY_CURRENT_USER\Software\W5XD\WriteLog\DigiRite\Simulator]
+#"AutoAnswerNonDupes"="1"
+#"AnswerAllCQs"="1"
+#"CqSetting"="1"
+#"EnableSimulation"="1"
+#
+#turn the RX device to something that is deaf to make DigiRite.log easier to compare.
 02:29:09 000000 -11  0.8 2050 +  W5XD EA3ZD JN01                     comments beyond column 70
 19:52:37 TX: EA3ZD W5XD -11
 02:29:39 000015 -16  0.8 2049 +  W5XD EA3ZD R-03                     
 19:52:52 TX: EA3ZD W5XD RRR
-02:30:09 000030 -16  0.8 2050 +  W5XD EA3ZD 73                       he changed his message"
-02:30:39 000045 -12  0.8 2049 +  W5XD EA3ZD 73                       but then he repeated it"
-03:57:42 000100 -19  0.3 2346 +  W5XD UT7QF -11                      "new caller"
+02:30:09 000030 -16  0.8 2050 +  W5XD EA3ZD 73                       he changed his message
+14:45:22 TX: CQ W5XD EM10
+02:30:39 000045 -12  0.8 2049 +  W5XD EA3ZD 73                       but then he repeated it
+14:45:37 TX: CQ W5XD EM10
+03:57:42 000100 -19  0.3 2346 +  W5XD UT7QF -11                      new caller
 19:53:37 TX: UT7QF W5XD R-19
-03:58:11 000115 -16  0.3 2346 +  W5XD UT7QF RR73                     we have no grid yet!"
-19:53:52 TX: UT7QF W5XD RRR                                          ...but won't try to get one"
+03:58:11 000115 -16  0.3 2346 +  W5XD UT7QF RR73                     we have no grid yet!
+19:53:52 TX: UT7QF W5XD RRR                                          ...but won't try to get one
 03:58:41 000130 -13  0.3 2346 +  W5XD UT7QF RR73                     
 19:54:07 TX: UT7QF W5XD RRR                                          
 03:59:10 000145 -20  0.3 2345 +  W5XD UT7QF RR73                     he repeats
@@ -22,25 +34,28 @@
 03:59:39 000230 -18  0.3 2345 +  W5XD P49X +01                       he implicitly ack's our grid, too
 19:55:07 TX: P49X W5XD R-18                                          ...our R should imply to him we logged him
 03:59:39 000245 -18  0.3 2345 +  W5XD P49X RR73                      he says "I have logged you, too"  
-19:55:22 TX: P49X W5XD RRR                                           we didn't need the RR73...should we reply? 
+19:55:22 TX: P49X W5XD RRR                                           we didn't need the RR73...should we reply?
+19:55:22 TX: CQ W5XD EM10                                            else on 2nd ack msg = None
 03:59:39 000300 -18  0.3 2345 +  W5XD P49X RR73                      he wants to hear something, apparently                     
-19:55:37 TX: P49X W5XD RRR                                           so we repeat our previous message
+19:55:37 TX: P49X W5XD RRR                                           ..so we ack
 03:59:39 000315 -18  0.3 2345 +  CQ P49Y FK53
 14:34:07 TX: P49X W5XD EM10
 03:59:39 000330 -18  0.3 2345 +  W5XD P49Y R+02                      as previous, but he sends an R...
 14:35:22 TX: P49Y W5XD R-18                                          His R+02 doesn't ack our report--we send it now
 03:59:39 000345 -18  0.3 2345 +  W5XD P49Y RR73                      he says "I have logged you"
 19:56:22 TX: P49Y W5XD RRR
-03:59:39 000400 -18  0.3 2345 +  W5XD P49Y RR73                      
-19:56:37 TX: P49Y W5XD RRR
+18:45:07 TX: CQ W5XD EM10                                            if our 2nd ack is None
+03:59:39 000400 -18  0.3 2345 +  W5XD P49Y RR73                      he repeats...so we ack again
+19:56:37 TX: P49Y W5XD RRR                                           so we go ack even if we CQed before
 03:59:39 000415 -18  0.3 2345 +  CQ P49Z FK54 
-14:36:07 TX: P49Z W5XD EM10                                          We auto-answer
-14:36:22 TX: P49Z W5XD EM10                                          and again
+14:36:07 TX: P49Z W5XD EM10                                          We auto-answer...wish we could send "R EM10" to signal "we have your grid"
+14:36:22 TX: P49Z W5XD EM10                                          ...but wsjt-x uses the R to decide to end the QSO
 03:59:39 000445 -18  0.3 2345 +  W5XD P49Z +01                       now he comes back to us
 19:57:22 TX: P49Z W5XD R-18                                          we send our report
 19:57:37 TX: P49Z W5XD R-18                                          but we heard nothing, so send again
 03:59:39 000515 -18  0.3 2345 +  W5XD P49Z RR73                      now he heard us
 19:57:52 TX: P49Z W5XD RRR
+14:50:22 TX: CQ W5XD EM10
 03:59:39 000545 -18  0.3 2345 +  W5XD P49Z RR73                      and apparently expects to hear from us again
 19:58:22 TX: P49Z W5XD RRR
 03:59:39 000600 -18  0.3 2345 +  CQ P49A FK55
@@ -52,54 +67,59 @@
 03:59:39 000645 -18  0.3 2345 +  W5XD P49A R+02                       He apparently didn't hear us
 19:59:22 TX: P49A W5XD RRR                                            so we repeat
 03:59:39 000700 -18  0.3 2345 +  CQ P49A FK55                         he goes back to CQ
-..... and we log the QSO and send nothing ...
+14:51:52 TX: CQ W5XD EM10                                             ..... and we log the QSO and send cq
 03:59:39 000715 -18  0.3 2345 +  W1AW F3ABC RR73
 14:39:07 TX: F3ABC W5XD EM10                                          for testing, we set to auto-initiate on this
 03:59:39 000730 -18  0.3 2345 +  W5XD F3ABC JN18
-20:00:07 TX: F3ABC W5XD -18
+14:52:22 TX: F3ABC W5XD R EM10                                        he didn't R the grid, so we do
 03:59:39 000745 -18  0.3 2345 +  W5XD F3ABC +02
 20:00:22 TX: F3ABC W5XD R-18
 03:59:39 000800 -18  0.3 2345 +  W5XD F3ABC +02
 20:00:37 TX: F3ABC W5XD R-18
-03:59:39 000815 -18  0.3 2345 +  CQ F3ABC JN18                       
-03:59:39 000830 -18  0.3 2345 +  CQ F4ABC JN19
-03:59:39 000845 -18  0.3 2345 +  W5XD F4ABC +02
-20:01:22 TX: F4ABC W5XD R-18
-20:01:37 TX: F4ABC W5XD R-18
-03:59:39 000915 -18  0.3 2345 +  CQ F4ABC JN19                       
-20:01:52 TX: F4ABC W5XD R-18
-03:59:39 000930 -18  0.3 2345 +  CQ F5ABC JN20
-20:02:07 TX: F4ABC W5XD R-18
-03:59:39 000945 -18  0.3 2345 +  W5XD F5ABC +02
-20:02:22 TX: F4ABC W5XD R-18
-20:02:37 TX: F5ABC W5XD R-18
-20:02:52 TX: F5ABC W5XD R-18
-20:03:07 TX: F5ABC W5XD R-18
-20:03:22 TX: F5ABC W5XD R-18
-03:59:39 001115 -18  0.3 2345 +  CQ F5ABC JN20                       
-03:59:39 001130 -18  0.3 2345 +  CQ RU K5ZD FI71                       Past here be RU exchanges. we muddle through
-14:43:22 TX: K5ZD W5XD EM10
-03:59:39 001145 -18  0.3 2345 +  W5XD K5ZD R 599 MA
+03:59:39 000815 -18  0.3 2345 +  CQ F3ABC JN18                        he went straight to CQ on next cycle, so we log it
+14:53:07 TX: CQ W5XD EM10
+03:59:39 000830 -18  0.3 2345 +  CQ F4DEF JN19
+14:53:22 TX: F4DEF W5XD EM10
+03:59:39 000845 -18  0.3 2345 +  W5XD F4DEF +02
+20:01:22 TX: F4DEF W5XD R-18
+20:01:37 TX: F4DEF W5XD R-18
+03:59:39 000915 -18  0.3 2345 +  CQ F4DEF JN19                       extra cycle to hear his CQ. do NOT log it                    
+20:01:52 TX: F4DEF W5XD R-18
+03:59:39 000930 -18  0.3 2345 +  CQ F5XYZ JN20                       auto-answer will get to this guy. later
+20:02:07 TX: F4DEF W5XD R-18
+03:59:39 000945 -18  0.3 2345 +  W5XD F5XYZ +02
+20:02:22 TX: F4DEF W5XD R-18                                         last one to timeout. don't log him
+20:02:37 TX: F5XYZ W5XD R-18                                         now try answer the later CQ
+20:02:52 TX: F5XYZ W5XD R-18
+20:03:07 TX: F5XYZ W5XD R-18
+20:03:22 TX: F5XYZ W5XD R-18                                         don't log this one either
+03:59:39 001115 -18  0.3 2345 +  CQ F5XYZ JN20                       
+03:59:39 001130 -18  0.3 2345 +  CQ RU K5ZD FI71                       Past here be RU exchanges. we muddle through cuz not in RU mode
+14:43:22 TX: K5ZD W5XD EM10                                            we're being stupid. should not answer CQ RU, but we're testing.
+03:59:39 001145 -18  0.3 2345 +  W5XD K5ZD R 599 MA                    we are not in RU mode, so cannot handle this
 14:43:37 TX: K5ZD W5XD RR73                                            we're not in contest mode. try to get out!
 03:59:39 001200 -18  0.3 2345 +  CQ RU K5ZD FI71                     
+14:56:52 TX: CQ W5XD EM10                                              we move on
 03:59:39 001215 -18  0.3 2345 +  CQ RU K1ZD FI72
 14:44:07 TX: K1ZD W5XD EM10
 03:59:39 001230 -18  0.3 2345 +  W5XD K1ZD R 539 ME
 14:44:22 TX: K1ZD W5XD RR73                                            same as above
-03:59:39 001245 -18  0.3 2345 +  W5XD K1ZD 73                        
-14:44:37 TX: K1ZD W5XD RR73
-03:59:39 001300 -18  0.3 2345 +  W5XD K1ZD 73
-14:44:52 TX: K1ZD W5XD RR73
+03:59:39 001245 -18  0.3 2345 +  W5XD K1ZD 73                          he answered our 73 with one of his own
+15:19:07 TX: CQ W5XD EM10
+03:59:39 001300 -18  0.3 2345 +  W5XD K1ZD 73                          maybe he wants something from us? we ignore
+15:19:22 TX: CQ W5XD EM10                                              if 2nd ack is None
+18:54:22 TX: K1ZD W5XD RR73
 03:59:39 001315 -18  0.3 2345 +  CQ RU K1ZD FI72                     
+15:19:37 TX: CQ W5XD EM10
 03:59:39 001330 -18  0.3 2345 +  W5XD W5TA 589 TX                       RU contest mode calling me. uh-oh          
-14:45:22 TX: W5TA W5XD EM10                                             we're in grid+db mode
+15:19:52 TX: W5TA W5XD RRR                                              try to get rid of him
 03:59:39 001345 -18  0.3 2345 +  W5XD W5TA 589 TX                       he's not happy. he tries again
-14:45:37 TX: W5TA W5XD -18                                              we stick to our guns (grid+db mode)
-14:45:52 TX: W5TA W5XD -18                                              ...and insist he finish
+15:20:07 TX: W5TA W5XD RRR                                              all he will get from us
+15:20:22 TX: CQ W5XD EM10
 03:59:39 001415 -18  0.3 2345 +  W5XD W5TA RR73
-20:06:52 TX: W5TA W5XD -18                                              ...its not that easy to get rid of me
+15:20:22 TX: CQ W5XD EM10
 03:59:39 001430 -18  0.3 2345 +  W5XD W5TA RR73
-20:07:07 TX: W5TA W5XD -18
+15:20:22 TX: CQ W5XD EM10
 03:59:39 001445 -18  0.3 2345 +  CQ LA1ST                         
 
 

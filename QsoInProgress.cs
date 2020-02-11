@@ -130,10 +130,9 @@ namespace DigiRite
 
         public bool Active { get { return active; } set { 
                 if (value && !active)
-                {
+                {   // changing from inactive to active
                     CyclesSinceMessaged = 0;
                     holdingForAnotherQso = false;
-                    messagedThisCycle = true;
                 }
                 active = value;
                 if (null != OnChangedCb) OnChangedCb();

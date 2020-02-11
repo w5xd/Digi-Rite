@@ -28,7 +28,7 @@ namespace DigiRite
      * hisCall.
      */
 
-    public delegate bool AcceptAck(XDpack77.Pack77Message.Message m);
+    public delegate bool ContestMessageSelector(XDpack77.Pack77Message.Message m);
 
     class QsoQueue : QueueCommon
     {
@@ -40,12 +40,13 @@ namespace DigiRite
             string GetAckMessage(QsoInProgress q, bool ofAnAck);
             void SendMessage(string toSend, QsoInProgress q, QsoSequencer.MessageSent ms);
             void LogQso(QsoInProgress q);
+            void SendOnLoggedAck(QsoInProgress q, QsoSequencer.MessageSent ms);
         };
 
         // connect the QsoQueue with QsoInProgress on callbacks from the QsoSequencer
-        protected class QsoSequencerImpl : QsoSequencer.IQsoSequencerCallbacks
+        protected class QsoSequencerCbImpl : QsoSequencer.IQsoSequencerCallbacks
         {
-            public QsoSequencerImpl(QsoQueue queue, QsoInProgress q)
+            public QsoSequencerCbImpl(QsoQueue queue, QsoInProgress q)
             {   qsoQueue = queue; qso = q;   }
 
             public void LogQso()  
@@ -54,6 +55,7 @@ namespace DigiRite
                 { qsoQueue.sendAck(qso, ofAnAck, ms);  }
             public void SendExchange(bool withAck, QsoSequencer.MessageSent ms)  
                 {  qsoQueue.sendExchange(qso, withAck, ms); }
+            public void SendOnLoggedAck(QsoSequencer.MessageSent ms) {  qsoQueue.callbacks.SendOnLoggedAck(qso, ms);} 
             public override String ToString()         
                 { return qso.ToString(); }
 
@@ -61,12 +63,12 @@ namespace DigiRite
             private QsoInProgress qso;
         }
 
-        private AcceptAck acceptAckFcn;
+        private ContestMessageSelector messageSelector;
 
-        public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb, AcceptAck acceptAck) : base(listBox)
+        public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb, ContestMessageSelector selector) : base(listBox)
         {   
             callbacks = cb; 
-            acceptAckFcn = acceptAck;
+            messageSelector = selector;
         }     
 
         // call here every for every incoming message that might be relevant to us
@@ -86,10 +88,10 @@ namespace DigiRite
                 QsoSequencer sequencer = inProgress.Sequencer as QsoSequencer;
                 onUsed(directlyToMe ? Conversation.Origin.TO_ME : Conversation.Origin.TO_OTHER);
                 // What's in the message? an exchange and/or an acknowledgement?
-                bool hasExchange = ExchangeFromMessage(rm.Pack77Message) != null;
                 bool ack = false;
-                if (acceptAckFcn(rm.Pack77Message))
-                    {
+                bool hasExchange = ExchangeFromMessage(rm.Pack77Message) != null;
+                if (hasExchange)
+                {
                     XDpack77.Pack77Message.Roger roger = rm.Pack77Message as XDpack77.Pack77Message.Roger;
                     if (roger != null)
                         ack = roger.Roger; // if the message has a roger bit, use it
@@ -106,6 +108,8 @@ namespace DigiRite
                     sequencer.OnReceivedExchange(ack);
                 else if (ack)
                     sequencer.OnReceivedAck();
+                else 
+                    sequencer.OnReceivedWrongExchange();
             } else if (autoStart && directlyToMe)
             {
                 onUsed(Conversation.Origin.TO_ME);
@@ -120,6 +124,8 @@ namespace DigiRite
 
         protected virtual XDpack77.Pack77Message.Exchange ExchangeFromMessage(XDpack77.Pack77Message.Message m)
         {
+            if (!messageSelector(m))
+                return null;
             XDpack77.Pack77Message.Exchange exc = m as XDpack77.Pack77Message.Exchange;
             // The Pack77Message Exchange interface can be deceptive.
             // The Standard message CQ can have this interface but a null exc.Exchange with non-null GridSquare
@@ -130,7 +136,7 @@ namespace DigiRite
 
         protected override void StartQso(QsoInProgress q)
         {   // q needs to already be in our qsosPanel list
-            QsoSequencer qs = new QsoSequencer(new QsoSequencerImpl(this, q));
+            QsoSequencer qs = new QsoSequencer(new QsoSequencerCbImpl(this, q));
             q.Sequencer = qs;
             // very first message directed from other to me
             // can be a CQ I chose to answer, or can be an exchange
@@ -174,10 +180,12 @@ namespace DigiRite
         protected bool gridSquareAck;
         public QsoQueueGridSquare(QsosPanel listBox, IQsoQueueCallBacks cb, bool gridAck) : base(listBox, cb,
             (XDpack77.Pack77Message.Message m) => { 
+                // select exchanges with a grid square
                 var sm = m as XDpack77.Pack77Message.StandardMessage;
+                bool ret = false;
                 if ((null != sm) && !String.IsNullOrEmpty(sm.GridSquare))
-                    return true;
-                return false;
+                    ret = true;
+                return ret;
                 })
         {
             gridSquareAck = gridAck;
@@ -185,7 +193,7 @@ namespace DigiRite
 
         protected override void StartQso(QsoInProgress q)
         {   // q needs to already be in our qsosPanel list
-            QsoSequencer qs = new QsoSequencer(new QsoSequencerImpl(this, q));
+            QsoSequencer qs = new QsoSequencer(new QsoSequencerCbImpl(this, q));
             q.Sequencer = qs;
             // very first message directed from other to me
             // can be a CQ I chose to answer, or can be an exchange
