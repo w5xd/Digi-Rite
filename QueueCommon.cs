@@ -49,11 +49,11 @@ namespace DigiRite
             foreach (QsoInProgress q in inProgList)
             {
                 bool wasReceiveCycle = (q.Message.CycleNumber & 1) != (cycleNumber & 1);
-                if (!q.OnCycleBegin(wasReceiveCycle) && wasReceiveCycle && q.Sequencer != null )
+                bool messagedThisCycle = q.OnCycleBegin(wasReceiveCycle);
+                if (wasReceiveCycle && q.Sequencer != null )
                 {
-                    if (!q.Sequencer.IsFinished)
-                        q.Sequencer.OnReceivedNothing();
-                    else if (q.IsLogged)
+                    q.Sequencer.OnReceiveCycleEnd(messagedThisCycle);
+                    if (!messagedThisCycle && q.Sequencer.IsFinished && q.IsLogged)
                         q.Active = false;
                 }
             }

@@ -406,5 +406,29 @@ namespace DigiRite.Properties {
                 this["OnLoggedAcknowedgeMessage"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowCalcNextToSend {
+            get {
+                return ((bool)(this["ShowCalcNextToSend"]));
+            }
+            set {
+                this["ShowCalcNextToSend"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public ushort ReactivateQSOTimerMinutes {
+            get {
+                return ((ushort)(this["ReactivateQSOTimerMinutes"]));
+            }
+            set {
+                this["ReactivateQSOTimerMinutes"] = value;
+            }
+        }
     }
 }

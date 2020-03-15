@@ -2,7 +2,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>DigiRite Readme 1.1.37</title>
+    <title>DigiRite Readme 1.1.38</title>
 </head>
 <body>
     <p>
@@ -7034,8 +7034,10 @@ CWZH+pLx19gxjy6dxYmXf4cv3j4Rl/3xj/jKV75iXkXZBPj/AZVMEkzQ14mJAAAAAElFTkSuQmCC" />
         </li>
         <li>
             <em>Move QSO Up</em> and <em>Move QSO Down</em> change the priority of this QSO.
-            Only the top-most active QSO (or QSOs if you have enabled multi-streaming) will
-            generate an outgoing message in a cycle. With the keyboard focus on this item,
+            The top-most active QSO (or QSOs if you have enabled multi-streaming) will
+            generate an outgoing message in a cycle, <b><i>except</i></b> that a lower
+            priority QSO will instead be selected if it has decoded something from the
+            other station more recently. With the keyboard focus on this item,
             Alt+Up or Alt+Down will also move it up or down the list.
         </li>
         <li>
@@ -7425,6 +7427,32 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         the entries in DigiRite's Conversation History window. The conversation log file is
         erased and started over every time you restart DigiRite.
     </p>
+    1.1.38
+    <ul>
+        <li>Fix "item with same key" exception.</li>
+        <li>Fix extraneous logging of QSOs when "wrong exchange" is received.</li>
+        <li>Click in label for QSOs in Progress toggles checkbox.</li>
+        <li>The Qso in progress (or QSOs if multi-streaming) that generates an outgoing message
+            is subject to how recently a message has been decoded for that QSO in progress. QSOs in
+            progress with more recent decodes have priority over those with no recent decodes.</li>
+        <li>Shorten "ReactivateQSOTimerMinutes" to 5 minutes. If a QSO in Progress is logged, DigiRite remembers
+            it as the same QSO for this long in case that station calls you again.
+        </li>
+        <li>A hidden and already-logged QSO in Progress only becomes visible on receipt of a new message, but is not
+        made Active (which previous versions did.)</li>
+        <li>Automatically activate an inactive QSO only for a QSO that had been automatically deactived by
+        timeout, and when a new message arrives from that station.
+        </li>
+        <li>Add options to transmit "1.1" streams. The first stream is at about 87% of full amplitude, and the other at 13%. The
+        amplitudes total to 100% to prevent overdrive--the rig is only capable of 100%.
+        In terms of power, this is about 75% power on the first stream (-1.2 dB down from peak) and about 2% on the second (-18dB).
+        Depending on how linear your rig's transmitter is, the IMD products for 1.1 streams should be down, about -17dB from what
+        they would be if you ran 2 streams.
+        </li>
+        <li>Change restriction on consecutive transmit cycles from not allowed, to allowing a maximum of two in a row. This
+        saves a "wasted" cycle for the case you want to immediately change between odd and even.</li>
+        <li>Initiating a QSO during the first few seconds of a QSO aborts the CQ in favor of the QSO (FT8 mode only.)</li>
+    </ul>
     1.1.37
     <ul>
         <li>Various improvements to the automatic sequencing algorithms, including dealing reasonbly with wrong-contest messages.</li>

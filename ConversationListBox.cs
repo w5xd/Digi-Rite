@@ -31,6 +31,9 @@ namespace DigiRite
                         case Conversation.Origin.TRANSMIT:
                             backColor = Color.Yellow;
                             break;
+                        case Conversation.Origin.TRANSMIT_REDUCED:
+                            backColor = Color.LightGoldenrodYellow;
+                            break;
                         default:
                             break;
                     }
@@ -48,7 +51,7 @@ namespace DigiRite
     }
 
     public static class Conversation
-    { public enum Origin { TRANSMIT, TO_ME, TO_OTHER, INITIATE }; }
+    { public enum Origin { TRANSMIT, TRANSMIT_REDUCED, TO_ME, TO_OTHER, INITIATE }; }
 
     class ListBoxConversationItem
     {

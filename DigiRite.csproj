@@ -180,9 +180,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="decoded-test-ru.txt" />
-    <Content Include="decoded-test-wwdigi.txt" />
-    <Content Include="decoded-tests.txt" />
+    <Content Include="Tests\decoded-dbReport.txt" />
+    <Content Include="Tests\decoded-test-ru.txt" />
+    <Content Include="Tests\decoded-test-wwdigi.txt" />
+    <Content Include="Tests\decoded-tests.txt" />
     <Content Include="ReadMe.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

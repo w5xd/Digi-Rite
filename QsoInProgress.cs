@@ -44,12 +44,14 @@ namespace DigiRite
         private bool messagedLastCycle = false;
         private bool holdingForAnotherQso = false;
         private bool active=true;
+        private bool timedMyselfOut = false;
         private short band = 0;
         private DateTime timeOfLastReceived;
         private bool markedAsLogged = false;
         private uint transmitFrequency = 0;
         private List<XDpack77.Pack77Message.ReceivedMessage> messages = new List<XDpack77.Pack77Message.ReceivedMessage>();
         private const int MAX_CYCLES_WITHOUT_ANSWER = 5;
+
         public delegate void OnChanged();
         public OnChanged OnChangedCb { get; set; }
         public QsoInProgress(RecentMessage rm, short band)
@@ -60,6 +62,8 @@ namespace DigiRite
             this.AckMessage = Properties.Settings.Default.DefaultAcknowlegement;
             timeOfLastReceived = DateTime.UtcNow;
         }
+
+        public bool TransmitedLastOpportunity { get; set; }  = false;
 
         public XDpack77.Pack77Message.ReceivedMessage Message { get { return messages.First(); } }
         
@@ -118,7 +122,9 @@ namespace DigiRite
             }
         }
 
-        public int CyclesSinceMessaged { get; private set; } = 0;
+        private int cyclesSinceMessaged;
+        public int CyclesSinceMessaged { get { return messagedThisCycle ? 0 : cyclesSinceMessaged; } }
+        public int CyclesSinceMessagedNotHolding { get; private set; } = 0;
 
         public bool CanAcceptAckNotToMe { get; private set; } = true;
 
@@ -131,7 +137,7 @@ namespace DigiRite
         public bool Active { get { return active; } set { 
                 if (value && !active)
                 {   // changing from inactive to active
-                    CyclesSinceMessaged = 0;
+                    CyclesSinceMessagedNotHolding = 0;
                     holdingForAnotherQso = false;
                 }
                 active = value;
@@ -153,29 +159,39 @@ namespace DigiRite
 
         public void OnSentAlternativeMessage()
         {
-            CyclesSinceMessaged = 0;
+            CyclesSinceMessagedNotHolding = 0;
             messagedThisCycle = true;
         }
 
         private bool AmTimedOut { get { return !messagedThisCycle && 
-                    CyclesSinceMessaged >= MAX_CYCLES_WITHOUT_ANSWER; } }
+                    CyclesSinceMessagedNotHolding >= MAX_CYCLES_WITHOUT_ANSWER; } }
 
         public bool OnCycleBegin(bool wasReceiveCycle)
         {
             bool ret = MessagedThisCycle;
             if (ret)
-                CyclesSinceMessaged = 0;
-            else if (!holdingForAnotherQso && wasReceiveCycle)
-                CyclesSinceMessaged += 1;
+            {
+                CyclesSinceMessagedNotHolding = 0;
+                cyclesSinceMessaged = 0;
+            }
+            else if (wasReceiveCycle)
+            {
+                cyclesSinceMessaged += 1;
+                if (!holdingForAnotherQso)
+                    CyclesSinceMessagedNotHolding += 1;
+            }
             if (AmTimedOut)
             {
                 CanAcceptAckNotToMe = false;
                 if (active)
                 {
+                    timedMyselfOut = true;
                     active = false;
                     if (null != OnChangedCb) OnChangedCb();
                 }
             }
+            else
+                timedMyselfOut = false;
             if (wasReceiveCycle)
                 messagedLastCycle = messagedThisCycle;
             messagedThisCycle = false;
@@ -212,33 +228,36 @@ namespace DigiRite
             {
                 if (directlyToMe)
                     CanAcceptAckNotToMe = true;
-                if (!directlyToMe)
+                else
                 {
-                    if (String.IsNullOrEmpty(callsQsled))
+                    if (!messagedThisCycle)
                     {
-                        // if he sends multiple messages in the same cycle...
-                        // ...then we need to "hold" only if this is the only one
-                        if (!messagedThisCycle && !markedAsLogged)
+                        if (String.IsNullOrEmpty(callsQsled))
                         {
-                            // he sent to someone else
-                            int freqDif = (int)transmitFrequency;
-                            freqDif -= (int)Message.Hz;
-                            if (freqDif < 0)
-                                freqDif = -freqDif;
-                            if (freqDif <= 60)
-                                holdingForAnotherQso = true;
+                            // if he sends multiple messages in the same cycle...
+                            // ...then we need to "hold" only if this is the only one
+                            if (!messagedThisCycle && !markedAsLogged)
+                            {
+                                // he sent to someone else
+                                int freqDif = (int)transmitFrequency;
+                                freqDif -= (int)Message.Hz;
+                                if (freqDif < 0)
+                                    freqDif = -freqDif;
+                                if (freqDif <= 60)
+                                    holdingForAnotherQso = true;
+                            }
                         }
-                    }
-                    else
-                    {
-                        holdingForAnotherQso = false;
-                        if (messagedLastCycle && !IsLogged && callsQsled == "ALL")
-                            return true;
+                        else
+                        {
+                            holdingForAnotherQso = false;
+                            if (messagedLastCycle && !IsLogged && callsQsled == "ALL")
+                                return true;
+                        }
                     }
                     return false;
                 }
                 holdingForAnotherQso = false;
-                if (AmTimedOut || IsLogged)
+                if (timedMyselfOut && !active)
                     active = true;
                 messagedThisCycle = true;
                 messages.Add(rm);
@@ -253,4 +272,5 @@ namespace DigiRite
 
         public List<XDpack77.Pack77Message.ReceivedMessage> MessageList { get { return messages; } }
     }
+
 }
