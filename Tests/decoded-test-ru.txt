@@ -64,6 +64,7 @@
 16:25:35 000615 -18  0.3 2345 +  W5XD F7ABC JN18                     not a contest exchange! 
 16:25:37 TX: F7ABC W5XD 539 TX                                       still insist
 16:25:35 000630 -18  0.3 2345 +  W5XD F7ABC JN18                     not a contest exchange! 
+23:14:07 TX: F7ABC W5XD RRR
 16:25:50 000645 -18  0.3 2345 +  W5XD F7ABC R 559 0001               switches to correct exchange
 16:25:52 TX: F7ABC W5XD RRR
 16:26:07 TX: CQ W5XD EM10

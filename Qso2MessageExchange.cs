@@ -135,8 +135,18 @@ namespace DigiRite
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
         private ExchangeSent lastSent;
+#if DEBUG
+        // make it easier to debug a specific QSO when there are multiple
+        private static uint gId;
+        private uint id;
+#endif
         public Qso2MessageSequencer(IQsoSequencerCallbacks cb)
-        { this.cb = cb;   }
+        { 
+            this.cb = cb;
+#if DEBUG
+            id = ++gId;
+#endif
+        }
 
         public bool IsFinished { get { return haveLoggedGrid || haveLoggedReport; } }
 
@@ -156,6 +166,7 @@ namespace DigiRite
         public delegate bool IsMe(string c);
         public void OnReceived(bool directlyToMe, XDpack77.Pack77Message.Message msg)
         {
+            deferredToEndOfReceive = null;
             XDpack77.Pack77Message.Exchange exc = msg as XDpack77.Pack77Message.Exchange;
             if (!amLeaderSet)
                 amLeader = directlyToMe;
@@ -236,35 +247,56 @@ namespace DigiRite
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             if ((qsl != null) && String.Equals(qsl.CallQSLed, "ALL") || directlyToMe)
             {
-                if (!haveLoggedGrid && (haveReport || (directlyToMe && haveGrid)))
+                // what we need to do
+                Action toDoOnAck = () =>
                 {
-                    haveLoggedGrid = true;
-                    if (haveReport)
-                        haveLoggedReport = true;
-                    lastSent = null;
-                    cb.LogQso();
-                    ackOfAckGrid = qsl.QslText; // see if they repeat exact message
-                    AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                    cb.SendOnLoggedAck(() =>
-                    { onLoggedAckEnabled = true;}); 
-                    return;
-                }
-                if (AckMoreAcks > 0 &&  directlyToMe && String.Equals(qsl.QslText, ackOfAckGrid))
-                {   // only repeat this if they send exact same message
-                    lastSent = null;
-                    AckMoreAcks -= 1;
-                    if (onLoggedAckEnabled)
-                        cb.SendOnLoggedAck(null);
-                    else
-                        cb.SendAck(null);
-                    return;
-                }
+                    if (!haveLoggedGrid && (haveReport || (directlyToMe && haveGrid)))
+                    {
+                        haveLoggedGrid = true;
+                        if (haveReport)
+                            haveLoggedReport = true;
+                        lastSent = null;
+                        cb.LogQso();
+                        ackOfAckGrid = qsl.QslText; // see if they repeat exact message
+                        AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                        cb.SendOnLoggedAck(() =>
+                        { onLoggedAckEnabled = true; });
+                        return;
+                    }
+                    if (AckMoreAcks > 0 && directlyToMe && String.Equals(qsl.QslText, ackOfAckGrid))
+                    {   // only repeat this if they send exact same message
+                        lastSent = null;
+                        AckMoreAcks -= 1;
+                        if (onLoggedAckEnabled)
+                            cb.SendOnLoggedAck(null);
+                        else
+                            cb.SendAck(null);
+                        return;
+                    }
+                };
+                // do it now? or see if multi-streaming partner sends a message directlyToMe
+                if (directlyToMe)
+                    toDoOnAck();
+                else
+                    deferredToEndOfReceive = toDoOnAck;
                 return;
             }
             OnReceivedNothing(); // didn't get what I wanted
-         }
+        }
 
-        public bool OnReceivedNothing()
+        private Action deferredToEndOfReceive;
+        public void OnReceiveCycleEnd(bool messagedThisCycle)
+        {
+            if (!messagedThisCycle)
+            {
+                if (!IsFinished)
+                    OnReceivedNothing();
+            }
+            else if (null != deferredToEndOfReceive)
+                deferredToEndOfReceive();
+            deferredToEndOfReceive = null;
+        }
+        private bool OnReceivedNothing()
         {
             if (null != lastSent)
             {

@@ -38,6 +38,12 @@ namespace DigiRite
         private LogFile logFile;
         private LogFile conversationLogFile;
         private bool sendInProgress = false;
+        private bool SendInProgress {
+            get { return sendInProgress; }
+            set { sendInProgress = value;
+                if (!value)
+                    CqMessageInProgress = false;}
+        }
         private AltMessageShortcuts altMessageShortcuts;
 
         // what we put in listToMe and cqlist
@@ -192,7 +198,6 @@ namespace DigiRite
                 rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
             using (rk)
             {
-
                 uint channel = (uint)Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()];
                 if (waveDevicePlayer != null)
                     waveDevicePlayer.Dispose();
@@ -406,7 +411,21 @@ namespace DigiRite
 
         #region transmit management
 
-        private int MAX_MESSAGES_PER_CYCLE { get { return (int)numericUpDownStreams.Value; } }
+        private int MAX_MESSAGES_PER_CYCLE { get { 
+                int ret = (int)numericUpDownStreams.Value; 
+                if ((decimal)ret != numericUpDownStreams.Value)
+                    ret += 1;
+                return ret;
+                } }
+        private float AMP_REDUCE_PER_STREAM {
+            get {
+                return numericUpDownStreams.Value == 1.1m ? 0.15f : 1.0f;
+            }}
+        private bool IS_AMP_REDUCED_PER_STREAM {
+            get {
+                return numericUpDownStreams.Value == 1.1m ? true : false;
+            }
+        }
 
         // empirically determined to "center" in the time slot
         private const int FT8_TX_AFTER_ZERO_MSEC = 210;
@@ -438,7 +457,8 @@ namespace DigiRite
         private GenMessage genMessage;
         private bool[] transmittedForQSOLastCycle = new bool[2];
         private delegate DateTime GetNowTime();
-
+        private int consecutiveTransmitCycles = 0;
+        private bool CqMessageInProgress = false;
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
             if ((digiMode == DigiMode.FT4) && allowLate)
@@ -456,9 +476,11 @@ namespace DigiRite
             int lastCycleIndex = nowOdd ? 0 : 1;
             // can't transmit two consecutive cycles, one odd and one even
             bool onUserSelectedCycle = nowOdd == radioButtonOdd.Checked;
-            if ((transmittedForQSOLastCycle[lastCycleIndex])
-                    && !onUserSelectedCycle)
+            if (consecutiveTransmitCycles >= 2)
+            {
+                consecutiveTransmitCycles = 0;
                 return;
+            }
             List<QueuedToSendListItem> toSendList = new List<QueuedToSendListItem>();
             // scan the checkboxes and decide what to send
             if (checkBoxManualEntry.Checked && onUserSelectedCycle)
@@ -491,7 +513,8 @@ namespace DigiRite
 
             // double list search is to maintain the priority order in listBoxInProgress.
             // the order things appear in checkedListBoxToSend is irrelevant.
-            List<QueuedToSendListItem> inToSend = new List<QueuedToSendListItem>();
+            Dictionary<int, QueuedToSendListItem> inToSend = new Dictionary<int, QueuedToSendListItem>();
+            int k = 0;
             var inProgress = qsosPanel.QsosInProgress;
             for (int i = 0; i < inProgress.Count; i++)
             {   // first entries are highest priority
@@ -509,31 +532,55 @@ namespace DigiRite
                         continue;   // present, but marked to skip
                     QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
                     if ((null != qli) && Object.ReferenceEquals(qli.q, q))
-                        inToSend.Add(qli);
+                        inToSend.Add(k++, qli);
                 }
             }
-
-            foreach (QueuedToSendListItem qli in inToSend)
+            
+            // push those we haven't heard from to end of list, recent calls to beginning
+            var sortedByRecentActivity = inToSend.OrderBy(item => item, new QueuedToSendListItemComparer());
+            foreach (var qli in sortedByRecentActivity)
             {
                 if (toSendList.Count >= MAX_MESSAGES_PER_CYCLE)
                     break;
                 checkedlbNextToSend.Items.Remove(qli);
                 if (toSendList.Any((qalready) => {
-                    if (null != qalready && null != qalready.q && null != qli.q)
-                        return String.Equals(qli.q.HisCall, qalready.q.HisCall);
+                    if (null != qalready && null != qalready.q && null != qli.Value.q)
+                        return String.Equals(qli.Value.q.HisCall, qalready.q.HisCall);
                     return false; }
                     ))
                     continue; // already a send to this callsign. don't allow another
-                toSendList.Add(qli);
+                toSendList.Add(qli.Value);
             }
 
             bool anyToSend = toSendList.Any();
             int thisCycleIndex = nowOdd ? 1 : 0;
             transmittedForQSOLastCycle[thisCycleIndex] = anyToSend;
+            if (anyToSend)
+            {
+                consecutiveTransmitCycles += 1;
+                if (consecutiveTransmitCycles >= 2)
+                {
+                    // force all Qsos in progress on "other" cycle to inactive
+                    for (int i = 0; i < inProgress.Count; i++)
+                    {   // first entries are highest priority
+                        QsoInProgress q = inProgress[i];
+                        if (null == q)
+                            continue;   // manual entry goes this way
+                        if (!q.Active)
+                            continue;
+                        bool sendOdd = ((q.Message.CycleNumber + 1) & 1) != 0;
+                        if (sendOdd != nowOdd)
+                            q.Active = false;
+                    }
+                }
+            }
+            else
+                consecutiveTransmitCycles = 0;
 
             int cqMode = comboBoxCQ.SelectedIndex;
+            bool onlyCQ = cqMode == 1 && !toSendList.Any();
             if (onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE &&
-                    ((cqMode == 1 && !toSendList.Any()) || cqMode == 2))
+                    (onlyCQ || cqMode == 2))
             {   // only CQ if we have nothing else to send
                 string cq = "CQ";
                 /* 77-bit pack is special w.r.t. CQ. can't sent directed CQ 
@@ -547,6 +594,8 @@ namespace DigiRite
                 toSendList.Add(new QueuedToSendListItem(cq, null));
                 if (!checkBoxAutoXmit.Checked)
                     comboBoxCQ.SelectedIndex = 0;
+                if (onlyCQ)
+                    CqMessageInProgress = true;
             }
 
             List<XDft.Tone> itonesToSend = new List<XDft.Tone>();
@@ -554,6 +603,7 @@ namespace DigiRite
             int freqRange = FT_GAP_HZ + 1;
             int freqIncrement = freqRange + 1;
             bool doingMultiStream = toSendList.Count > 1;
+            Conversation.Origin origin = Conversation.Origin.TRANSMIT;
             foreach (var item in toSendList)
             {
                 QsoInProgress q = item.q;
@@ -603,18 +653,19 @@ namespace DigiRite
                 int[] itones = null;
                 bool[] ftbits = null;
                 genMessage(item.MessageText, ref asSent, ref itones, ref ftbits);
-                const float RELATIVE_POWER_THIS_QSO = 1.0f;
-                itonesToSend.Add(new XDft.Tone(itones, RELATIVE_POWER_THIS_QSO, freq, 0));
+                itonesToSend.Add(new XDft.Tone(itones, 1, freq, 0));
                 string conversationItem = String.Format("{2:00}{3:00}{4:00} transmit {1,4}    {0}",
                         asSent,
                         freq, toSend.Hour, toSend.Minute, seconds);
-                listBoxConversation.Items.Add(new ListBoxConversationItem(conversationItem, Conversation.Origin.TRANSMIT));
+                listBoxConversation.Items.Add(new ListBoxConversationItem(conversationItem, origin));
                 conversationLogFile.SendToLog(conversationItem);
                 ScrollListBoxToBottom(listBoxConversation);
                 logFile.SendToLog("TX: " + item.MessageText);
                 asSent = asSent.Trim();
                 if (asSent != item.MessageText)
                     logFile.SendToLog("TX error sent \"" + asSent + "\" instead of \"" + item.MessageText + "\"");
+                if (IS_AMP_REDUCED_PER_STREAM)
+                    origin = Conversation.Origin.TRANSMIT_REDUCED;
             }
 
             const int MAX_CONVERSATION_LISTBOX_ITEMS = 1000;
@@ -651,7 +702,7 @@ namespace DigiRite
                     }
                     int freq = itonesToSend[0].frequency;
                     freq = RigVfoSplitForTx(freq, freq + FT_GAP_HZ);
-                    sendInProgress = true;
+                    SendInProgress = true;
                     AfterNmsec(new Action(() =>
                         XDft.Generator.Play(genContext, itones,
                             freq, deviceTx.GetRealTimeAudioSink())), VfoSetToTxMsec);
@@ -673,6 +724,8 @@ namespace DigiRite
                     else if (maxFreq > rxForm.MaxDecodeFrequency + FT_GAP_HZ)
                         deltaFreq = rxForm.MaxDecodeFrequency + FT_GAP_HZ - maxFreq; // negative
                     List<XDft.Tone> tones = new List<XDft.Tone>();
+                    float amplitude = 1;
+                    float relativeAmplitudeSubsequentQsos = AMP_REDUCE_PER_STREAM;
                     foreach (var itones in itonesToSend)
                     {
                         int[] nextTones = itones.itone;
@@ -692,11 +745,12 @@ namespace DigiRite
                             }
                         }
 
-                        XDft.Tone thisSignal = new XDft.Tone(nextTones, 1.0f, itones.frequency + deltaFreq, 0);
+                        XDft.Tone thisSignal = new XDft.Tone(nextTones, amplitude, itones.frequency + deltaFreq, 0);
                         tones.Add(thisSignal);
+                        amplitude *= relativeAmplitudeSubsequentQsos;
                     }
                     RigVfoSplitForTx(minFreq, maxFreq + FT_GAP_HZ, tones);
-                    sendInProgress = true;
+                    SendInProgress = true;
                     AfterNmsec(new Action(() =>
                         XDft.Generator.Play(genContext, tones.ToArray(), deviceTx.GetRealTimeAudioSink())), VfoSetToTxMsec);
                 }
@@ -710,18 +764,23 @@ namespace DigiRite
                 if (null != qli && (null != (qp = qli.q)) && inProgress.Any((q) => Object.ReferenceEquals(q, qp)))
                 {   // if the QSO remains active in progress, but still in this list, it didn't get sent,
                     // mark it unchecked so user can see that.
-                    checkedlbNextToSend.SetItemChecked(j, qp.Active);
+                    checkedlbNextToSend.SetItemChecked(j, false);
                     j += 1;
                 }
                 else
                     checkedlbNextToSend.Items.RemoveAt(j);
             }
 
+            foreach (var item in inToSend)
+                item.Value.q.TransmitedLastOpportunity = false;
+
             foreach (var item in toSendList)
             {
                 var cb = item.MessageSent;
                 if (null != cb)
                     cb();
+                if (null != item.q)
+                    item.q.TransmitedLastOpportunity = true;
             }
         }
 
@@ -730,17 +789,10 @@ namespace DigiRite
 
         private int RigVfoSplitForTx(int minAudioTx, int maxAudioTx, List<XDft.Tone> tones = null)
         {
-            if (logger == null)
-                return minAudioTx; // can't do rig control
-
-            logger.SetTransmitFocus();
+            logger?.SetTransmitFocus();
 
             if (controlVFOsplit == VfoControl.VFO_NONE)
                 return minAudioTx;
-
-            bool split;
-            double txKHz; double rxKHz;
-            logger.GetRigFrequency(out rxKHz, out txKHz, out split);
 
             // want all outputs below TxHighFreqLimit
             // ...and, more importantly, above half that.
@@ -763,43 +815,50 @@ namespace DigiRite
                 offset *= 100;
             }
 
-            // proposed split in offset
-            if (((maxAudioTx - minAudioTx) >= (maxFreq - minFreq))
-                || (offset == 0))
-            {   //un-split the rig if the needed range is beyond
-                // the setup parameters, or no offset is needed
-                if (split)
-                    logger.SetRigFrequency(rxKHz, rxKHz, false);
-                return minAudioTx;
-            }
+            if (logger != null)
+            {
+                bool split;
+                double txKHz; double rxKHz;
+                logger.GetRigFrequency(out rxKHz, out txKHz, out split);
 
-            bool rigIsAlreadyOk = false;  // check if the rig has an acceptable split already
-            if (split)
-            {
-                int currentOffset = (int)(1000 * (rxKHz - txKHz));
-                if ((minAudioTx + currentOffset >= minFreq) &&
-                    maxAudioTx + currentOffset <= maxFreq)
-                {   // the rig's state is OK already
-                    offset = currentOffset;
-                    rigIsAlreadyOk = // OK only if we're really supposed to be in split mode
-                        controlVFOsplit != VfoControl.VFO_SHIFT;
-                }
-            }
-            // offset is what we'll set
-            if (!rigIsAlreadyOk)
-            {
-                double rxDuringTx = rxKHz;
-                double txDuringTx = rxKHz - .001f * offset;
-                if (controlVFOsplit == VfoControl.VFO_SPLIT)
-                    logger.SetRigFrequency(rxDuringTx, txDuringTx, true);
-                else if (controlVFOsplit == VfoControl.VFO_SHIFT)
-                {
-                    rxDuringTx = txDuringTx;
-                    logger.SetRigFrequency(rxDuringTx, txDuringTx, false);
-                    vfoOnTxEnd = () =>
-                    {
+                // proposed split in offset
+                if (((maxAudioTx - minAudioTx) >= (maxFreq - minFreq))
+                    || (offset == 0))
+                {   //un-split the rig if the needed range is beyond
+                    // the setup parameters, or no offset is needed
+                    if (split)
                         logger.SetRigFrequency(rxKHz, rxKHz, false);
-                    };
+                    return minAudioTx;
+                }
+
+                bool rigIsAlreadyOk = false;  // check if the rig has an acceptable split already
+                if (split)
+                {
+                    int currentOffset = (int)(1000 * (rxKHz - txKHz));
+                    if ((minAudioTx + currentOffset >= minFreq) &&
+                        maxAudioTx + currentOffset <= maxFreq)
+                    {   // the rig's state is OK already
+                        offset = currentOffset;
+                        rigIsAlreadyOk = // OK only if we're really supposed to be in split mode
+                            controlVFOsplit != VfoControl.VFO_SHIFT;
+                    }
+                }
+                // offset is what we'll set
+                if (!rigIsAlreadyOk)
+                {
+                    double rxDuringTx = rxKHz;
+                    double txDuringTx = rxKHz - .001f * offset;
+                    if (controlVFOsplit == VfoControl.VFO_SPLIT)
+                        logger.SetRigFrequency(rxDuringTx, txDuringTx, true);
+                    else if (controlVFOsplit == VfoControl.VFO_SHIFT)
+                    {
+                        rxDuringTx = txDuringTx;
+                        logger.SetRigFrequency(rxDuringTx, txDuringTx, false);
+                        vfoOnTxEnd = () =>
+                        {
+                            logger.SetRigFrequency(rxKHz, rxKHz, false);
+                        };
+                    }
                 }
             }
             if (null != tones)
@@ -853,11 +912,13 @@ namespace DigiRite
 
             RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
-            if (!sendInProgress && (
-                (rm.Message.CycleNumber & 1) != (cycleNumber & 1))
+            if (((rm.Message.CycleNumber & 1) != (cycleNumber & 1))
                 && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
             {   // start late if we can
-                transmitAtZero(true);
+                if (CqMessageInProgress)
+                    AbortMessage();
+                if (!SendInProgress)
+                    transmitAtZero(true);
             }
             checkBoxAutoXmit.Checked = true;
         }
@@ -907,104 +968,104 @@ namespace DigiRite
             else if (mycallNeedsBrackets)
                 mycall = String.Format(BracketFormat, mycall);
 
-                 // fill in from logger if we can
-                if (q.SentSerialNumber == 0)
-                {   // assign a serial number even if contest doesn't need it
-                    uint serialToSend = ++noLoggerSerialNumber;
-                    if (null != logger)
-                        serialToSend = logger.GetSendSerialNumber(q.HisCall);
-                    // logger may give us the same serial number since we're just one radio
-                    Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
-                    var inProgress = qsosPanel.QsosInProgress;
-                    for (int i = 0; i < inProgress.Count; i++)
-                    {   // first entries are highest priority
-                        QsoInProgress qp = inProgress[i];
-                        if (null == qp)
-                            continue;   // manual entry goes this way
-                        uint qps = qp.SentSerialNumber;
-                        if (qps != 0)
-                            serialsInProgress.Add(qps, qps);
+            // fill in from logger if we can
+            if (q.SentSerialNumber == 0)
+            {   // assign a serial number even if contest doesn't need it
+                uint serialToSend = ++noLoggerSerialNumber;
+                if (null != logger)
+                    serialToSend = logger.GetSendSerialNumber(q.HisCall);
+                // logger may give us the same serial number since we're just one radio
+                Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
+                var inProgress = qsosPanel.QsosInProgress;
+                for (int i = 0; i < inProgress.Count; i++)
+                {   // first entries are highest priority
+                    QsoInProgress qp = inProgress[i];
+                    if (null == qp)
+                        continue;   // manual entry goes this way
+                    uint qps = qp.SentSerialNumber;
+                    if (qps != 0)
+                        serialsInProgress[qps] = qps;
+                }
+                uint ignore;
+                while (serialsInProgress.TryGetValue(serialToSend, out ignore))
+                    serialToSend += 1;
+                q.SentSerialNumber = serialToSend;
+            }
+            switch (excSet)
+            {
+                case ExchangeTypes.ARRL_FIELD_DAY:
+                    string entryclass = "";
+                    var fdsplit = Properties.Settings.Default.ContestMessageToSend.Split((char[])null,
+                        StringSplitOptions.RemoveEmptyEntries);
+                    bool founddigit = false;
+                    foreach (string w in fdsplit)
+                    {
+                        if (!founddigit)
+                        {
+                            if (Char.IsDigit(w[0]))
+                            {
+                                founddigit = true;
+                                entryclass = w;
+                            }
+                        }
+                        else if (w.All(Char.IsLetter))
+                            return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                                addAck ? "R " : "", entryclass, w);
                     }
-                    uint ignore;
-                    while (serialsInProgress.TryGetValue(serialToSend, out ignore))
-                        serialToSend += 1;
-                    q.SentSerialNumber = serialToSend;
-                }
-                switch (excSet)
-                {
-                    case ExchangeTypes.ARRL_FIELD_DAY:
-                        string entryclass = "";
-                        var fdsplit = Properties.Settings.Default.ContestMessageToSend.Split((char[])null,
-                            StringSplitOptions.RemoveEmptyEntries);
-                        bool founddigit = false;
-                        foreach (string w in fdsplit)
+                    break;
+
+                case ExchangeTypes.ARRL_RTTY:
+                    string part = null;
+                    String percentSearch = Properties.Settings.Default.ContestMessageToSend;
+                    String percentsRemoved = "";
+                    for (; ; )
+                    {   // is there a serial number in the message?
+                        int percentPos = percentSearch.IndexOf('%');
+                        if (percentPos < 0)
                         {
-                            if (!founddigit)
-                            {
-                                if (Char.IsDigit(w[0]))
-                                {
-                                    founddigit = true;
-                                    entryclass = w;
-                                }
-                            }
-                            else if (w.All(Char.IsLetter))
-                                return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
-                                    addAck ? "R " : "", entryclass, w);
+                            percentsRemoved += percentSearch;
+                            break;  // no serial number
                         }
-                        break;
-
-                    case ExchangeTypes.ARRL_RTTY:
-                        string part = null;
-                        String percentSearch = Properties.Settings.Default.ContestMessageToSend;
-                        String percentsRemoved = "";
-                        for (; ; )
-                        {   // is there a serial number in the message?
-                            int percentPos = percentSearch.IndexOf('%');
-                            if (percentPos < 0)
-                            {
-                                percentsRemoved += percentSearch;
-                                break;  // no serial number
-                            }
-                            if ((percentPos < percentSearch.Length - 1) &&
-                                Char.IsLetter(percentSearch[percentPos + 1]))
-                            {
-                                percentsRemoved += percentSearch.Substring(0, percentPos);
-                                percentSearch = percentSearch.Substring(percentPos + 2);
-                                continue; // this one is not a serial number
-                            }
-                            part = String.Format("{0:0000}", q.SentSerialNumber);
-                            break;
-                        }
-                        if (String.IsNullOrEmpty(part))
+                        if ((percentPos < percentSearch.Length - 1) &&
+                            Char.IsLetter(percentSearch[percentPos + 1]))
                         {
-                            var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (string w in rttysplit)
-                                if (w.All(Char.IsLetter))
-                                {
-                                    part = w.ToUpper();
-                                    break;
-                                }
+                            percentsRemoved += percentSearch.Substring(0, percentPos);
+                            percentSearch = percentSearch.Substring(percentPos + 2);
+                            continue; // this one is not a serial number
                         }
-                        return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
-                            addAck ? "R " : "", q.Message.RST, part);
-
-                    case ExchangeTypes.GRID_SQUARE:
-                        if (null != logger)
-                        {   // logger can override sent grid
-                            string sentgrid = logger.GridSquareSendingOverride();
-                            if (sentgrid.Length >= 4)
-                            {
-                                q.SentGrid = sentgrid;
-                                return String.Format("{0} {1} {2} {3}",
-                                    hiscall, mycall,
-                                    addAck ? "R" : "", sentgrid);
-                            }
-                        }
+                        part = String.Format("{0:0000}", q.SentSerialNumber);
                         break;
+                    }
+                    if (String.IsNullOrEmpty(part))
+                    {
+                        var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string w in rttysplit)
+                            if (w.All(Char.IsLetter))
+                            {
+                                part = w.ToUpper();
+                                break;
+                            }
+                    }
+                    return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                        addAck ? "R " : "", q.Message.RST, part);
 
-                    case ExchangeTypes.DB_REPORT:
-                        break; // handle below
-                }
+                case ExchangeTypes.GRID_SQUARE:
+                    if (null != logger)
+                    {   // logger can override sent grid
+                        string sentgrid = logger.GridSquareSendingOverride();
+                        if (sentgrid.Length >= 4)
+                        {
+                            q.SentGrid = sentgrid;
+                            return String.Format("{0} {1} {2} {3}",
+                                hiscall, mycall,
+                                addAck ? "R" : "", sentgrid);
+                        }
+                    }
+                    break;
+
+                case ExchangeTypes.DB_REPORT:
+                    break; // handle below
+            }
             // if logger is not running, or doesn't handle the exchange.
             switch (excSet)
             {
@@ -1292,7 +1353,6 @@ namespace DigiRite
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
 #if !DEBUG
             if (null == logger)
             {
@@ -1593,6 +1653,7 @@ namespace DigiRite
             locationToSave = Location;
             sizeToSave = Size;
             checkBoxShowMenu.Checked = Properties.Settings.Default.ShowMenu;
+            checkBoxCalcNextToSend.Checked = checkedlbNextToSend.Visible = Properties.Settings.Default.ShowCalcNextToSend;
             rxForm.RxHz = (int)numericUpDownRxFrequency.Value;
             rxForm.MinDecodeFrequency = decodeMin;
             rxForm.MaxDecodeFrequency = decodeMax;
@@ -1621,16 +1682,12 @@ namespace DigiRite
             }
 #endif
 
-
             finishedLoad = true;
         }
 
         private void changeDigiMode()
         {
             ClockLabel cl = labelClockAnimation as ClockLabel;
-#if DISABLE_FT4
-            digiMode = DigiMode.FT8;
-#endif
             switch (digiMode)
             {
                 case DigiMode.FT4:
@@ -1699,31 +1756,30 @@ namespace DigiRite
                     break;
 
                 case ExchangeTypes.GRID_SQUARE:
-                    qsoQueue = new QsoQueueGridSquare(qsosPanel, this, !needBrackets(myCall));
+                    qsoQueue =  new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                                var sm = m as XDpack77.Pack77Message.StandardMessage;
+                                return (null != sm) && (!String.IsNullOrEmpty(sm.GridSquare) && sm.GridSquare.Length >= 4);
+                            });
                     break;
 
                 case ExchangeTypes.ARRL_FIELD_DAY:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                         // select our own contest messages
-                        var sm = m as XDpack77.Pack77Message.ArrlFieldDayMessage;
-                        return null != sm;
+                        return null != m as XDpack77.Pack77Message.ArrlFieldDayMessage;
                     });
                     break;
 
                 case ExchangeTypes.ARRL_RTTY:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                         // select our own contest messages
-                        var sm = m as XDpack77.Pack77Message.RttyRoundUpMessage;
-                        return null != sm;
+                        return null != m as XDpack77.Pack77Message.RttyRoundUpMessage;
                     });
                     break;
 
                 case ExchangeTypes.DB_REPORT:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                         var sm = m as XDpack77.Pack77Message.StandardMessage;
-                        if ((null != sm) && sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB)
-                            return true;
-                        return false;
+                        return (null != sm) && sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB;
                     });
                     break;
             }
@@ -1738,6 +1794,7 @@ namespace DigiRite
             {
                 Properties.Settings.Default.OnLoggedAcknowedgeMessage = (ushort)comboBoxOnLoggedMessage.SelectedIndex;
                 Properties.Settings.Default.ShowMenu = checkBoxShowMenu.Checked;
+                Properties.Settings.Default.ShowCalcNextToSend = checkBoxCalcNextToSend.Checked;
                 Properties.Settings.Default.Save();
                 Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
                 if (null != rk)
@@ -1846,11 +1903,7 @@ namespace DigiRite
         
         private void timerCleanup_Tick(object sender, EventArgs e)
         {
-#if !DEBUG
-            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromHours(1);
-#else
-            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromMinutes(4);
-#endif
+            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromMinutes(Properties.Settings.Default.ReactivateQSOTimerMinutes);
             qsosPanel.PurgeOldLoggedQsos(removalTime);
         }
 
@@ -2207,7 +2260,7 @@ namespace DigiRite
                 if (!isBegin)
                     RigVfoSplitForTxOff();
             }
-            sendInProgress = isBegin;
+            SendInProgress = isBegin;
         }
 
         public void SendRttyMessage(String toSend) // WriteLog pressed an F-key
@@ -2218,7 +2271,7 @@ namespace DigiRite
         {
             if (null != deviceTx)
                 deviceTx.Abort();
-            sendInProgress = false;
+            SendInProgress = false;
         }
      
         private void quitQso(QsoInProgress q)
@@ -2267,7 +2320,7 @@ namespace DigiRite
                 bool checkState = e.NewValue == CheckState.Checked;
                 if (checkState)
                     BeginInvoke(new Action(() => {
-                        if (!sendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS) 
+                        if (!SendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS) 
                             transmitAtZero(true);
                         }));
         }
@@ -2278,6 +2331,11 @@ namespace DigiRite
                     watchDogTime = DateTime.UtcNow;
             for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
                 checkedlbNextToSend.SetItemChecked(i, checkBoxAutoXmit.Checked);
+        }
+
+        private void checkBoxCalcNextToSend_CheckedChanged(object sender, EventArgs e)
+        {
+            checkedlbNextToSend.Visible = checkBoxCalcNextToSend.Checked;
         }
 
         private void listBoxAlternatives_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -2512,13 +2570,38 @@ namespace DigiRite
                 ApplyFontControls();
             }
         }
-        
-#endregion
 
-#region TX RX frequency
+        private decimal numericUpDownStreamsPrevious = 1m;
+        private void numericUpDownStreams_ValueChanged(object sender, EventArgs e)
+        {
+            int v = (int)numericUpDownStreams.Value;
+            if ((v == 2 && numericUpDownStreamsPrevious == 1m) ||
+                (v == 1 && numericUpDownStreamsPrevious == 2m))
+                numericUpDownStreams.Value = 1.1m;
+
+            if ((decimal)v != numericUpDownStreams.Value)
+            {
+                if (numericUpDownStreams.Value == 1.1m)
+                    numericUpDownStreams.DecimalPlaces = 1;
+                else
+                    numericUpDownStreams.Value = v;
+            }
+            else
+                numericUpDownStreams.DecimalPlaces = 0;
+            numericUpDownStreamsPrevious = numericUpDownStreams.Value;
+        }
+
+        private void numericUpDownStreams_Scroll(object sender, ScrollEventArgs e)
+        {
+            
+        }
+
+        #endregion
+
+        #region TX RX frequency
         private void buttonTune_Click(object sender, EventArgs e)
         {
-            if (sendInProgress)
+            if (SendInProgress)
                 return;
             deviceTx.TransmitCycle = XD.Transmit_Cycle.PLAY_NOW;
             int tuneFrequency = TxFrequency;
@@ -2585,7 +2668,9 @@ namespace DigiRite
             }
         }
 
-#endregion
+        #endregion
 
+ 
+     
     }
 }
