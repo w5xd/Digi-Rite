@@ -185,6 +185,14 @@ namespace DigiRiteLogger
                         {
                             if (XD.WaveDeviceEnumerator.waveOutInstanceId(i).ToUpper() == id)
                             {
+#if DEBUG
+                                // have a look at the user-friendly name of the device
+                                var waveOuts = XD.WaveDeviceEnumerator.waveOutDevices();
+                                if (i < waveOuts.Count)
+                                {
+                                    string name = waveOuts[i];
+                                }
+#endif
                                 TxOutDevice = (uint)i;
                                 break;
                             }

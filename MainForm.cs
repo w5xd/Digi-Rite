@@ -192,7 +192,6 @@ namespace DigiRite
                 rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
             using (rk)
             {
-
                 uint channel = (uint)Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()];
                 if (waveDevicePlayer != null)
                     waveDevicePlayer.Dispose();
@@ -730,17 +729,10 @@ namespace DigiRite
 
         private int RigVfoSplitForTx(int minAudioTx, int maxAudioTx, List<XDft.Tone> tones = null)
         {
-            if (logger == null)
-                return minAudioTx; // can't do rig control
-
-            logger.SetTransmitFocus();
+            logger?.SetTransmitFocus();
 
             if (controlVFOsplit == VfoControl.VFO_NONE)
                 return minAudioTx;
-
-            bool split;
-            double txKHz; double rxKHz;
-            logger.GetRigFrequency(out rxKHz, out txKHz, out split);
 
             // want all outputs below TxHighFreqLimit
             // ...and, more importantly, above half that.
@@ -763,43 +755,50 @@ namespace DigiRite
                 offset *= 100;
             }
 
-            // proposed split in offset
-            if (((maxAudioTx - minAudioTx) >= (maxFreq - minFreq))
-                || (offset == 0))
-            {   //un-split the rig if the needed range is beyond
-                // the setup parameters, or no offset is needed
-                if (split)
-                    logger.SetRigFrequency(rxKHz, rxKHz, false);
-                return minAudioTx;
-            }
+            if (logger != null)
+            {
+                bool split;
+                double txKHz; double rxKHz;
+                logger.GetRigFrequency(out rxKHz, out txKHz, out split);
 
-            bool rigIsAlreadyOk = false;  // check if the rig has an acceptable split already
-            if (split)
-            {
-                int currentOffset = (int)(1000 * (rxKHz - txKHz));
-                if ((minAudioTx + currentOffset >= minFreq) &&
-                    maxAudioTx + currentOffset <= maxFreq)
-                {   // the rig's state is OK already
-                    offset = currentOffset;
-                    rigIsAlreadyOk = // OK only if we're really supposed to be in split mode
-                        controlVFOsplit != VfoControl.VFO_SHIFT;
-                }
-            }
-            // offset is what we'll set
-            if (!rigIsAlreadyOk)
-            {
-                double rxDuringTx = rxKHz;
-                double txDuringTx = rxKHz - .001f * offset;
-                if (controlVFOsplit == VfoControl.VFO_SPLIT)
-                    logger.SetRigFrequency(rxDuringTx, txDuringTx, true);
-                else if (controlVFOsplit == VfoControl.VFO_SHIFT)
-                {
-                    rxDuringTx = txDuringTx;
-                    logger.SetRigFrequency(rxDuringTx, txDuringTx, false);
-                    vfoOnTxEnd = () =>
-                    {
+                // proposed split in offset
+                if (((maxAudioTx - minAudioTx) >= (maxFreq - minFreq))
+                    || (offset == 0))
+                {   //un-split the rig if the needed range is beyond
+                    // the setup parameters, or no offset is needed
+                    if (split)
                         logger.SetRigFrequency(rxKHz, rxKHz, false);
-                    };
+                    return minAudioTx;
+                }
+
+                bool rigIsAlreadyOk = false;  // check if the rig has an acceptable split already
+                if (split)
+                {
+                    int currentOffset = (int)(1000 * (rxKHz - txKHz));
+                    if ((minAudioTx + currentOffset >= minFreq) &&
+                        maxAudioTx + currentOffset <= maxFreq)
+                    {   // the rig's state is OK already
+                        offset = currentOffset;
+                        rigIsAlreadyOk = // OK only if we're really supposed to be in split mode
+                            controlVFOsplit != VfoControl.VFO_SHIFT;
+                    }
+                }
+                // offset is what we'll set
+                if (!rigIsAlreadyOk)
+                {
+                    double rxDuringTx = rxKHz;
+                    double txDuringTx = rxKHz - .001f * offset;
+                    if (controlVFOsplit == VfoControl.VFO_SPLIT)
+                        logger.SetRigFrequency(rxDuringTx, txDuringTx, true);
+                    else if (controlVFOsplit == VfoControl.VFO_SHIFT)
+                    {
+                        rxDuringTx = txDuringTx;
+                        logger.SetRigFrequency(rxDuringTx, txDuringTx, false);
+                        vfoOnTxEnd = () =>
+                        {
+                            logger.SetRigFrequency(rxKHz, rxKHz, false);
+                        };
+                    }
                 }
             }
             if (null != tones)
@@ -907,104 +906,104 @@ namespace DigiRite
             else if (mycallNeedsBrackets)
                 mycall = String.Format(BracketFormat, mycall);
 
-                 // fill in from logger if we can
-                if (q.SentSerialNumber == 0)
-                {   // assign a serial number even if contest doesn't need it
-                    uint serialToSend = ++noLoggerSerialNumber;
-                    if (null != logger)
-                        serialToSend = logger.GetSendSerialNumber(q.HisCall);
-                    // logger may give us the same serial number since we're just one radio
-                    Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
-                    var inProgress = qsosPanel.QsosInProgress;
-                    for (int i = 0; i < inProgress.Count; i++)
-                    {   // first entries are highest priority
-                        QsoInProgress qp = inProgress[i];
-                        if (null == qp)
-                            continue;   // manual entry goes this way
-                        uint qps = qp.SentSerialNumber;
-                        if (qps != 0)
-                            serialsInProgress.Add(qps, qps);
+            // fill in from logger if we can
+            if (q.SentSerialNumber == 0)
+            {   // assign a serial number even if contest doesn't need it
+                uint serialToSend = ++noLoggerSerialNumber;
+                if (null != logger)
+                    serialToSend = logger.GetSendSerialNumber(q.HisCall);
+                // logger may give us the same serial number since we're just one radio
+                Dictionary<uint, uint> serialsInProgress = new Dictionary<uint, uint>();
+                var inProgress = qsosPanel.QsosInProgress;
+                for (int i = 0; i < inProgress.Count; i++)
+                {   // first entries are highest priority
+                    QsoInProgress qp = inProgress[i];
+                    if (null == qp)
+                        continue;   // manual entry goes this way
+                    uint qps = qp.SentSerialNumber;
+                    if (qps != 0)
+                        serialsInProgress[qps] = qps;
+                }
+                uint ignore;
+                while (serialsInProgress.TryGetValue(serialToSend, out ignore))
+                    serialToSend += 1;
+                q.SentSerialNumber = serialToSend;
+            }
+            switch (excSet)
+            {
+                case ExchangeTypes.ARRL_FIELD_DAY:
+                    string entryclass = "";
+                    var fdsplit = Properties.Settings.Default.ContestMessageToSend.Split((char[])null,
+                        StringSplitOptions.RemoveEmptyEntries);
+                    bool founddigit = false;
+                    foreach (string w in fdsplit)
+                    {
+                        if (!founddigit)
+                        {
+                            if (Char.IsDigit(w[0]))
+                            {
+                                founddigit = true;
+                                entryclass = w;
+                            }
+                        }
+                        else if (w.All(Char.IsLetter))
+                            return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                                addAck ? "R " : "", entryclass, w);
                     }
-                    uint ignore;
-                    while (serialsInProgress.TryGetValue(serialToSend, out ignore))
-                        serialToSend += 1;
-                    q.SentSerialNumber = serialToSend;
-                }
-                switch (excSet)
-                {
-                    case ExchangeTypes.ARRL_FIELD_DAY:
-                        string entryclass = "";
-                        var fdsplit = Properties.Settings.Default.ContestMessageToSend.Split((char[])null,
-                            StringSplitOptions.RemoveEmptyEntries);
-                        bool founddigit = false;
-                        foreach (string w in fdsplit)
+                    break;
+
+                case ExchangeTypes.ARRL_RTTY:
+                    string part = null;
+                    String percentSearch = Properties.Settings.Default.ContestMessageToSend;
+                    String percentsRemoved = "";
+                    for (; ; )
+                    {   // is there a serial number in the message?
+                        int percentPos = percentSearch.IndexOf('%');
+                        if (percentPos < 0)
                         {
-                            if (!founddigit)
-                            {
-                                if (Char.IsDigit(w[0]))
-                                {
-                                    founddigit = true;
-                                    entryclass = w;
-                                }
-                            }
-                            else if (w.All(Char.IsLetter))
-                                return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
-                                    addAck ? "R " : "", entryclass, w);
+                            percentsRemoved += percentSearch;
+                            break;  // no serial number
                         }
-                        break;
-
-                    case ExchangeTypes.ARRL_RTTY:
-                        string part = null;
-                        String percentSearch = Properties.Settings.Default.ContestMessageToSend;
-                        String percentsRemoved = "";
-                        for (; ; )
-                        {   // is there a serial number in the message?
-                            int percentPos = percentSearch.IndexOf('%');
-                            if (percentPos < 0)
-                            {
-                                percentsRemoved += percentSearch;
-                                break;  // no serial number
-                            }
-                            if ((percentPos < percentSearch.Length - 1) &&
-                                Char.IsLetter(percentSearch[percentPos + 1]))
-                            {
-                                percentsRemoved += percentSearch.Substring(0, percentPos);
-                                percentSearch = percentSearch.Substring(percentPos + 2);
-                                continue; // this one is not a serial number
-                            }
-                            part = String.Format("{0:0000}", q.SentSerialNumber);
-                            break;
-                        }
-                        if (String.IsNullOrEmpty(part))
+                        if ((percentPos < percentSearch.Length - 1) &&
+                            Char.IsLetter(percentSearch[percentPos + 1]))
                         {
-                            var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (string w in rttysplit)
-                                if (w.All(Char.IsLetter))
-                                {
-                                    part = w.ToUpper();
-                                    break;
-                                }
+                            percentsRemoved += percentSearch.Substring(0, percentPos);
+                            percentSearch = percentSearch.Substring(percentPos + 2);
+                            continue; // this one is not a serial number
                         }
-                        return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
-                            addAck ? "R " : "", q.Message.RST, part);
-
-                    case ExchangeTypes.GRID_SQUARE:
-                        if (null != logger)
-                        {   // logger can override sent grid
-                            string sentgrid = logger.GridSquareSendingOverride();
-                            if (sentgrid.Length >= 4)
-                            {
-                                q.SentGrid = sentgrid;
-                                return String.Format("{0} {1} {2} {3}",
-                                    hiscall, mycall,
-                                    addAck ? "R" : "", sentgrid);
-                            }
-                        }
+                        part = String.Format("{0:0000}", q.SentSerialNumber);
                         break;
+                    }
+                    if (String.IsNullOrEmpty(part))
+                    {
+                        var rttysplit = percentsRemoved.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string w in rttysplit)
+                            if (w.All(Char.IsLetter))
+                            {
+                                part = w.ToUpper();
+                                break;
+                            }
+                    }
+                    return String.Format("{0} {1} {2}{3} {4}", q.HisCall, myCall,
+                        addAck ? "R " : "", q.Message.RST, part);
 
-                    case ExchangeTypes.DB_REPORT:
-                        break; // handle below
-                }
+                case ExchangeTypes.GRID_SQUARE:
+                    if (null != logger)
+                    {   // logger can override sent grid
+                        string sentgrid = logger.GridSquareSendingOverride();
+                        if (sentgrid.Length >= 4)
+                        {
+                            q.SentGrid = sentgrid;
+                            return String.Format("{0} {1} {2} {3}",
+                                hiscall, mycall,
+                                addAck ? "R" : "", sentgrid);
+                        }
+                    }
+                    break;
+
+                case ExchangeTypes.DB_REPORT:
+                    break; // handle below
+            }
             // if logger is not running, or doesn't handle the exchange.
             switch (excSet)
             {

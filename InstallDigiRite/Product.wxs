@@ -18,7 +18,7 @@
 !!
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define VersionNumber = 1.1.37.5 ?>
+    <?define VersionNumber = 1.1.38.1 ?>
     <Product Manufacturer="builders name here" 
              Name="DigiRite open source" 
              Version="$(var.VersionNumber)" 
