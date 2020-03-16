@@ -28,6 +28,7 @@
         private bool HaveTheirExchange  = false;
         private bool HaveAck  = false;
         private bool HaveSentAck = false;
+        private bool HaveSentExchange = false;
         private uint AckMoreAcks = 0;
         private bool HaveLoggedQso { get { return HaveTheirExchange & HaveAck; } }
         private uint State  = 0;
@@ -55,7 +56,7 @@
             {
                 MessageSent ms = null;
                 if (HaveTheirExchange)
-                    ms = () => { HaveSentAck = true; };
+                    ms = () => { HaveSentAck = true; HaveSentExchange = true;};
                 qsoSequencerCallbacks.SendExchange(HaveTheirExchange, ms);
                 return true;
             }
@@ -68,7 +69,7 @@
             HaveAck |= withAck;
             if (!withAck)
             {   // if they don't have ours, send it
-                qsoSequencerCallbacks.SendExchange(true,  () => { HaveSentAck = true;   });
+                qsoSequencerCallbacks.SendExchange(true,  () => { HaveSentAck = true; HaveSentExchange = true;  });
                 State = 2;
             }
             else
@@ -124,7 +125,7 @@
             }
             else // this is the wierd transition. 
             {
-                qsoSequencerCallbacks.SendExchange(false, null);
+                qsoSequencerCallbacks.SendExchange(false, () => {HaveSentExchange = true; });
                 State = 1;
             }
             return retval;
@@ -132,13 +133,16 @@
 
         public void OnReceivedWrongExchange()
         {
-            if (!haveLogged)
+            if (HaveSentExchange)
             {
-                LogQso();
-                AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                if (!haveLogged)
+                {
+                    LogQso();
+                    AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                }
+                if (AckMoreAcks-- > 0)
+                    qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; });
             }
-            if (AckMoreAcks-- > 0)
-                qsoSequencerCallbacks.SendExchange(false, null);
         }
     }
 }
