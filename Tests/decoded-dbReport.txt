@@ -1,0 +1,41 @@
+﻿#   DR should be in FT4 (to go faster). 
+#   In "db Report" mode, with W5XD as the call in use. 
+#Build DR in DEBUG config. 
+# Set registry entries: Computer\HKEY_CURRENT_USER\Software\W5XD\WriteLog\DigiRite\Simulator
+#Windows Registry Editor Version 5.00
+#
+#[HKEY_CURRENT_USER\Software\W5XD\WriteLog\DigiRite\Simulator]
+#"AutoAnswerNonDupes"="1"
+#"AnswerAllCQs"="1"
+#"CqSetting"="1"
+#"EnableSimulation"="1"
+#
+#turn the RX device to something that is deaf to make DigiRite.log easier to compare.
+02:24:35 000015 -11  0.8 2050 +  CQ EA3ZD JN01                       
+02:24:37 TX: EA3ZD W5XD -11
+02:24:50 000030 -16  0.8 2049 +  W5XD EA3ZD R+02                     
+02:24:50 000030 -16  0.8 2050 +  W5XD W1AW R-04                      unsolicited call from W1AW...R is superfluous
+02:24:52 TX: EA3ZD W5XD 73
+02:25:05 000045 -16  0.8 2050 +  W5XD W1AW R-04                      unsolicited call from W1AW...R is superfluous
+02:25:07 TX: W1AW W5XD R-16
+02:25:22 TX: W1AW W5XD R-16
+02:25:35 000115 -12  0.8 2049 +  W5XD W1AW 73                        They send 73. only now I can log them
+02:25:37 TX: W1AW W5XD RR73
+02:25:50 000130 -12  0.8 2049 +  W5XD K5ZD R FN42                    They send an exchange we cannot use. with a bogus R
+02:25:52 TX: K5ZD W5XD -12
+02:26:05 000145 -12  0.8 2049 +  W5XD K5ZD R-09                      They send an exchange we can use
+02:26:07 TX: K5ZD W5XD 73
+02:26:20 000200 -12  0.8 2049 +  W5XD K5ZD R-09                      they repeat
+02:26:22 TX: K5ZD W5XD 73                                            
+02:26:37 TX: CQ W5XD EM10                                            all done
+02:26:50 000230 -12  0.8 2049 +  W5XD W1MX FN42
+02:26:52 TX: W1MX W5XD -12
+02:27:05 000245 -12  0.8 2049 +  W5XD W1MX +00                       they don't send an R
+02:27:07 TX: W1MX W5XD R-12
+02:27:22 TX: W1MX W5XD R-12
+02:27:35 000315 -12  0.8 2049 +  W5XD W1MX 73                        now I can log them
+02:27:37 TX: W1MX W5XD RR73
+02:27:52 TX: CQ W5XD EM10
+       
+
+

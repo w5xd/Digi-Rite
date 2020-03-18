@@ -135,8 +135,17 @@ namespace DigiRite
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
         private ExchangeSent lastSent;
+#if DEBUG
+        private static uint gId;
+        private uint id;
+#endif
         public Qso2MessageSequencer(IQsoSequencerCallbacks cb)
-        { this.cb = cb;   }
+        { 
+            this.cb = cb;
+#if DEBUG
+            id = ++gId;
+#endif
+        }
 
         public bool IsFinished { get { return haveLoggedGrid || haveLoggedReport; } }
 

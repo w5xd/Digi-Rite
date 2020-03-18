@@ -52,7 +52,6 @@
             this.panel6 = new System.Windows.Forms.Panel();
             this.label15 = new System.Windows.Forms.Label();
             this.comboBoxOnLoggedMessage = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
             this.checkBoxAutoXmit = new System.Windows.Forms.CheckBox();
             this.panel3 = new System.Windows.Forms.Panel();
             this.labelClockAnimation = new System.Windows.Forms.Label();
@@ -106,9 +105,10 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new DigiRite.ConversationListBox();
             this.checkedlbNextToSend = new DigiRite.ToSendListBox();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
+            this.checkBoxCalcNextToSend = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -362,9 +362,9 @@
             // 
             // panel6
             // 
+            this.panel6.Controls.Add(this.checkBoxCalcNextToSend);
             this.panel6.Controls.Add(this.label15);
             this.panel6.Controls.Add(this.comboBoxOnLoggedMessage);
-            this.panel6.Controls.Add(this.label8);
             this.panel6.Controls.Add(this.checkBoxAutoXmit);
             this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel6.Location = new System.Drawing.Point(0, 0);
@@ -390,16 +390,7 @@
             this.comboBoxOnLoggedMessage.Location = new System.Drawing.Point(246, 4);
             this.comboBoxOnLoggedMessage.Name = "comboBoxOnLoggedMessage";
             this.comboBoxOnLoggedMessage.Size = new System.Drawing.Size(56, 21);
-            this.comboBoxOnLoggedMessage.TabIndex = 2;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(5, 31);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(118, 13);
-            this.label8.TabIndex = 1;
-            this.label8.Text = "&Calculated next to send";
+            this.comboBoxOnLoggedMessage.TabIndex = 4;
             // 
             // checkBoxAutoXmit
             // 
@@ -1020,11 +1011,6 @@
             this.panelInProgress.Size = new System.Drawing.Size(345, 136);
             this.panelInProgress.TabIndex = 1;
             // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
-            // 
             // listBoxConversation
             // 
             this.listBoxConversation.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -1051,6 +1037,22 @@
             this.checkedlbNextToSend.Sorted = true;
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
+            // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
+            // 
+            // checkBoxCalcNextToSend
+            // 
+            this.checkBoxCalcNextToSend.AutoSize = true;
+            this.checkBoxCalcNextToSend.Location = new System.Drawing.Point(8, 32);
+            this.checkBoxCalcNextToSend.Name = "checkBoxCalcNextToSend";
+            this.checkBoxCalcNextToSend.Size = new System.Drawing.Size(167, 17);
+            this.checkBoxCalcNextToSend.TabIndex = 5;
+            this.checkBoxCalcNextToSend.Text = "Show &Calculated next to send";
+            this.checkBoxCalcNextToSend.UseVisualStyleBackColor = true;
+            this.checkBoxCalcNextToSend.CheckedChanged += new System.EventHandler(this.checkBoxCalcNextToSend_CheckedChanged);
             // 
             // MainForm
             // 
@@ -1135,7 +1137,6 @@
         private System.Windows.Forms.CheckBox checkBoxManualEntry;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckedListBox listBoxAlternatives;
         private System.Windows.Forms.Panel listBoxAlternativesPanel;
@@ -1191,6 +1192,7 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.ComboBox comboBoxOnLoggedMessage;
+        private System.Windows.Forms.CheckBox checkBoxCalcNextToSend;
     }
 }
 

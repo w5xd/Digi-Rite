@@ -144,6 +144,7 @@ namespace DigiRite
 
             lb.onClick += new EventHandler((object o, EventArgs e) =>
             {
+                cb.Checked = !cb.Checked;
                 cb.Focus();
             });
             lb.onGetFocusCb += new FocusDrawingHelper.OnGetFocusCb(() => {

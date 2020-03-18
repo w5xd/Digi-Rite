@@ -19,9 +19,10 @@
 
         private IQsoSequencerCallbacks qsoSequencerCallbacks;
 
-        public QsoSequencer(IQsoSequencerCallbacks callbacks)
+        public QsoSequencer(IQsoSequencerCallbacks callbacks, bool haveSentExchange)
         {
             qsoSequencerCallbacks = callbacks;
+            HaveSentExchange = haveSentExchange;
             State = 0;
         }
         private const uint MAXIMUM_ACK_OF_ACK = 3;
@@ -33,12 +34,13 @@
         private bool HaveLoggedQso { get { return HaveTheirExchange & HaveAck; } }
         private uint State  = 0;
         private const uint FINISHED_STATE = 4;
+        private uint WrongExchangeCount = 0;
+        private const uint MAX_WRONG_EXCHANGE = 3;
 
         // call to answer a CQ or otherwise think the other station might answer
-        public void Initiate(bool ack = false)
+        public void Initiate()
         {
-            qsoSequencerCallbacks.SendExchange(ack, null); // Beware--no guarantee actually sent
-            HaveTheirExchange = ack;
+            qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; }); // Beware--no guarantee actually sent
             State = 1;
         }
 
@@ -66,7 +68,7 @@
         public void OnReceivedExchange(bool withAck)
         {
             HaveTheirExchange = true;
-            HaveAck |= withAck;
+            HaveAck |= withAck && HaveSentExchange;
             if (!withAck)
             {   // if they don't have ours, send it
                 qsoSequencerCallbacks.SendExchange(true,  () => { HaveSentAck = true; HaveSentExchange = true;  });
@@ -111,7 +113,7 @@
                     else
                     {
                         AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                        qsoSequencerCallbacks.SendOnLoggedAck(null );
+                        qsoSequencerCallbacks.SendOnLoggedAck(null);
                         LogQso();
                     }
                 }
@@ -123,7 +125,20 @@
                 else
                     retval = false;
             }
-            else // this is the wierd transition. 
+            else if (WrongExchangeCount > 0)
+            {
+                // give up.
+                if (!haveLogged)
+                    AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                if (AckMoreAcks-- > 0)
+                    qsoSequencerCallbacks.SendAck(true,
+                        () =>
+                        {
+                            if (!haveLogged)
+                                LogQso();
+                        });
+            }
+            else // ask them to try again
             {
                 qsoSequencerCallbacks.SendExchange(false, () => {HaveSentExchange = true; });
                 State = 1;
@@ -133,16 +148,12 @@
 
         public void OnReceivedWrongExchange()
         {
-            if (HaveSentExchange)
+            if (WrongExchangeCount++ < MAX_WRONG_EXCHANGE)
             {
-                if (!haveLogged)
-                {
-                    LogQso();
-                    AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                }
-                if (AckMoreAcks-- > 0)
-                    qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; });
+                qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; });
+                return;
             }
+            qsoSequencerCallbacks.SendAck(false, () => { if (!haveLogged) LogQso(); });
         }
     }
 }

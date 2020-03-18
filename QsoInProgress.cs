@@ -214,26 +214,29 @@ namespace DigiRite
                     CanAcceptAckNotToMe = true;
                 if (!directlyToMe)
                 {
-                    if (String.IsNullOrEmpty(callsQsled))
+                    if (!messagedThisCycle)
                     {
-                        // if he sends multiple messages in the same cycle...
-                        // ...then we need to "hold" only if this is the only one
-                        if (!messagedThisCycle && !markedAsLogged)
+                        if (String.IsNullOrEmpty(callsQsled))
                         {
-                            // he sent to someone else
-                            int freqDif = (int)transmitFrequency;
-                            freqDif -= (int)Message.Hz;
-                            if (freqDif < 0)
-                                freqDif = -freqDif;
-                            if (freqDif <= 60)
-                                holdingForAnotherQso = true;
+                            // if he sends multiple messages in the same cycle...
+                            // ...then we need to "hold" only if this is the only one
+                            if (!messagedThisCycle && !markedAsLogged)
+                            {
+                                // he sent to someone else
+                                int freqDif = (int)transmitFrequency;
+                                freqDif -= (int)Message.Hz;
+                                if (freqDif < 0)
+                                    freqDif = -freqDif;
+                                if (freqDif <= 60)
+                                    holdingForAnotherQso = true;
+                            }
                         }
-                    }
-                    else
-                    {
-                        holdingForAnotherQso = false;
-                        if (messagedLastCycle && !IsLogged && callsQsled == "ALL")
-                            return true;
+                        else
+                        {
+                            holdingForAnotherQso = false;
+                            if (messagedLastCycle && !IsLogged && callsQsled == "ALL")
+                                return true;
+                        }
                     }
                     return false;
                 }

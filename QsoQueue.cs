@@ -136,7 +136,7 @@ namespace DigiRite
 
         protected override void StartQso(QsoInProgress q)
         {   // q needs to already be in our qsosPanel list
-            QsoSequencer qs = new QsoSequencer(new QsoSequencerCbImpl(this, q));
+            QsoSequencer qs = new QsoSequencer(new QsoSequencerCbImpl(this, q), false);
             q.Sequencer = qs;
             // very first message directed from other to me
             // can be a CQ I chose to answer, or can be an exchange
@@ -172,44 +172,5 @@ namespace DigiRite
 
         private string ackMessage(QsoInProgress q, bool ofAnAck)
         { return callbacks.GetAckMessage(q, ofAnAck); }
-
-    }
-
-    class QsoQueueGridSquare : QsoQueue
-    {
-        protected bool gridSquareAck;
-        public QsoQueueGridSquare(QsosPanel listBox, IQsoQueueCallBacks cb, bool gridAck) : base(listBox, cb,
-            (XDpack77.Pack77Message.Message m) => { 
-                // select exchanges with a grid square
-                var sm = m as XDpack77.Pack77Message.StandardMessage;
-                bool ret = false;
-                if ((null != sm) && !String.IsNullOrEmpty(sm.GridSquare))
-                    ret = true;
-                return ret;
-                })
-        {
-            gridSquareAck = gridAck;
-        }
-
-        protected override void StartQso(QsoInProgress q)
-        {   // q needs to already be in our qsosPanel list
-            QsoSequencer qs = new QsoSequencer(new QsoSequencerCbImpl(this, q));
-            q.Sequencer = qs;
-            // very first message directed from other to me
-            // can be a CQ I chose to answer, or can be an exchange
-            XDpack77.Pack77Message.Exchange exc = q.Message.Pack77Message as XDpack77.Pack77Message.Exchange;
-            if (null != ExchangeFromMessage(q.Message.Pack77Message))
-                qs.OnReceivedExchange(gridSquareAck);
-            else
-                qs.Initiate(gridSquareAck && exc != null && exc.GridSquare != null && exc.GridSquare.Length >= 4);
-        }
-
-        protected override XDpack77.Pack77Message.Exchange ExchangeFromMessage(XDpack77.Pack77Message.Message m)
-        {   // more restrictive than base class. Insist on a grid square
-            XDpack77.Pack77Message.Exchange exc = base.ExchangeFromMessage(m);
-            if (exc != null && !String.IsNullOrEmpty(exc.GridSquare) && exc.GridSquare.Length >= 4)
-                return exc;
-            return null;
-        }
     }
 }

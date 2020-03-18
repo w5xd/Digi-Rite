@@ -709,7 +709,7 @@ namespace DigiRite
                 if (null != qli && (null != (qp = qli.q)) && inProgress.Any((q) => Object.ReferenceEquals(q, qp)))
                 {   // if the QSO remains active in progress, but still in this list, it didn't get sent,
                     // mark it unchecked so user can see that.
-                    checkedlbNextToSend.SetItemChecked(j, qp.Active);
+                    checkedlbNextToSend.SetItemChecked(j, false);
                     j += 1;
                 }
                 else
@@ -1291,7 +1291,6 @@ namespace DigiRite
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
 #if !DEBUG
             if (null == logger)
             {
@@ -1592,6 +1591,7 @@ namespace DigiRite
             locationToSave = Location;
             sizeToSave = Size;
             checkBoxShowMenu.Checked = Properties.Settings.Default.ShowMenu;
+            checkBoxCalcNextToSend.Checked = checkedlbNextToSend.Visible = Properties.Settings.Default.ShowCalcNextToSend;
             rxForm.RxHz = (int)numericUpDownRxFrequency.Value;
             rxForm.MinDecodeFrequency = decodeMin;
             rxForm.MaxDecodeFrequency = decodeMax;
@@ -1620,16 +1620,12 @@ namespace DigiRite
             }
 #endif
 
-
             finishedLoad = true;
         }
 
         private void changeDigiMode()
         {
             ClockLabel cl = labelClockAnimation as ClockLabel;
-#if DISABLE_FT4
-            digiMode = DigiMode.FT8;
-#endif
             switch (digiMode)
             {
                 case DigiMode.FT4:
@@ -1698,31 +1694,30 @@ namespace DigiRite
                     break;
 
                 case ExchangeTypes.GRID_SQUARE:
-                    qsoQueue = new QsoQueueGridSquare(qsosPanel, this, !needBrackets(myCall));
+                    qsoQueue =  new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                                var sm = m as XDpack77.Pack77Message.StandardMessage;
+                                return (null != sm) && (!String.IsNullOrEmpty(sm.GridSquare) && sm.GridSquare.Length >= 4);
+                            });
                     break;
 
                 case ExchangeTypes.ARRL_FIELD_DAY:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                         // select our own contest messages
-                        var sm = m as XDpack77.Pack77Message.ArrlFieldDayMessage;
-                        return null != sm;
+                        return null != m as XDpack77.Pack77Message.ArrlFieldDayMessage;
                     });
                     break;
 
                 case ExchangeTypes.ARRL_RTTY:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                         // select our own contest messages
-                        var sm = m as XDpack77.Pack77Message.RttyRoundUpMessage;
-                        return null != sm;
+                        return null != m as XDpack77.Pack77Message.RttyRoundUpMessage;
                     });
                     break;
 
                 case ExchangeTypes.DB_REPORT:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                         var sm = m as XDpack77.Pack77Message.StandardMessage;
-                        if ((null != sm) && sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB)
-                            return true;
-                        return false;
+                        return (null != sm) && sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB;
                     });
                     break;
             }
@@ -1737,6 +1732,7 @@ namespace DigiRite
             {
                 Properties.Settings.Default.OnLoggedAcknowedgeMessage = (ushort)comboBoxOnLoggedMessage.SelectedIndex;
                 Properties.Settings.Default.ShowMenu = checkBoxShowMenu.Checked;
+                Properties.Settings.Default.ShowCalcNextToSend = checkBoxCalcNextToSend.Checked;
                 Properties.Settings.Default.Save();
                 Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
                 if (null != rk)
@@ -2279,6 +2275,11 @@ namespace DigiRite
                 checkedlbNextToSend.SetItemChecked(i, checkBoxAutoXmit.Checked);
         }
 
+        private void checkBoxCalcNextToSend_CheckedChanged(object sender, EventArgs e)
+        {
+            checkedlbNextToSend.Visible = checkBoxCalcNextToSend.Checked;
+        }
+
         private void listBoxAlternatives_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (e.NewValue == CheckState.Checked)
@@ -2584,7 +2585,6 @@ namespace DigiRite
             }
         }
 
-#endregion
-
+        #endregion
     }
 }
