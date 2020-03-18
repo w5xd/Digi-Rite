@@ -107,7 +107,7 @@ namespace DigiRite
                 if (hasExchange)
                     sequencer.OnReceivedExchange(ack);
                 else if (ack)
-                    sequencer.OnReceivedAck();
+                    sequencer.OnReceivedAck(directlyToMe);
                 else 
                     sequencer.OnReceivedWrongExchange();
             } else if (autoStart && directlyToMe)

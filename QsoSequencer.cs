@@ -51,8 +51,20 @@
         }
 
         public string DisplayState { get { return State.ToString(); } }
-        
-        public bool OnReceivedNothing()
+        private System.Action deferredToEndOfReceive;
+        public void OnReceiveCycleEnd(bool messagedThisCycle)
+        {
+            if (!messagedThisCycle)
+            {
+                if (!IsFinished)
+                    OnReceivedNothing();
+            }
+            else if (null != deferredToEndOfReceive)
+                deferredToEndOfReceive();
+            deferredToEndOfReceive = null;
+        }
+
+        private bool OnReceivedNothing()
         {
             if (!HaveTheirExchange || !HaveAck || !HaveSentAck)
             {
@@ -67,6 +79,7 @@
 
         public void OnReceivedExchange(bool withAck)
         {
+            deferredToEndOfReceive = null;
             HaveTheirExchange = true;
             HaveAck |= withAck && HaveSentExchange;
             if (!withAck)
@@ -95,62 +108,67 @@
             State = 4;
         }
 
-        public bool OnReceivedAck()
+        public void OnReceivedAck(bool directlyToMe)
         {
-            bool retval = true;
-            HaveAck = true;
-            if (HaveTheirExchange)
+            deferredToEndOfReceive = null;
+            System.Action toDo = () =>
             {
-                if (!haveLoggedExchange)
-                {   // we only ack the ack once
-                    if (!HaveSentAck)
+                HaveAck = true;
+                if (HaveTheirExchange)
+                {
+                    if (!haveLoggedExchange)
+                    {   // we only ack the ack once
+                        if (!HaveSentAck)
+                            qsoSequencerCallbacks.SendAck(true,
+                                () =>
+                                {
+                                    HaveSentAck = true;
+                                    LogQso();
+                                });
+                        else
+                        {
+                            AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                            qsoSequencerCallbacks.SendOnLoggedAck(null);
+                            LogQso();
+                        }
+                    }
+                    else if (AckMoreAcks > 0)
+                        qsoSequencerCallbacks.SendAck(true,
+                            () => { AckMoreAcks -= 1; });
+                }
+                else if (WrongExchangeCount > 0)
+                {
+                    // give up.
+                    if (!haveLogged)
+                        AckMoreAcks = MAXIMUM_ACK_OF_ACK;
+                    if (AckMoreAcks > 0)
                         qsoSequencerCallbacks.SendAck(true,
                             () =>
                             {
-                                HaveSentAck = true;
-                                LogQso();
+                                AckMoreAcks -= 1;
+                                if (!haveLogged)
+                                    LogQso();
                             });
-                    else
-                    {
-                        AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                        qsoSequencerCallbacks.SendOnLoggedAck(null);
-                        LogQso();
-                    }
                 }
-                else if (AckMoreAcks > 0)
+                else // ask them to try again
                 {
-                    AckMoreAcks -= 1;
-                    qsoSequencerCallbacks.SendAck(true, null);
+                    qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; });
+                    State = 1;
                 }
-                else
-                    retval = false;
-            }
-            else if (WrongExchangeCount > 0)
-            {
-                // give up.
-                if (!haveLogged)
-                    AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                if (AckMoreAcks-- > 0)
-                    qsoSequencerCallbacks.SendAck(true,
-                        () =>
-                        {
-                            if (!haveLogged)
-                                LogQso();
-                        });
-            }
-            else // ask them to try again
-            {
-                qsoSequencerCallbacks.SendExchange(false, () => {HaveSentExchange = true; });
-                State = 1;
-            }
-            return retval;
+            };
+            // defer the action to end of receive cycle if not directly to me
+            if (directlyToMe)
+                toDo();
+            else
+                deferredToEndOfReceive = toDo;
         }
 
         public void OnReceivedWrongExchange()
         {
-            if (WrongExchangeCount++ < MAX_WRONG_EXCHANGE)
+            deferredToEndOfReceive = null;
+            if (WrongExchangeCount < MAX_WRONG_EXCHANGE)
             {
-                qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; });
+                qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; WrongExchangeCount += 1;});
                 return;
             }
             qsoSequencerCallbacks.SendAck(false, () => { if (!haveLogged) LogQso(); });
