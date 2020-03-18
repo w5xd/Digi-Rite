@@ -119,6 +119,7 @@ namespace DigiRite
         }
 
         public int CyclesSinceMessaged { get; private set; } = 0;
+        public int CyclesSinceMessagedNotHolding { get; private set; } = 0;
 
         public bool CanAcceptAckNotToMe { get; private set; } = true;
 
@@ -131,7 +132,7 @@ namespace DigiRite
         public bool Active { get { return active; } set { 
                 if (value && !active)
                 {   // changing from inactive to active
-                    CyclesSinceMessaged = 0;
+                    CyclesSinceMessagedNotHolding = 0;
                     holdingForAnotherQso = false;
                 }
                 active = value;
@@ -153,20 +154,27 @@ namespace DigiRite
 
         public void OnSentAlternativeMessage()
         {
-            CyclesSinceMessaged = 0;
+            CyclesSinceMessagedNotHolding = 0;
             messagedThisCycle = true;
         }
 
         private bool AmTimedOut { get { return !messagedThisCycle && 
-                    CyclesSinceMessaged >= MAX_CYCLES_WITHOUT_ANSWER; } }
+                    CyclesSinceMessagedNotHolding >= MAX_CYCLES_WITHOUT_ANSWER; } }
 
         public bool OnCycleBegin(bool wasReceiveCycle)
         {
             bool ret = MessagedThisCycle;
             if (ret)
+            {
+                CyclesSinceMessagedNotHolding = 0;
                 CyclesSinceMessaged = 0;
-            else if (!holdingForAnotherQso && wasReceiveCycle)
+            }
+            else
+            {
                 CyclesSinceMessaged += 1;
+                if (!holdingForAnotherQso && wasReceiveCycle)
+                    CyclesSinceMessagedNotHolding += 1;
+            }
             if (AmTimedOut)
             {
                 CanAcceptAckNotToMe = false;
@@ -256,4 +264,5 @@ namespace DigiRite
 
         public List<XDpack77.Pack77Message.ReceivedMessage> MessageList { get { return messages; } }
     }
+
 }

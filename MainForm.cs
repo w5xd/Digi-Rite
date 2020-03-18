@@ -490,7 +490,8 @@ namespace DigiRite
 
             // double list search is to maintain the priority order in listBoxInProgress.
             // the order things appear in checkedListBoxToSend is irrelevant.
-            List<QueuedToSendListItem> inToSend = new List<QueuedToSendListItem>();
+            Dictionary<int, QueuedToSendListItem> inToSend = new Dictionary<int, QueuedToSendListItem>();
+            int k = 0;
             var inProgress = qsosPanel.QsosInProgress;
             for (int i = 0; i < inProgress.Count; i++)
             {   // first entries are highest priority
@@ -508,22 +509,24 @@ namespace DigiRite
                         continue;   // present, but marked to skip
                     QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
                     if ((null != qli) && Object.ReferenceEquals(qli.q, q))
-                        inToSend.Add(qli);
+                        inToSend.Add(k++, qli);
                 }
             }
-
-            foreach (QueuedToSendListItem qli in inToSend)
+            
+            // push those we haven't heard from to end of list, recent calls to beginning
+            var sortedByRecentActivity = inToSend.OrderBy(item => item, new QueuedToSendListItemComparer());
+            foreach (var qli in sortedByRecentActivity)
             {
                 if (toSendList.Count >= MAX_MESSAGES_PER_CYCLE)
                     break;
                 checkedlbNextToSend.Items.Remove(qli);
                 if (toSendList.Any((qalready) => {
-                    if (null != qalready && null != qalready.q && null != qli.q)
-                        return String.Equals(qli.q.HisCall, qalready.q.HisCall);
+                    if (null != qalready && null != qalready.q && null != qli.Value.q)
+                        return String.Equals(qli.Value.q.HisCall, qalready.q.HisCall);
                     return false; }
                     ))
                     continue; // already a send to this callsign. don't allow another
-                toSendList.Add(qli);
+                toSendList.Add(qli.Value);
             }
 
             bool anyToSend = toSendList.Any();

@@ -72,6 +72,21 @@ namespace DigiRite
         private QsoSequencer.MessageSent messageSentCb;
     }
 
+    // priority goes to Qsos in progress with fewer CyclesSinceMessaged
+    class QueuedToSendListItemComparer : IComparer<KeyValuePair<int, QueuedToSendListItem>>
+    {
+        public int Compare(KeyValuePair<int, QueuedToSendListItem> x, KeyValuePair<int, QueuedToSendListItem> y)
+        {
+            // more recently heard from sort to smaller numbers 
+            if (x.Value.q.CyclesSinceMessaged < y.Value.q.CyclesSinceMessaged)
+                return -1;
+            else if (x.Value.q.CyclesSinceMessaged > y.Value.q.CyclesSinceMessaged)
+                return 1;
+            else // same age. return sort of original keys
+                return x.Key < y.Key ? -1 : (x.Key == y.Key ? 0 : 1);
+        }
+    }
+
     class SortedQueuedToSendListItem : QueuedToSendListItem
     {
         public QsosPanel qp;
