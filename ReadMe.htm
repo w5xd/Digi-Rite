@@ -7034,8 +7034,10 @@ CWZH+pLx19gxjy6dxYmXf4cv3j4Rl/3xj/jKV75iXkXZBPj/AZVMEkzQ14mJAAAAAElFTkSuQmCC" />
         </li>
         <li>
             <em>Move QSO Up</em> and <em>Move QSO Down</em> change the priority of this QSO.
-            Only the top-most active QSO (or QSOs if you have enabled multi-streaming) will
-            generate an outgoing message in a cycle. With the keyboard focus on this item,
+            The top-most active QSO (or QSOs if you have enabled multi-streaming) will
+            generate an outgoing message in a cycle, <b><i>except</i></b> that a lower
+            priority QSO will instead be selected if it has decoded something from the
+            other station more recently. With the keyboard focus on this item,
             Alt+Up or Alt+Down will also move it up or down the list.
         </li>
         <li>
@@ -7430,6 +7432,10 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         <li>Fix "item with same key" exception.</li>
         <li>Fix extraneous logging of QSOs when "wrong exchange" is received.</li>
         <li>Click in label for QSOs in Progress toggles checkbox.</li>
+        <li>The Qso in progress (or QSOs if multi-streaming) that generates an outgoing message
+            is subject to how recently a message has been decoded for that QSO in progress. QSOs in
+            progress with more recent decodes have priority over those with no recent decodes.
+        </li>
     </ul>
     1.1.37
     <ul>
