@@ -405,7 +405,17 @@ namespace DigiRite
 
         #region transmit management
 
-        private int MAX_MESSAGES_PER_CYCLE { get { return (int)numericUpDownStreams.Value; } }
+        private int MAX_MESSAGES_PER_CYCLE { get { 
+                int ret = (int)numericUpDownStreams.Value; 
+                if ((decimal)ret != numericUpDownStreams.Value)
+                    ret += 1;
+                return ret;
+                } }
+        private float AMP_REDUCE_PER_STREAM {
+            get {
+                return numericUpDownStreams.Value == 1.1m ? 0.15f : 1.0f;
+            }
+        }
 
         // empirically determined to "center" in the time slot
         private const int FT8_TX_AFTER_ZERO_MSEC = 210;
@@ -605,8 +615,7 @@ namespace DigiRite
                 int[] itones = null;
                 bool[] ftbits = null;
                 genMessage(item.MessageText, ref asSent, ref itones, ref ftbits);
-                const float RELATIVE_POWER_THIS_QSO = 1.0f;
-                itonesToSend.Add(new XDft.Tone(itones, RELATIVE_POWER_THIS_QSO, freq, 0));
+                itonesToSend.Add(new XDft.Tone(itones, 1, freq, 0));
                 string conversationItem = String.Format("{2:00}{3:00}{4:00} transmit {1,4}    {0}",
                         asSent,
                         freq, toSend.Hour, toSend.Minute, seconds);
@@ -675,6 +684,8 @@ namespace DigiRite
                     else if (maxFreq > rxForm.MaxDecodeFrequency + FT_GAP_HZ)
                         deltaFreq = rxForm.MaxDecodeFrequency + FT_GAP_HZ - maxFreq; // negative
                     List<XDft.Tone> tones = new List<XDft.Tone>();
+                    float amplitude = 1;
+                    float relativeAmplitudeSubsequentQsos = AMP_REDUCE_PER_STREAM;
                     foreach (var itones in itonesToSend)
                     {
                         int[] nextTones = itones.itone;
@@ -694,8 +705,9 @@ namespace DigiRite
                             }
                         }
 
-                        XDft.Tone thisSignal = new XDft.Tone(nextTones, 1.0f, itones.frequency + deltaFreq, 0);
+                        XDft.Tone thisSignal = new XDft.Tone(nextTones, amplitude, itones.frequency + deltaFreq, 0);
                         tones.Add(thisSignal);
+                        amplitude *= relativeAmplitudeSubsequentQsos;
                     }
                     RigVfoSplitForTx(minFreq, maxFreq + FT_GAP_HZ, tones);
                     sendInProgress = true;
@@ -2511,10 +2523,35 @@ namespace DigiRite
                 ApplyFontControls();
             }
         }
-        
-#endregion
 
-#region TX RX frequency
+        private decimal numericUpDownStreamsPrevious = 1m;
+        private void numericUpDownStreams_ValueChanged(object sender, EventArgs e)
+        {
+            int v = (int)numericUpDownStreams.Value;
+            if ((v == 2 && numericUpDownStreamsPrevious == 1m) ||
+                (v == 1 && numericUpDownStreamsPrevious == 2m))
+                numericUpDownStreams.Value = 1.1m;
+
+            if ((decimal)v != numericUpDownStreams.Value)
+            {
+                if (numericUpDownStreams.Value == 1.1m)
+                    numericUpDownStreams.DecimalPlaces = 1;
+                else
+                    numericUpDownStreams.Value = v;
+            }
+            else
+                numericUpDownStreams.DecimalPlaces = 0;
+            numericUpDownStreamsPrevious = numericUpDownStreams.Value;
+        }
+
+        private void numericUpDownStreams_Scroll(object sender, ScrollEventArgs e)
+        {
+            
+        }
+
+        #endregion
+
+        #region TX RX frequency
         private void buttonTune_Click(object sender, EventArgs e)
         {
             if (sendInProgress)
@@ -2585,5 +2622,8 @@ namespace DigiRite
         }
 
         #endregion
+
+ 
+     
     }
 }

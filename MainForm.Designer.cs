@@ -50,6 +50,7 @@
             this.labelInProgress = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.panel6 = new System.Windows.Forms.Panel();
+            this.checkBoxCalcNextToSend = new System.Windows.Forms.CheckBox();
             this.label15 = new System.Windows.Forms.Label();
             this.comboBoxOnLoggedMessage = new System.Windows.Forms.ComboBox();
             this.checkBoxAutoXmit = new System.Windows.Forms.CheckBox();
@@ -108,7 +109,6 @@
             this.listBoxConversation = new DigiRite.ConversationListBox();
             this.checkedlbNextToSend = new DigiRite.ToSendListBox();
             this.timerCleanup = new System.Windows.Forms.Timer(this.components);
-            this.checkBoxCalcNextToSend = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -371,6 +371,17 @@
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(345, 52);
             this.panel6.TabIndex = 0;
+            // 
+            // checkBoxCalcNextToSend
+            // 
+            this.checkBoxCalcNextToSend.AutoSize = true;
+            this.checkBoxCalcNextToSend.Location = new System.Drawing.Point(8, 32);
+            this.checkBoxCalcNextToSend.Name = "checkBoxCalcNextToSend";
+            this.checkBoxCalcNextToSend.Size = new System.Drawing.Size(167, 17);
+            this.checkBoxCalcNextToSend.TabIndex = 5;
+            this.checkBoxCalcNextToSend.Text = "Show &Calculated next to send";
+            this.checkBoxCalcNextToSend.UseVisualStyleBackColor = true;
+            this.checkBoxCalcNextToSend.CheckedChanged += new System.EventHandler(this.checkBoxCalcNextToSend_CheckedChanged);
             // 
             // label15
             // 
@@ -639,7 +650,7 @@
             // 
             // numericUpDownStreams
             // 
-            this.numericUpDownStreams.Location = new System.Drawing.Point(63, 106);
+            this.numericUpDownStreams.Location = new System.Drawing.Point(67, 106);
             this.numericUpDownStreams.Maximum = new decimal(new int[] {
             5,
             0,
@@ -651,13 +662,15 @@
             0,
             0});
             this.numericUpDownStreams.Name = "numericUpDownStreams";
-            this.numericUpDownStreams.Size = new System.Drawing.Size(32, 20);
+            this.numericUpDownStreams.Size = new System.Drawing.Size(38, 20);
             this.numericUpDownStreams.TabIndex = 7;
             this.numericUpDownStreams.Value = new decimal(new int[] {
             1,
             0,
             0,
             0});
+            this.numericUpDownStreams.ValueChanged += new System.EventHandler(this.numericUpDownStreams_ValueChanged);
+            this.numericUpDownStreams.Scroll += new System.Windows.Forms.ScrollEventHandler(this.numericUpDownStreams_Scroll);
             // 
             // labelPtt
             // 
@@ -1042,17 +1055,6 @@
             // 
             this.timerCleanup.Interval = 10000;
             this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
-            // 
-            // checkBoxCalcNextToSend
-            // 
-            this.checkBoxCalcNextToSend.AutoSize = true;
-            this.checkBoxCalcNextToSend.Location = new System.Drawing.Point(8, 32);
-            this.checkBoxCalcNextToSend.Name = "checkBoxCalcNextToSend";
-            this.checkBoxCalcNextToSend.Size = new System.Drawing.Size(167, 17);
-            this.checkBoxCalcNextToSend.TabIndex = 5;
-            this.checkBoxCalcNextToSend.Text = "Show &Calculated next to send";
-            this.checkBoxCalcNextToSend.UseVisualStyleBackColor = true;
-            this.checkBoxCalcNextToSend.CheckedChanged += new System.EventHandler(this.checkBoxCalcNextToSend_CheckedChanged);
             // 
             // MainForm
             // 
