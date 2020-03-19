@@ -20,6 +20,7 @@
 02:25:07 TX: W1AW W5XD R-16
 02:25:22 TX: W1AW W5XD R-16
 02:25:35 000115 -12  0.8 2049 +  W5XD W1AW 73                        They send 73. only now I can log them
+02:24:50 000115 -16  0.8 2049 +  W5XD EA3ZD RRR                      bring this guy back, but don't activate him
 02:25:37 TX: W1AW W5XD RR73
 02:25:50 000130 -12  0.8 2049 +  W5XD K5ZD R FN42                    They send an exchange we cannot use. with a bogus R
 02:25:52 TX: K5ZD W5XD -12

@@ -7434,7 +7434,14 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         <li>Click in label for QSOs in Progress toggles checkbox.</li>
         <li>The Qso in progress (or QSOs if multi-streaming) that generates an outgoing message
             is subject to how recently a message has been decoded for that QSO in progress. QSOs in
-            progress with more recent decodes have priority over those with no recent decodes.
+            progress with more recent decodes have priority over those with no recent decodes.</li>
+        <li>Shorten "ReactivateQSOTimerMinutes" to 5 minutes. If a QSO in Progress is logged, DigiRite remembers
+            it as the same QSO for this long in case that station calls you again.
+        </li>
+        <li>A hidden and already-logged QSO in Progress only becomes visible on receipt of a new message, but is not
+        made Active (which previous versions did.)</li>
+        <li>Automatically activate an inactive QSO only for a QSO that had been automatically deactived by
+        timeout, and when a new message arrives from that station.
         </li>
     </ul>
     1.1.37

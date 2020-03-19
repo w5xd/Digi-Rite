@@ -1844,11 +1844,7 @@ namespace DigiRite
         
         private void timerCleanup_Tick(object sender, EventArgs e)
         {
-#if !DEBUG
-            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromHours(1);
-#else
-            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromMinutes(4);
-#endif
+            DateTime removalTime = DateTime.UtcNow - TimeSpan.FromMinutes(Properties.Settings.Default.ReactivateQSOTimerMinutes);
             qsosPanel.PurgeOldLoggedQsos(removalTime);
         }
 

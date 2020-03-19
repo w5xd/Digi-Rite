@@ -101,5 +101,8 @@
     <Setting Name="ShowCalcNextToSend" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="ReactivateQSOTimerMinutes" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

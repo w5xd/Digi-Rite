@@ -44,6 +44,7 @@ namespace DigiRite
         private bool messagedLastCycle = false;
         private bool holdingForAnotherQso = false;
         private bool active=true;
+        private bool timedMyselfOut = false;
         private short band = 0;
         private DateTime timeOfLastReceived;
         private bool markedAsLogged = false;
@@ -118,7 +119,8 @@ namespace DigiRite
             }
         }
 
-        public int CyclesSinceMessaged { get; private set; } = 0;
+        private int cyclesSinceMessaged;
+        public int CyclesSinceMessaged { get { return messagedThisCycle ? 0 : cyclesSinceMessaged; } }
         public int CyclesSinceMessagedNotHolding { get; private set; } = 0;
 
         public bool CanAcceptAckNotToMe { get; private set; } = true;
@@ -167,11 +169,11 @@ namespace DigiRite
             if (ret)
             {
                 CyclesSinceMessagedNotHolding = 0;
-                CyclesSinceMessaged = 0;
+                cyclesSinceMessaged = 0;
             }
             else
             {
-                CyclesSinceMessaged += 1;
+                cyclesSinceMessaged += 1;
                 if (!holdingForAnotherQso && wasReceiveCycle)
                     CyclesSinceMessagedNotHolding += 1;
             }
@@ -180,10 +182,13 @@ namespace DigiRite
                 CanAcceptAckNotToMe = false;
                 if (active)
                 {
+                    timedMyselfOut = true;
                     active = false;
                     if (null != OnChangedCb) OnChangedCb();
                 }
             }
+            else
+                timedMyselfOut = false;
             if (wasReceiveCycle)
                 messagedLastCycle = messagedThisCycle;
             messagedThisCycle = false;
@@ -249,7 +254,7 @@ namespace DigiRite
                     return false;
                 }
                 holdingForAnotherQso = false;
-                if (AmTimedOut || IsLogged)
+                if (timedMyselfOut && !active)
                     active = true;
                 messagedThisCycle = true;
                 messages.Add(rm);

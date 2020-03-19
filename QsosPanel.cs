@@ -92,9 +92,8 @@ namespace DigiRite
             cb.Font = tlp.Font;
 
             // set active and checked on add
-            cb.Checked = true;
+            cb.Checked = qp.Active;
             cb.TabStop = addedIndex == 0;
-            qp.Active = true;
             qp.OnChangedCb = new QsoInProgress.OnChanged(() =>
             {
                 if (qp.IsLogged && !qp.Active)
@@ -230,7 +229,7 @@ namespace DigiRite
 
         private void OnLoggedInactiveChanged(QsoInProgress qp)
         {
-            if (qp.Active)
+            if (qp.Active || qp.CyclesSinceMessaged  < 2)
             {   // back into the GUI when it becomes active.
                 qp.OnChangedCb = null;
                 loggedInactive.Remove(qp.GetKey());
