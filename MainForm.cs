@@ -414,6 +414,10 @@ namespace DigiRite
         private float AMP_REDUCE_PER_STREAM {
             get {
                 return numericUpDownStreams.Value == 1.1m ? 0.15f : 1.0f;
+            }}
+        private bool IS_AMP_REDUCED_PER_STREAM {
+            get {
+                return numericUpDownStreams.Value == 1.1m ? true : false;
             }
         }
 
@@ -566,6 +570,7 @@ namespace DigiRite
             int freqRange = FT_GAP_HZ + 1;
             int freqIncrement = freqRange + 1;
             bool doingMultiStream = toSendList.Count > 1;
+            Conversation.Origin origin = Conversation.Origin.TRANSMIT;
             foreach (var item in toSendList)
             {
                 QsoInProgress q = item.q;
@@ -619,13 +624,15 @@ namespace DigiRite
                 string conversationItem = String.Format("{2:00}{3:00}{4:00} transmit {1,4}    {0}",
                         asSent,
                         freq, toSend.Hour, toSend.Minute, seconds);
-                listBoxConversation.Items.Add(new ListBoxConversationItem(conversationItem, Conversation.Origin.TRANSMIT));
+                listBoxConversation.Items.Add(new ListBoxConversationItem(conversationItem, origin));
                 conversationLogFile.SendToLog(conversationItem);
                 ScrollListBoxToBottom(listBoxConversation);
                 logFile.SendToLog("TX: " + item.MessageText);
                 asSent = asSent.Trim();
                 if (asSent != item.MessageText)
                     logFile.SendToLog("TX error sent \"" + asSent + "\" instead of \"" + item.MessageText + "\"");
+                if (IS_AMP_REDUCED_PER_STREAM)
+                    origin = Conversation.Origin.TRANSMIT_REDUCED;
             }
 
             const int MAX_CONVERSATION_LISTBOX_ITEMS = 1000;
