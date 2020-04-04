@@ -77,10 +77,18 @@ namespace DigiRite
     {
         public int Compare(KeyValuePair<int, QueuedToSendListItem> x, KeyValuePair<int, QueuedToSendListItem> y)
         {
+            var xCyclesSinceMessaged = x.Value.q.CyclesSinceMessaged;
+            var yCyclesSinceMessaged = y.Value.q.CyclesSinceMessaged;
+            // make 1 cycle same as zero cycles
+            if (xCyclesSinceMessaged == 0)
+                xCyclesSinceMessaged = 1;
+            if (yCyclesSinceMessaged == 0)
+                yCyclesSinceMessaged = 1;
+
             // more recently heard from sort to smaller numbers 
-            if (x.Value.q.CyclesSinceMessaged < y.Value.q.CyclesSinceMessaged)
+            if (xCyclesSinceMessaged < yCyclesSinceMessaged)
                 return -1;
-            else if (x.Value.q.CyclesSinceMessaged > y.Value.q.CyclesSinceMessaged)
+            else if (xCyclesSinceMessaged > yCyclesSinceMessaged)
                 return 1;
             else // same age. return sort of original keys
                 return x.Key < y.Key ? -1 : (x.Key == y.Key ? 0 : 1);
