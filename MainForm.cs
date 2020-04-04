@@ -738,11 +738,16 @@ namespace DigiRite
                     checkedlbNextToSend.Items.RemoveAt(j);
             }
 
+            foreach (var item in inToSend)
+                item.Value.q.TransmitedLastOpportunity = false;
+
             foreach (var item in toSendList)
             {
                 var cb = item.MessageSent;
                 if (null != cb)
                     cb();
+                if (null != item.q)
+                    item.q.TransmitedLastOpportunity = true;
             }
         }
 

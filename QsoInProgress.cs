@@ -51,6 +51,7 @@ namespace DigiRite
         private uint transmitFrequency = 0;
         private List<XDpack77.Pack77Message.ReceivedMessage> messages = new List<XDpack77.Pack77Message.ReceivedMessage>();
         private const int MAX_CYCLES_WITHOUT_ANSWER = 5;
+
         public delegate void OnChanged();
         public OnChanged OnChangedCb { get; set; }
         public QsoInProgress(RecentMessage rm, short band)
@@ -61,6 +62,8 @@ namespace DigiRite
             this.AckMessage = Properties.Settings.Default.DefaultAcknowlegement;
             timeOfLastReceived = DateTime.UtcNow;
         }
+
+        public bool TransmitedLastOpportunity { get; set; }  = false;
 
         public XDpack77.Pack77Message.ReceivedMessage Message { get { return messages.First(); } }
         
@@ -171,10 +174,10 @@ namespace DigiRite
                 CyclesSinceMessagedNotHolding = 0;
                 cyclesSinceMessaged = 0;
             }
-            else
+            else if (wasReceiveCycle)
             {
                 cyclesSinceMessaged += 1;
-                if (!holdingForAnotherQso && wasReceiveCycle)
+                if (!holdingForAnotherQso)
                     CyclesSinceMessagedNotHolding += 1;
             }
             if (AmTimedOut)
@@ -225,7 +228,7 @@ namespace DigiRite
             {
                 if (directlyToMe)
                     CanAcceptAckNotToMe = true;
-                if (!directlyToMe)
+                else
                 {
                     if (!messagedThisCycle)
                     {

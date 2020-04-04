@@ -79,19 +79,23 @@ namespace DigiRite
         {
             var xCyclesSinceMessaged = x.Value.q.CyclesSinceMessaged;
             var yCyclesSinceMessaged = y.Value.q.CyclesSinceMessaged;
-            // make 1 cycle same as zero cycles
-            if (xCyclesSinceMessaged == 0)
-                xCyclesSinceMessaged = 1;
-            if (yCyclesSinceMessaged == 0)
-                yCyclesSinceMessaged = 1;
 
+            // If we transmitted to a guy at his most recent TX slot, and if we didn't
+            // copy him this RX slot, then give him one RX slot grace period
+            if ((xCyclesSinceMessaged == 1) && x.Value.q.TransmitedLastOpportunity)
+                xCyclesSinceMessaged = 0;
+            if ((yCyclesSinceMessaged == 1) && y.Value.q.TransmitedLastOpportunity)
+                yCyclesSinceMessaged = 0;
+
+            int ret = -1;
             // more recently heard from sort to smaller numbers 
             if (xCyclesSinceMessaged < yCyclesSinceMessaged)
-                return -1;
+                ret = -1;
             else if (xCyclesSinceMessaged > yCyclesSinceMessaged)
-                return 1;
+                ret = 1;
             else // same age. return sort of original keys
-                return x.Key < y.Key ? -1 : (x.Key == y.Key ? 0 : 1);
+                ret = x.Key < y.Key ? -1 : (x.Key == y.Key ? 0 : 1);
+            return ret;
         }
     }
 
