@@ -451,7 +451,7 @@ namespace DigiRite
         private GenMessage genMessage;
         private bool[] transmittedForQSOLastCycle = new bool[2];
         private delegate DateTime GetNowTime();
-
+        private int consecutiveTransmitCycles = 0;
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
             if ((digiMode == DigiMode.FT4) && allowLate)
@@ -469,9 +469,11 @@ namespace DigiRite
             int lastCycleIndex = nowOdd ? 0 : 1;
             // can't transmit two consecutive cycles, one odd and one even
             bool onUserSelectedCycle = nowOdd == radioButtonOdd.Checked;
-            if ((transmittedForQSOLastCycle[lastCycleIndex])
-                    && !onUserSelectedCycle)
+            if (consecutiveTransmitCycles >= 2)
+            {
+                consecutiveTransmitCycles = 0;
                 return;
+            }
             List<QueuedToSendListItem> toSendList = new List<QueuedToSendListItem>();
             // scan the checkboxes and decide what to send
             if (checkBoxManualEntry.Checked && onUserSelectedCycle)
@@ -546,6 +548,27 @@ namespace DigiRite
             bool anyToSend = toSendList.Any();
             int thisCycleIndex = nowOdd ? 1 : 0;
             transmittedForQSOLastCycle[thisCycleIndex] = anyToSend;
+            if (anyToSend)
+            {
+                consecutiveTransmitCycles += 1;
+                if (consecutiveTransmitCycles >= 2)
+                {
+                    // force all Qsos in progress on "other" cycle to inactive
+                    for (int i = 0; i < inProgress.Count; i++)
+                    {   // first entries are highest priority
+                        QsoInProgress q = inProgress[i];
+                        if (null == q)
+                            continue;   // manual entry goes this way
+                        if (!q.Active)
+                            continue;
+                        bool sendOdd = ((q.Message.CycleNumber + 1) & 1) != 0;
+                        if (sendOdd != nowOdd)
+                            q.Active = false;
+                    }
+                }
+            }
+            else
+                consecutiveTransmitCycles = 0;
 
             int cqMode = comboBoxCQ.SelectedIndex;
             if (onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE &&
