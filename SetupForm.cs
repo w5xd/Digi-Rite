@@ -166,6 +166,17 @@ namespace DigiRite
             tabPageOther.BackColor = BackColor;
 
             comboBoxContest_SelectedIndexChanged(null,null);
+
+            numericUpDownMultiProc.Maximum = Math.Min(Math.Max(System.Environment.ProcessorCount,1),
+                                                        MultiDemodulatorWrapper.MAX_MULTIPROC);
+            try
+            {
+                numericUpDownMultiProc.Value = Properties.Settings.Default.MultiProcessCount;
+            }
+            catch (System.Exception )
+            {
+                numericUpDownMultiProc.Value = 1;
+            }
         }
 
         // make the user type one in that can be parsed
@@ -234,6 +245,7 @@ namespace DigiRite
             Properties.Settings.Default.LeftClickIsMyTx = radioButtonR.Checked;
             Properties.Settings.Default.CQmessage = textBoxCQ.Text.ToUpper();
             Properties.Settings.Default.ContestMessageToSend = textBoxExchangeToSend.Text.ToUpper();
+            Properties.Settings.Default.MultiProcessCount = (ushort)numericUpDownMultiProc.Value;
 
             DialogResult = DialogResult.OK;
             controlSplit = radioButtonSplitTX.Checked ? VfoControl.VFO_SPLIT : 

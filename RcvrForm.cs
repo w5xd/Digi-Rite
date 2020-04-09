@@ -131,8 +131,8 @@ namespace DigiRite
             listBoxReceived.Font = font;
         }
 
-        XDft.Demodulator myDemod = null;
-        public XDft.Demodulator demodParams {  set { 
+        MultiDemodulatorWrapper myDemod = null;
+        public MultiDemodulatorWrapper demodParams {  set { 
                 myDemod = value;
                 if (null != value)
                 {

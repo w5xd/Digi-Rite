@@ -15,9 +15,7 @@ namespace DigiRite
         public enum DigiMode { FT8, FT4 };
 
         // These are the objects needed to receive and send FT8.
-        private XDft.Demodulator demodulator;
-        private XDft.WsjtSharedMemory wsjtSharedMem;
-        private XDft.WsjtExe wsjtExe;
+        MultiDemodulatorWrapper demodulatorWrapper;
         private XD.WaveDevicePlayer waveDevicePlayer;
         private XD.WaveDeviceTx deviceTx = null; // to modulate
         private XDft.GeneratorContext genContext;
@@ -100,7 +98,7 @@ namespace DigiRite
             return ret;
         }
 
-        private string LogFilePath { get { return wsjtExe.AppDirectoryPath + "DigiRite.log"; } }
+        private string LogFilePath { get { return demodulatorWrapper.AppDirectoryPath + "DigiRite.log"; } }
 
         const double AUDIO_SLIDER_SCALE = 12;
         private bool InitSoundInAndOut()
@@ -113,15 +111,8 @@ namespace DigiRite
             timerFt8Clock.Enabled = false;
             timerSpectrum.Enabled = false;
             timerCleanup.Enabled = false;
-            if (null != demodulator)
-                demodulator.Dispose();
-            demodulator = null;
-            if (null != wsjtSharedMem)
-                wsjtSharedMem.Dispose();
-            wsjtSharedMem = null;
-            if (null != wsjtExe)
-                wsjtExe.Dispose();
-            wsjtExe = null;
+            if (null != demodulatorWrapper)
+                demodulatorWrapper.Dispose();
             if (null != waveDevicePlayer)
                 waveDevicePlayer.Dispose();
             waveDevicePlayer = null;
@@ -135,54 +126,34 @@ namespace DigiRite
                 conversationLogFile.Dispose();
             conversationLogFile = null;
 
+            ushort multiProc = Properties.Settings.Default.MultiProcessCount;
+            if (multiProc > System.Environment.ProcessorCount)
+                multiProc = (ushort)System.Environment.ProcessorCount;
+            demodulatorWrapper = new MultiDemodulatorWrapper(instanceNumber, multiProc);
+
             // The demodulator invokes the wsjtx decoder
-            demodulator = new XDft.Demodulator();
             // the names of its parameters are verbatim from the wsjt-x source code.
             // Don't ask this author what they mean.
-            demodulator.nftx = 1500;
-            demodulator.nfqso = 1500;
-            demodulator.nfa = 200;
-            demodulator.nfb = 6000;
+            demodulatorWrapper.nftx = 1500;
+            demodulatorWrapper.nfqso = 1500;
+            demodulatorWrapper.nfa = 200;
+            demodulatorWrapper.nfb = 6000;
 
             if (Properties.Settings.Default.Decode_ndepth < 1)
                 Properties.Settings.Default.Decode_ndepth = 1;
             if (Properties.Settings.Default.Decode_ndepth > 3)
                 Properties.Settings.Default.Decode_ndepth = 1;
-            demodulator.ndepth = Properties.Settings.Default.Decode_ndepth;
-            demodulator.lft8apon = Properties.Settings.Default.Decode_lft8apon;
-            demodulator.nQSOProgress = 5;
-            demodulator.digiMode = digiMode == DigiMode.FT8 ? XDft.DigiMode.DIGI_FT8 : XDft.DigiMode.DIGI_FT4;
+            demodulatorWrapper.ndepth = Properties.Settings.Default.Decode_ndepth;
+            demodulatorWrapper.lft8apon = Properties.Settings.Default.Decode_lft8apon;
+            demodulatorWrapper.nQSOProgress = 5;
+            demodulatorWrapper.digiMode = digiMode == DigiMode.FT8 ? XDft.DigiMode.DIGI_FT8 : XDft.DigiMode.DIGI_FT4;
 
             // When the decoder finds an FT8 message, it calls us back...
             // ...on a foreign thread. Call BeginInvoke to get back on this one. See below.
-            demodulator.DemodulatorResultCallback = new XDft.DemodResult(Decoded);
-
-            string sharedMemoryKey = "DigiRite-" + instanceNumber.ToString();
-            wsjtSharedMem = new XDft.WsjtSharedMemory(sharedMemoryKey, false);
-            if (!wsjtSharedMem.CreateWsjtSharedMem())
-            {
-                MessageBox.Show("Failed to create Shared Memory from " + sharedMemoryKey);
-                return false;
-            }
-
-            // The subprocess itself is managed by the XDft
-            wsjtExe = new XDft.WsjtExe();
-            wsjtExe.AppDataName = "DigiRite-" + instanceNumber.ToString();
-
-            if (!wsjtExe.CreateWsjtProcess(wsjtSharedMem))
-            {
-                MessageBox.Show("Failed to launch wsjt exe");
-                demodulator.Dispose();
-                wsjtExe.Dispose();
-                wsjtExe = null;
-                wsjtSharedMem.Dispose();
-                wsjtSharedMem = null;
-                demodulator = null;
-                return false;
-            }
+            demodulatorWrapper.DemodulatorResultCallback = new XDft.DemodResult(Decoded);
 
             logFile = new LogFile(LogFilePath);
-            String conversationLog = wsjtExe.AppDirectoryPath + "Conversation.log";
+            String conversationLog = demodulatorWrapper.AppDirectoryPath + "Conversation.log";
             conversationLogFile = new LogFile(conversationLog, false);
 
             rxForm.logFile = logFile;
@@ -196,7 +167,7 @@ namespace DigiRite
                 if (waveDevicePlayer != null)
                     waveDevicePlayer.Dispose();
                 waveDevicePlayer = new XD.WaveDevicePlayer();
-                if (!waveDevicePlayer.Open(RxInDevice, channel, demodulator.GetRealTimeRxSink()))
+                if (!waveDevicePlayer.Open(RxInDevice, channel, demodulatorWrapper.GetRealTimeRxSink()))
                 {
                     MessageBox.Show("Failed to open wave input");
                     waveDevicePlayer.Dispose();
@@ -207,7 +178,7 @@ namespace DigiRite
                 {
                     if (fromRegistryValue(rk, "RxInputGain", out float x) && x >= 0 && x <= 1)
                         waveDevicePlayer.Gain = x;
-                    rxForm.demodParams = demodulator;
+                    rxForm.demodParams = demodulatorWrapper;
                     waveDevicePlayer.Resume();
                     rxForm.Player = waveDevicePlayer;
                 }
@@ -389,7 +360,7 @@ namespace DigiRite
                     if (ft4DecodeOffsetIdx < ft4DecodeOffsetMsec.Length)
                     {
                         ft4MsecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[ft4DecodeOffsetIdx] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
-                        bool started = demodulator.DecodeAgain(wsjtExe, cycleNumber, ft4DecodeOffsetMsec[ft4DecodeOffsetIdx]);
+                        bool started = demodulatorWrapper.DecodeAgain(cycleNumber, ft4DecodeOffsetMsec[ft4DecodeOffsetIdx]);
                     }
                 }
             }
@@ -1682,17 +1653,17 @@ namespace DigiRite
                     genContext = XDft.GeneratorContext.getFt4Context((ushort)UserPttToSound);
                     genMessage = new GenMessage(XDft.Generator.genft4);
                     checkTransmitAtZero = new CheckTransmitAtZero(Ft4CheckTransmitAtZero);
-                    demodulator.digiMode = XDft.DigiMode.DIGI_FT4;
-                    demodulator.DemodulateSoundPreUtcZeroMsec = (short)( DEFAULT_DECODER_LOOKBACK_MSEC + FT4_DECODER_CENTER_OFFSET_MSEC);
-                    demodulator.nzhsym = 18;
+                    demodulatorWrapper.digiMode = XDft.DigiMode.DIGI_FT4;
+                    demodulatorWrapper.DemodulateSoundPreUtcZeroMsec = (short)( DEFAULT_DECODER_LOOKBACK_MSEC + FT4_DECODER_CENTER_OFFSET_MSEC);
+                    demodulatorWrapper.nzhsym = 18;
 #if DEBUG
                     if ((1 & FT4_MULTIPLE_DECODE_COUNT) != 1)
                         throw new System.Exception("FT4_MULTIPLE_DECODE_COUNT must be an odd number");
-                    if (demodulator.DemodulateSoundPreUtcZeroMsec > 1000)
+                    if (demodulatorWrapper.DemodulateSoundPreUtcZeroMsec > 1000)
                         throw new System.Exception("Demodulator cannot look back further than 1000msec");
                     SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 50;
 #endif
-                    demodulator.DemodulateDefaultSoundShiftMsec = FT4_DECODER_CENTER_OFFSET_MSEC;
+                    demodulatorWrapper.DemodulateDefaultSoundShiftMsec = FT4_DECODER_CENTER_OFFSET_MSEC;
                     ft4DecodeOffsetMsec = new ushort[FT4_MULTIPLE_DECODE_COUNT];
                     ft4DecodeOffsetMsec[0] = FT4_DECODER_CENTER_OFFSET_MSEC; // zero idx is run by OnClock
                     int middleIdx = FT4_MULTIPLE_DECODE_COUNT / 2;
@@ -1715,9 +1686,9 @@ namespace DigiRite
                     genContext = XDft.GeneratorContext.getFt8Context((ushort)UserPttToSound);
                     genMessage = new GenMessage(XDft.Generator.genft8);
                     checkTransmitAtZero = new CheckTransmitAtZero(Ft8CheckTransmitAtZero);
-                    demodulator.digiMode = XDft.DigiMode.DIGI_FT8;
-                    demodulator.DemodulateSoundPreUtcZeroMsec = DEFAULT_DECODER_LOOKBACK_MSEC;
-                    demodulator.nzhsym = 50;
+                    demodulatorWrapper.digiMode = XDft.DigiMode.DIGI_FT8;
+                    demodulatorWrapper.DemodulateSoundPreUtcZeroMsec = DEFAULT_DECODER_LOOKBACK_MSEC;
+                    demodulatorWrapper.nzhsym = 50;
                     TRIGGER_DECODE_TENTHS = 50;
                     CLEAR_OLD_MESSAGES_AT_TENTHS = 50;
                     cl.CYCLE = 150;
@@ -1828,17 +1799,9 @@ namespace DigiRite
                         rk.SetValue("RxInputGain", waveDevicePlayer.Gain.ToString());
                 }
             }
-            if (demodulator != null)
-                demodulator.Dispose();
-            demodulator = null;
-
-            if (wsjtExe != null)
-                wsjtExe.Dispose();
-            wsjtExe = null;
-
-            if (wsjtSharedMem != null)
-                wsjtSharedMem.Dispose();
-            wsjtSharedMem = null;
+            if (demodulatorWrapper != null)
+                demodulatorWrapper.Dispose();
+            demodulatorWrapper = null;
 
             if (waveDevicePlayer != null)
                 waveDevicePlayer.Dispose();
@@ -1885,8 +1848,8 @@ namespace DigiRite
 
         private void timerSpectrum_Tick(object sender, EventArgs e)
         {
-            if ((null != rxForm) && (null != demodulator))
-                rxForm.DisplaySpectrum(demodulator);
+            if ((null != rxForm) && (null != demodulatorWrapper))
+                rxForm.DisplaySpectrum(demodulatorWrapper.demodulator);
         }
         
         private void timerCleanup_Tick(object sender, EventArgs e)
@@ -2055,14 +2018,14 @@ namespace DigiRite
                 {
                     labelClock.Text = "";
                     int msecIntoCycle = -1;
-                    if ((null != demodulator) && (null != waveDevicePlayer))
+                    if ((null != demodulatorWrapper) && (null != waveDevicePlayer))
                     {
                         // TRIGGER_DECODE tells the demodulator whether to actually demodulate
                         bool invokedDecode = false;
                         String hiscall = qsosPanel.FirstActive?.HisCall;
-                        demodulator.mycall = myCall;
-                        demodulator.hiscall = hiscall;
-                        intervalTenths = demodulator.Clock(TRIGGER_DECODE_TENTHS, wsjtExe, ref invokedDecode, ref cycleNumber);
+                        demodulatorWrapper.mycall = myCall;
+                        demodulatorWrapper.hiscall = hiscall;
+                        intervalTenths = demodulatorWrapper.Clock(TRIGGER_DECODE_TENTHS, ref invokedDecode, ref cycleNumber);
                         // invokedDecode tells us whether it actually was able to invoke the wsjtx decoder.
                         // Some reasons it might not: interval is less than TRIGGER_DECODE.
                         // We have recently called into Clock which did invoke a decode, and that one isn't finished yet.
@@ -2612,16 +2575,16 @@ namespace DigiRite
 
         public int RxFrequency {
             get {
-                if (null != demodulator)
-                    return (int)demodulator.nfqso;
+                if (null != demodulatorWrapper)
+                    return (int)demodulatorWrapper.nfqso;
                 return 0;
             }
             set {
                 if ((value <= 0) || (value > 6000))
                     return;
                 int v = value;
-                if (null != demodulator)
-                    demodulator.nfqso = v;
+                if (null != demodulatorWrapper)
+                    demodulatorWrapper.nfqso = v;
                 rxForm.RxHz = v;
                 if (v != (int)numericUpDownRxFrequency.Value)
                 {
