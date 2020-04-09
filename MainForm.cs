@@ -36,6 +36,12 @@ namespace DigiRite
         private LogFile logFile;
         private LogFile conversationLogFile;
         private bool sendInProgress = false;
+        private bool SendInProgress {
+            get { return sendInProgress; }
+            set { sendInProgress = value;
+                if (!value)
+                    CqMessageInProgress = false;}
+        }
         private AltMessageShortcuts altMessageShortcuts;
 
         // what we put in listToMe and cqlist
@@ -423,6 +429,7 @@ namespace DigiRite
         private bool[] transmittedForQSOLastCycle = new bool[2];
         private delegate DateTime GetNowTime();
         private int consecutiveTransmitCycles = 0;
+        private bool CqMessageInProgress = false;
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
             if ((digiMode == DigiMode.FT4) && allowLate)
@@ -542,8 +549,9 @@ namespace DigiRite
                 consecutiveTransmitCycles = 0;
 
             int cqMode = comboBoxCQ.SelectedIndex;
+            bool onlyCQ = cqMode == 1 && !toSendList.Any();
             if (onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE &&
-                    ((cqMode == 1 && !toSendList.Any()) || cqMode == 2))
+                    (onlyCQ || cqMode == 2))
             {   // only CQ if we have nothing else to send
                 string cq = "CQ";
                 /* 77-bit pack is special w.r.t. CQ. can't sent directed CQ 
@@ -557,6 +565,8 @@ namespace DigiRite
                 toSendList.Add(new QueuedToSendListItem(cq, null));
                 if (!checkBoxAutoXmit.Checked)
                     comboBoxCQ.SelectedIndex = 0;
+                if (onlyCQ)
+                    CqMessageInProgress = true;
             }
 
             List<XDft.Tone> itonesToSend = new List<XDft.Tone>();
@@ -663,7 +673,7 @@ namespace DigiRite
                     }
                     int freq = itonesToSend[0].frequency;
                     freq = RigVfoSplitForTx(freq, freq + FT_GAP_HZ);
-                    sendInProgress = true;
+                    SendInProgress = true;
                     AfterNmsec(new Action(() =>
                         XDft.Generator.Play(genContext, itones,
                             freq, deviceTx.GetRealTimeAudioSink())), VfoSetToTxMsec);
@@ -711,7 +721,7 @@ namespace DigiRite
                         amplitude *= relativeAmplitudeSubsequentQsos;
                     }
                     RigVfoSplitForTx(minFreq, maxFreq + FT_GAP_HZ, tones);
-                    sendInProgress = true;
+                    SendInProgress = true;
                     AfterNmsec(new Action(() =>
                         XDft.Generator.Play(genContext, tones.ToArray(), deviceTx.GetRealTimeAudioSink())), VfoSetToTxMsec);
                 }
@@ -873,11 +883,13 @@ namespace DigiRite
 
             RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
-            if (!sendInProgress && (
-                (rm.Message.CycleNumber & 1) != (cycleNumber & 1))
+            if (((rm.Message.CycleNumber & 1) != (cycleNumber & 1))
                 && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
             {   // start late if we can
-                transmitAtZero(true);
+                if (CqMessageInProgress)
+                    AbortMessage();
+                if (!SendInProgress)
+                    transmitAtZero(true);
             }
             checkBoxAutoXmit.Checked = true;
         }
@@ -2211,7 +2223,7 @@ namespace DigiRite
                 if (!isBegin)
                     RigVfoSplitForTxOff();
             }
-            sendInProgress = isBegin;
+            SendInProgress = isBegin;
         }
 
         public void SendRttyMessage(String toSend) // WriteLog pressed an F-key
@@ -2222,7 +2234,7 @@ namespace DigiRite
         {
             if (null != deviceTx)
                 deviceTx.Abort();
-            sendInProgress = false;
+            SendInProgress = false;
         }
      
         private void quitQso(QsoInProgress q)
@@ -2271,7 +2283,7 @@ namespace DigiRite
                 bool checkState = e.NewValue == CheckState.Checked;
                 if (checkState)
                     BeginInvoke(new Action(() => {
-                        if (!sendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS) 
+                        if (!SendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS) 
                             transmitAtZero(true);
                         }));
         }
@@ -2552,7 +2564,7 @@ namespace DigiRite
         #region TX RX frequency
         private void buttonTune_Click(object sender, EventArgs e)
         {
-            if (sendInProgress)
+            if (SendInProgress)
                 return;
             deviceTx.TransmitCycle = XD.Transmit_Cycle.PLAY_NOW;
             int tuneFrequency = TxFrequency;

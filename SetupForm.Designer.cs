@@ -78,8 +78,8 @@
             this.tabPageAudioDevices = new System.Windows.Forms.TabPage();
             this.tabPageRigControl = new System.Windows.Forms.TabPage();
             this.tabPageOther = new System.Windows.Forms.TabPage();
-            this.numericUpDownMultiProc = new System.Windows.Forms.NumericUpDown();
             this.label12 = new System.Windows.Forms.Label();
+            this.numericUpDownMultiProc = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -690,31 +690,32 @@
             this.tabPageOther.Text = "Other";
             this.tabPageOther.UseVisualStyleBackColor = true;
             // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(24, 111);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(136, 13);
+            this.label12.TabIndex = 22;
+            this.label12.Text = "Multiple WSJT-X decoders:";
+            this.label12.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // numericUpDownMultiProc
             // 
-            this.numericUpDownMultiProc.Location = new System.Drawing.Point(135, 132);
+            this.numericUpDownMultiProc.Location = new System.Drawing.Point(173, 109);
             this.numericUpDownMultiProc.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.numericUpDownMultiProc.Name = "numericUpDownMultiProc";
-            this.numericUpDownMultiProc.Size = new System.Drawing.Size(45, 20);
+            this.numericUpDownMultiProc.Size = new System.Drawing.Size(39, 20);
             this.numericUpDownMultiProc.TabIndex = 21;
             this.numericUpDownMultiProc.Value = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(17, 134);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(102, 13);
-            this.label12.TabIndex = 22;
-            this.label12.Text = "Multi-process count:";
             // 
             // SetupForm
             // 
