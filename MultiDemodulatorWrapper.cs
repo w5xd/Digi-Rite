@@ -36,7 +36,9 @@ namespace DigiRite
                 demodulators[i] = new XDft.Demodulator();
                 enabled[i] = true;
 
-                string sharedMemoryKey = "DigiRite-" + instanceNumber.ToString() + "-" + i.ToString();
+                string sharedMemoryKey = "DigiRite-" + instanceNumber.ToString();
+                if (i != 0)
+                    sharedMemoryKey += "-" + i.ToString();
                 wsjtSharedMems[i] = new XDft.WsjtSharedMemory(sharedMemoryKey, false);
                 if (!wsjtSharedMems[i].CreateWsjtSharedMem())
                     throw new System.Exception("Failed to create Shared Memory from " + sharedMemoryKey);
