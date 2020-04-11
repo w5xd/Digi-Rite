@@ -12,4 +12,4 @@ using System.Reflection;
 [assembly: AssemblyVersion("1.1.38.8")]
 [assembly: AssemblyFileVersion("1.1.38.8")]
 //    If you plan to give the built files ot another Op, please add your callsign in the Version string.
-[assembly: AssemblyInformationalVersion("1.1.38.8 BETA built by - YOURCALLSIGN")]
+[assembly: AssemblyInformationalVersion("1.1.38.8 built by - YOURCALLSIGN")]
