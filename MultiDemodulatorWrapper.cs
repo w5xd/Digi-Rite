@@ -130,8 +130,21 @@ namespace DigiRite
             bands.Add(new FrequencyBand(m_nfa));
 
             // iterate over all but first and last
-            double range = Math.Max(((double)(m_nfb - m_nfa) / (nDemodsMinusOne+1)), MIN_RANGE_HZ);
+            double diff = m_nfb - m_nfa;
+            double range = diff / (nDemodsMinusOne+1);
+            int num = nDemodsMinusOne + 1;
             bool enable = true;
+            if (range < MIN_RANGE_HZ)
+            {   // limit multi-processing to wider than this
+                num = (int)(diff / MIN_RANGE_HZ);
+                if (num <= 1)
+                {
+                    // the best we can do is put the whole range in one decoder
+                    num = 1;
+                    enable = false;
+                }
+                range = diff / num;
+            }
             for (int i = 1; i <= nDemodsMinusOne; i++)
             {
                 if (enable)
