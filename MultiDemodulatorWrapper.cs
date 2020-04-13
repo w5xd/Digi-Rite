@@ -6,19 +6,33 @@ using System.Threading.Tasks;
 
 namespace DigiRite
 {
+    /* MultiDemodulatorWrapper
+     * Consolidate the various objects required to host a WSJT-X decoder into this one class
+     * while also presenting (almost) the same interface to the rest of the DigiRite application.
+     * And allow for the case of multiple decoders, each responsible for only part of the
+     * total bandwidth being decoded. Why does that help? because it has been observed that
+     * (a) limiting the bandwidth on the decoder causes it to finish presenting its messages
+     * much sooner
+     * (b) it runs on only one thread and therefore
+     * (c) running multiple decoders on a multi-core CPU consumes more of them while getting
+     * decoded messages sooner.
+     */
     public class MultiDemodulatorWrapper : IDisposable
     {
         public static int MAX_MULTIPROC = 8;
         // the decoder seems to find signals right up to the nfa/nfb limit, but we'll overlap anyway
         private const int FREQ_OVERLAP_HZ = 8;
-        private const double MIN_RANGE_HZ = 150;
+        private const double MIN_RANGE_HZ = 200; // give each decoder at least this much, even if that means using fewer
         
+        // these are all parallel arrays
         private XDft.Demodulator[] demodulators;
         private XDft.WsjtSharedMemory[] wsjtSharedMems;
         private XDft.WsjtExe[] wsjtExes;
-        private XDft.RxSinkRepeater rxSinkRepeater;
         private bool[] enabled;
 
+        private XDft.RxSinkRepeater rxSinkRepeater; // need help repeating the RX audio to each decoder
+
+        // have to know at construction time how many decoders
         public MultiDemodulatorWrapper(int instanceNumber, uint numDemodulators = 1)
         {
             if (numDemodulators > MAX_MULTIPROC)
@@ -36,8 +50,9 @@ namespace DigiRite
                 demodulators[i] = new XDft.Demodulator();
                 enabled[i] = true;
 
+                // The first decoder gets the same subdirectory name as a single decoder
                 string sharedMemoryKey = "DigiRite-" + instanceNumber.ToString();
-                if (i != 0)
+                if (i != 0) // subsequent ones get extra goop in their names
                     sharedMemoryKey += "-" + i.ToString();
                 wsjtSharedMems[i] = new XDft.WsjtSharedMemory(sharedMemoryKey, false);
                 if (!wsjtSharedMems[i].CreateWsjtSharedMem())
@@ -53,9 +68,13 @@ namespace DigiRite
                     throw new System.Exception("Failed to launch wsjt exe");
                 }
             }
+            multibandManager = new MultibandManager(demodulators);
         }
 
+        // There always is at least one, so provide a simple way to get at that one
         public XDft.Demodulator demodulator { get { return demodulators[0]; } }
+
+
         public XDft.DemodResult DemodulatorResultCallback {
             get { return demodulator.DemodulatorResultCallback; }
             set { 
@@ -63,12 +82,11 @@ namespace DigiRite
                     a.DemodulatorResultCallback = value; 
                 } }
 
-
         // parallelization is done by frequency ranges
-        private int m_nfa;
+        private int m_nfa;     
         private int m_nfb;
 
-
+        // the min and max decoder frequencies are handled in this special way
         public int nfa { get { return m_nfa; }
             set { 
                 m_nfa = value;
@@ -83,15 +101,34 @@ namespace DigiRite
                 }
             }
 
+        private class FrequencyBand
+        {
+            public FrequencyBand(int nfa)
+            {
+                this.nfa = nfa;
+                nfb = 0;
+            }
+            public int nfa;
+            public int nfb;
+        }
+
         private void AllocateFrequencyBands()
         {
+            multibandManager = new MultibandManager(demodulators);
             if (nfa >= nfb)
                 return;
             int nDemodsMinusOne = demodulators.Count() - 1;
-            demodulator.nfa = m_nfa;
-            demodulators[nDemodsMinusOne].nfb = m_nfb;
             if (nDemodsMinusOne == 0)
+            {
+                demodulator.nfa = m_nfa;
+                demodulator.nfb = m_nfb;
                 return;
+            }
+
+            // defer assigning nfa and nfb until the demodulator starts
+            List<FrequencyBand> bands = new List<FrequencyBand>();
+            bands.Add(new FrequencyBand(m_nfa));
+
             // iterate over all but first and last
             double range = Math.Max(((double)(m_nfb - m_nfa) / (nDemodsMinusOne+1)), MIN_RANGE_HZ);
             bool enable = true;
@@ -102,14 +139,16 @@ namespace DigiRite
                     int lowBound = (int)(m_nfa + i * range);
                     if (lowBound >= m_nfb)
                         enable = false;
-                    demodulators[i - 1].nfb = lowBound + FREQ_OVERLAP_HZ;
-                    demodulators[i].nfa = lowBound - FREQ_OVERLAP_HZ;
+                    bands.Last().nfb = lowBound + FREQ_OVERLAP_HZ;
+                    bands.Add(new FrequencyBand(lowBound - FREQ_OVERLAP_HZ));
                 }
                 enabled[i] = enable;
-           }
+            }
+            bands.Last().nfb = m_nfb;
+            multibandManager = new MultibandManager(bands.ToArray(), demodulators);
         }
 
-
+        // all properties except min and max are just duplicated among all decoders
         public int n2pass { get { return demodulator.n2pass; }
             set { foreach (var a in demodulators) a.n2pass = value; } }
 
@@ -154,11 +193,100 @@ namespace DigiRite
 
         public string AppDirectoryPath { get { return wsjtExes[0].AppDirectoryPath; } }
 
+        private class MultibandManager
+        {
+            FrequencyBand[] frequencyBands = null;
+            XDft.Demodulator[] demodulators = null;
+            int [] lastAllocatedBand = null;
+            // constructor for manager that does nothing
+            public MultibandManager(XDft.Demodulator[] demodulators)
+            {
+                foreach (var a in demodulators)
+                    a.DecodeCallback = null;
+            }
+            // constructor for manager that does something
+            public MultibandManager(FrequencyBand[] frequencyBands, XDft.Demodulator[] demodulators)
+            {
+                this.frequencyBands = frequencyBands;
+                this.demodulators = demodulators;
+                int which = 0;
+                foreach (var a in demodulators)
+                {
+                    int v = which++;
+                    a.DecodeCallback = new XDft.StartDecodeCallback(() => AllocateBandwidth(v));
+                }
+                lastAllocatedBand = new int[frequencyBands.Count()];
+                for (int i = 0; i < lastAllocatedBand.Length; i++)
+                    lastAllocatedBand[i] = -1;
+            }
+
+            private Dictionary<int,int> assignedThisCycle;
+            private bool clockInProgress = false;
+            public bool ClockInProgress {
+                get { return clockInProgress; }
+                set {
+                        if (value != clockInProgress)
+                        {
+                            clockInProgress = value;
+                            if (value)
+                                assignedThisCycle = new Dictionary<int, int>();
+                        }
+                    }
+            }
+
+            // decoder calls here right before it starts a decoding run.
+            // set its nfa and nfb properties
+            private void AllocateBandwidth(int which)
+            {
+                if (!ClockInProgress)
+                    return; // DecodeAgain does NOT fiddle with the frequency assignments
+
+                if ((which >= frequencyBands.Length) || (which < 0))
+                    throw new System.Exception("Invalid decoder number"); // demodulator clr ignores this...
+
+                // rotate the frequency band assignments through the demodulators.
+                // Why? mostly to give them a chance to populate their hashed callsign tables.
+
+                lock (this)
+                {
+
+                    int nextToAssign = lastAllocatedBand[which];
+                    if (nextToAssign < 0)
+                        nextToAssign = which;
+                    else
+                        nextToAssign += 1;
+
+                    int val;
+                    for (; ; )
+                    {
+                        if (nextToAssign >= lastAllocatedBand.Length)
+                            nextToAssign = 0;
+                        if (!assignedThisCycle.TryGetValue(nextToAssign, out val))
+                        {
+                            assignedThisCycle[nextToAssign] = which;
+                            break;
+                        }
+                        else
+                        {
+                            if (val == which) // we got called multiple times in same cycle for same decoder...
+                                return;
+                            nextToAssign += 1;
+                        }
+                    }
+                    demodulators[which].nfa = frequencyBands[nextToAssign].nfa;
+                    demodulators[which].nfb = frequencyBands[nextToAssign].nfb;
+                    lastAllocatedBand[which] = nextToAssign;
+                }
+            }
+        }
+        private MultibandManager multibandManager;
+
         public uint Clock(uint tenthToTriggerDecode,  ref bool invokedDecode, ref int cycleNumber)
         {
             bool invDecodeAtEnd = false;
             uint ret = 0;
             int i = 0;
+            multibandManager.ClockInProgress = true;
             foreach (var a in demodulators)
             {
                 if (enabled[i])
@@ -170,6 +298,7 @@ namespace DigiRite
                 }
             }
             invokedDecode = invDecodeAtEnd;
+            multibandManager.ClockInProgress = false;
             return ret;
         }
 
@@ -178,8 +307,12 @@ namespace DigiRite
             bool ret = false;
             int i = 0;
             foreach (var a in demodulators)
-                if (a.DecodeAgain(wsjtExes[i++], cycleNumber, msecOffset))
-                    ret = true;
+            {
+                if (enabled[i])
+                    if (a.DecodeAgain(wsjtExes[i], cycleNumber, msecOffset))
+                        ret = true;
+                i += 1;
+            }
             return ret;
         }
 
