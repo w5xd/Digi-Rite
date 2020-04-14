@@ -7336,6 +7336,17 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
     distributed among those streams. Therefore, expect
     your signal to noise at the other other end's receiver to be reduced. You may change
     this parameter at any time, but it takes effect only at the beginning of each transmit cycle.
+    <p>One of the choices is "1.1" streams. This choice will send two messages in a single TX cycle, 
+        but with the transmit power allocated mostly to the higher priority QSO, and the seecond
+        message very weak. That power balance means the first stream is nearly as strong as it would be if it were alone
+       but the second stream is very weak. The first stream is at about 87% of full amplitude, and the other at 13%. The
+        amplitudes total to 100% to prevent overdrive--the rig is only capable of 100%.
+       Depending on how linear your rig's transmitter is, the IMD products for 1.1 streams should be down, about -18dB from what
+        they would be if you ran 2 streams. Why would you choose this option? At a very small sacrifice in the ability
+        of the other station copying your primary stream, you get a small but non-zero probability that a second
+        message can simultaneouly be copied at a second station. If that second station is copying you well, you can 
+        make two QSOs in parallel.
+    </p>
     <h3>Transmit Frequency</h3>
     To simplify managing your TX frequency, DigiRite limits its choice to only two
     possible TX frequencies for a given QSO in progress. It has the frequency you have entered in the
@@ -7472,6 +7483,8 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
     1.1.39
     <ul>
         <li>Add multi-processing option to run WSJT-X decoder in multiple parallel processes.</li>
+        <li>Fix failure to send on next TX cycle in the case of starting a QSO during the first
+		several seconds of the previous RX cycle.</li>
     </ul>
     1.1.38
     <ul>
@@ -7489,12 +7502,7 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         <li>Automatically activate an inactive QSO only for a QSO that had been automatically deactived by
         timeout, and when a new message arrives from that station.
         </li>
-        <li>Add options to transmit "1.1" streams. The first stream is at about 87% of full amplitude, and the other at 13%. The
-        amplitudes total to 100% to prevent overdrive--the rig is only capable of 100%.
-        In terms of power, this is about 75% power on the first stream (-1.2 dB down from peak) and about 2% on the second (-18dB).
-        Depending on how linear your rig's transmitter is, the IMD products for 1.1 streams should be down, about -17dB from what
-        they would be if you ran 2 streams.
-        </li>
+        <li>Add options to transmit "1.1" streams.         </li>
         <li>Change restriction on consecutive transmit cycles from not allowed, to allowing a maximum of two in a row. This
         saves a "wasted" cycle for the case you want to immediately change between odd and even.</li>
         <li>Initiating a QSO during the first few seconds of a QSO aborts the CQ in favor of the QSO (FT8 mode only.)</li>

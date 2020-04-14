@@ -732,10 +732,13 @@ namespace DigiRite
             {
                 QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
                 QsoInProgress qp;
-                if (null != qli && (null != (qp = qli.q)) && inProgress.Any((q) => Object.ReferenceEquals(q, qp)))
+                if (null != qli && 
+                    (null != (qp = qli.q)) && 
+                    inProgress.Any((q) => Object.ReferenceEquals(q, qp)))
                 {   // if the QSO remains active in progress, but still in this list, it didn't get sent,
                     // mark it unchecked so user can see that.
-                    checkedlbNextToSend.SetItemChecked(j, false);
+                    if (nowOdd == (((qp.Message.CycleNumber + 1) & 1) != 0))
+                        checkedlbNextToSend.SetItemChecked(j, false);
                     j += 1;
                 }
                 else
@@ -2280,12 +2283,13 @@ namespace DigiRite
         {   // ItemCheck event preceeds checking the check box. 
             // ..but I want the check box true before calling transmitAtZero...
             // ..so have to work around recursion issues
-                bool checkState = e.NewValue == CheckState.Checked;
-                if (checkState)
-                    BeginInvoke(new Action(() => {
-                        if (!SendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS) 
-                            transmitAtZero(true);
-                        }));
+            bool checkState = e.NewValue == CheckState.Checked;
+            if (checkState)
+                BeginInvoke(new Action(() =>
+                {
+                    if (!SendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
+                        transmitAtZero(true);
+                }));
         }
 
         private void checkBoxAutoXmit_CheckedChanged(object sender, EventArgs e)
