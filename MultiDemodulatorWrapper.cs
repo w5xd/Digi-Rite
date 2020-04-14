@@ -68,12 +68,11 @@ namespace DigiRite
                     throw new System.Exception("Failed to launch wsjt exe");
                 }
             }
-            multibandManager = new MultibandManager(demodulators);
+            multibandManager = new MultibandManagerOneDemod(demodulators);
         }
 
         // There always is at least one, so provide a simple way to get at that one
         public XDft.Demodulator demodulator { get { return demodulators[0]; } }
-
 
         public XDft.DemodResult DemodulatorResultCallback {
             get { return demodulator.DemodulatorResultCallback; }
@@ -114,7 +113,7 @@ namespace DigiRite
 
         private void AllocateFrequencyBands()
         {
-            multibandManager = new MultibandManager(demodulators);
+            multibandManager = new MultibandManagerOneDemod(demodulators);
             if (nfa >= nfb)
                 return;
             int nDemodsMinusOne = demodulators.Count() - 1;
@@ -206,17 +205,29 @@ namespace DigiRite
 
         public string AppDirectoryPath { get { return wsjtExes[0].AppDirectoryPath; } }
 
-        private class MultibandManager
+
+        private interface IMultibandManager
         {
-            FrequencyBand[] frequencyBands = null;
-            XDft.Demodulator[] demodulators = null;
-            int [] lastAllocatedBand = null;
+            bool ClockInProgress { get; set; }
+        }
+        
+        private class MultibandManagerOneDemod : IMultibandManager
+        {
             // constructor for manager that does nothing
-            public MultibandManager(XDft.Demodulator[] demodulators)
+            public MultibandManagerOneDemod(XDft.Demodulator[] demodulators)
             {
                 foreach (var a in demodulators)
                     a.DecodeCallback = null;
             }
+
+            public bool ClockInProgress { get; set ; } = false;
+        }
+
+        private class MultibandManager : IMultibandManager
+        {
+            FrequencyBand[] frequencyBands = null;
+            XDft.Demodulator[] demodulators = null;
+            int [] lastAllocatedBand = null;
             // constructor for manager that does something
             public MultibandManager(FrequencyBand[] frequencyBands, XDft.Demodulator[] demodulators)
             {
@@ -257,24 +268,21 @@ namespace DigiRite
                 if ((which >= frequencyBands.Length) || (which < 0))
                     throw new System.Exception("Invalid decoder number"); // demodulator clr ignores this...
 
-                // rotate the frequency band assignments through the demodulators.
-                // Why? mostly to give them a chance to populate their hashed callsign tables.
-
                 lock (this)
                 {
-
+                // rotate the frequency band assignments through the demodulators.
+                // Why? mostly to give them a chance to populate their hashed callsign tables.
                     int nextToAssign = lastAllocatedBand[which];
                     if (nextToAssign < 0)
                         nextToAssign = which;
                     else
                         nextToAssign += 1;
 
-                    int val;
-                    for (; ; )
+                    for (;;)
                     {
                         if (nextToAssign >= lastAllocatedBand.Length)
                             nextToAssign = 0;
-                        if (!assignedThisCycle.TryGetValue(nextToAssign, out val))
+                        if (!assignedThisCycle.TryGetValue(nextToAssign, out int val))
                         {
                             assignedThisCycle[nextToAssign] = which;
                             break;
@@ -292,7 +300,7 @@ namespace DigiRite
                 }
             }
         }
-        private MultibandManager multibandManager;
+        private IMultibandManager multibandManager;
 
         public uint Clock(uint tenthToTriggerDecode,  ref bool invokedDecode, ref int cycleNumber)
         {
