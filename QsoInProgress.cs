@@ -232,8 +232,7 @@ namespace DigiRite
                 {
                     if (!messagedThisCycle)
                     {
-                        if (String.IsNullOrEmpty(callsQsled) ||
-                            ("R" == (rm.Pack77Message as XDpack77.Pack77Message.QSL)?.QslText))
+                        if (String.IsNullOrEmpty(callsQsled))
                         {
                             // if he sends multiple messages in the same cycle...
                             // ...then we need to "hold" only if this is the only one
