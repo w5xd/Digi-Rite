@@ -40,7 +40,9 @@ namespace DigiRite
             get { return sendInProgress; }
             set { sendInProgress = value;
                 if (!value)
-                    CqMessageInProgress = false;}
+                    CqMessageInProgress = false;
+                buttonCQnow.Enabled = !(value || (comboBoxCQ.SelectedIndex != 0));
+                }
         }
         private AltMessageShortcuts altMessageShortcuts;
 
@@ -430,10 +432,9 @@ namespace DigiRite
         private delegate DateTime GetNowTime();
         private int consecutiveTransmitCycles = 0;
         private bool CqMessageInProgress = false;
+        private bool singleCQ = false;
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
-            if ((digiMode == DigiMode.FT4) && allowLate)
-                return;
             if (null == genMessage)
                 return;
             DateTime toSend = getNowTime == null ? DateTime.UtcNow : getNowTime();
@@ -548,10 +549,20 @@ namespace DigiRite
             else
                 consecutiveTransmitCycles = 0;
 
+
             int cqMode = comboBoxCQ.SelectedIndex;
             bool onlyCQ = cqMode == 1 && !toSendList.Any();
-            if (onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE &&
-                    (onlyCQ || cqMode == 2))
+            bool doCQnow = onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE && (onlyCQ || cqMode == 2);
+            if (!doCQnow)
+            {
+                if (singleCQ && !toSendList.Any())
+                {
+                    radioButtonOdd.Checked = nowOdd;
+                    doCQnow = true;
+                }
+            }
+            singleCQ = false;
+            if (doCQnow)
             {   // only CQ if we have nothing else to send
                 string cq = "CQ";
                 /* 77-bit pack is special w.r.t. CQ. can't sent directed CQ 
@@ -647,8 +658,6 @@ namespace DigiRite
                 ScrollListBoxToBottom(listBoxConversation);
             }
 
-            const int ALLOW_LATE_MSEC = 1800; // ft8 decoder only allows so much lateness.This is OK unless our clock is slow.
-
             if (itonesToSend.Any())
             {
                 SetTxCycle(nowOdd ? 1 : 0);
@@ -661,7 +670,7 @@ namespace DigiRite
                         if (cyclePosTenths > 0)
                         {
                             int msecToTruncate = toSend.Millisecond + 100 * cyclePosTenths; // how late we are
-                            msecToTruncate -= ALLOW_LATE_MSEC; // full itones don't last a full 15 seconds
+                            msecToTruncate -= SHIFT_OUTGOING_LATER_MSEC; // full itones don't last a full 15 seconds in FT8
                             int itonesToLose = msecToTruncate / 160;
                             if (itonesToLose > 0)
                             {
@@ -705,7 +714,7 @@ namespace DigiRite
                             if (cyclePosTenths > 0)
                             {
                                 int msecToTruncate = toSend.Millisecond + 100 * cyclePosTenths; // how late we are
-                                msecToTruncate -= ALLOW_LATE_MSEC; // full itones don't last a full 15 seconds
+                                msecToTruncate -= SHIFT_OUTGOING_LATER_MSEC; // full itones don't last a full 15 seconds
                                 int itonesToLose = msecToTruncate / 160;
                                 if (itonesToLose > 0)
                                 {
@@ -1688,7 +1697,9 @@ namespace DigiRite
                         ft4DecodeOffsetMsec[i * 2 + 2] = (ushort)(FT4_DECODER_CENTER_OFFSET_MSEC - (i + 1) * FT4_MULTIPLE_DECODE_OFFSET_MSEC);
                     }
                     TRIGGER_DECODE_TENTHS = 20;
+                    START_LATE_MESSAGES_THROUGH_TENTHS = 10;
                     CLEAR_OLD_MESSAGES_AT_TENTHS = 10;
+                    SHIFT_OUTGOING_LATER_MSEC = 200;
                     cl.CYCLE = 75;
                     rxForm.CYCLE = 75;
                     FT_CYCLE_TENTHS = 75;
@@ -1705,9 +1716,11 @@ namespace DigiRite
                     demodulatorWrapper.DemodulateSoundPreUtcZeroMsec = DEFAULT_DECODER_LOOKBACK_MSEC;
                     demodulatorWrapper.nzhsym = 50;
                     TRIGGER_DECODE_TENTHS = 50;
+                    START_LATE_MESSAGES_THROUGH_TENTHS = 60;
                     CLEAR_OLD_MESSAGES_AT_TENTHS = 50;
                     cl.CYCLE = 150;
                     FT_CYCLE_TENTHS = 150;
+                    SHIFT_OUTGOING_LATER_MSEC = 1000;
                     rxForm.CYCLE = 150;
                     FT_GAP_HZ = 60;
                     MESSAGE_SEPARATOR = '~';
@@ -1920,8 +1933,9 @@ namespace DigiRite
         private int cycleNumber = 0;
         uint CLEAR_OLD_MESSAGES_AT_TENTHS = 50;
         uint TRIGGER_DECODE_TENTHS = 50; // At this second and later, see if we see any messages
+        int SHIFT_OUTGOING_LATER_MSEC = 1000; // ft8 decoder only allows so much lateness.This is OK unless our clock is slow.
 
-        const uint START_LATE_MESSAGES_THROUGH_TENTHS = 60;
+        uint START_LATE_MESSAGES_THROUGH_TENTHS = 60;
         private delegate void CheckTransmitAtZero(int cycleNumber, int msecIntoCycle);
         private CheckTransmitAtZero checkTransmitAtZero;
 
@@ -2231,6 +2245,8 @@ namespace DigiRite
 
         public void SendRttyMessage(String toSend) // WriteLog pressed an F-key
         {   // automation call from WriteLog....
+            if (toSend.StartsWith("CQ "))
+                buttonCQnow_Click(null, null);
         }
 
         public void AbortMessage()
@@ -2505,9 +2521,23 @@ namespace DigiRite
         
         private void comboBoxCQ_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBoxCQ.SelectedIndex != 0)
+            bool CqOn = comboBoxCQ.SelectedIndex != 0;
+            if (CqOn)
                 checkBoxAutoXmit.Checked = true;
+            buttonCQnow.Enabled = !(SendInProgress || CqOn);             
         }
+
+        private void buttonCQnow_Click(object sender, EventArgs e)
+        {
+            if (!sendInProgress)
+            {
+                singleCQ = true;
+                if (intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
+                    transmitAtZero(true, null);
+            }
+            buttonCQnow.Enabled = false;
+        }
+
         int TUNE_LEN;
 
         private void ApplyFontControls()
@@ -2556,11 +2586,6 @@ namespace DigiRite
             else
                 numericUpDownStreams.DecimalPlaces = 0;
             numericUpDownStreamsPrevious = numericUpDownStreams.Value;
-        }
-
-        private void numericUpDownStreams_Scroll(object sender, ScrollEventArgs e)
-        {
-            
         }
 
         #endregion
@@ -2636,8 +2661,5 @@ namespace DigiRite
         }
 
         #endregion
-
- 
-     
     }
 }

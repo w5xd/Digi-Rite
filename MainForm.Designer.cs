@@ -67,6 +67,7 @@
             this.textBoxMessageEdit = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.buttonCQnow = new System.Windows.Forms.Button();
             this.buttonTxToQip = new System.Windows.Forms.Button();
             this.labelTxValue = new System.Windows.Forms.Label();
             this.trackBarTxGain = new System.Windows.Forms.TrackBar();
@@ -106,9 +107,9 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new DigiRite.ConversationListBox();
             this.checkedlbNextToSend = new DigiRite.ToSendListBox();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -147,7 +148,7 @@
             this.buttonAbort.Location = new System.Drawing.Point(8, 181);
             this.buttonAbort.Name = "buttonAbort";
             this.buttonAbort.Size = new System.Drawing.Size(58, 23);
-            this.buttonAbort.TabIndex = 14;
+            this.buttonAbort.TabIndex = 11;
             this.buttonAbort.Text = "Abort TX";
             this.buttonAbort.UseVisualStyleBackColor = true;
             this.buttonAbort.Click += new System.EventHandler(this.buttonAbort_Click);
@@ -561,6 +562,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.buttonCQnow);
             this.groupBox3.Controls.Add(this.buttonTxToQip);
             this.groupBox3.Controls.Add(this.labelTxValue);
             this.groupBox3.Controls.Add(this.trackBarTxGain);
@@ -583,6 +585,16 @@
             this.groupBox3.TabIndex = 9;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "&Tx";
+            // 
+            // buttonCQnow
+            // 
+            this.buttonCQnow.Location = new System.Drawing.Point(123, 139);
+            this.buttonCQnow.Name = "buttonCQnow";
+            this.buttonCQnow.Size = new System.Drawing.Size(49, 23);
+            this.buttonCQnow.TabIndex = 10;
+            this.buttonCQnow.Text = "Single";
+            this.buttonCQnow.UseVisualStyleBackColor = true;
+            this.buttonCQnow.Click += new System.EventHandler(this.buttonCQnow_Click);
             // 
             // buttonTxToQip
             // 
@@ -670,7 +682,6 @@
             0,
             0});
             this.numericUpDownStreams.ValueChanged += new System.EventHandler(this.numericUpDownStreams_ValueChanged);
-            this.numericUpDownStreams.Scroll += new System.Windows.Forms.ScrollEventHandler(this.numericUpDownStreams_Scroll);
             // 
             // labelPtt
             // 
@@ -700,9 +711,9 @@
             "Off",
             "On idle",
             "Use stream"});
-            this.comboBoxCQ.Location = new System.Drawing.Point(30, 140);
+            this.comboBoxCQ.Location = new System.Drawing.Point(28, 140);
             this.comboBoxCQ.Name = "comboBoxCQ";
-            this.comboBoxCQ.Size = new System.Drawing.Size(116, 21);
+            this.comboBoxCQ.Size = new System.Drawing.Size(89, 21);
             this.comboBoxCQ.TabIndex = 9;
             this.comboBoxCQ.SelectedIndexChanged += new System.EventHandler(this.comboBoxCQ_SelectedIndexChanged);
             // 
@@ -1024,6 +1035,11 @@
             this.panelInProgress.Size = new System.Drawing.Size(345, 136);
             this.panelInProgress.TabIndex = 1;
             // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
+            // 
             // listBoxConversation
             // 
             this.listBoxConversation.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -1050,11 +1066,6 @@
             this.checkedlbNextToSend.Sorted = true;
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
-            // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
             // 
             // MainForm
             // 
@@ -1195,6 +1206,7 @@
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.ComboBox comboBoxOnLoggedMessage;
         private System.Windows.Forms.CheckBox checkBoxCalcNextToSend;
+        private System.Windows.Forms.Button buttonCQnow;
     }
 }
 

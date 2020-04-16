@@ -5840,8 +5840,12 @@ Dc6SAAAAAElFTkSuQmCC" />
     your selection only to receipt of any such messages in the future.
     </p>
     <h3>Sending CQ</h3>
-    There are three CQ modes:
+    There are four CQ modes:
     <ul>
+        <li>Single<br/>Click this button and the next transmit cycle will send a CQ unless
+        DigiRite computes a message to send to a QSO in Progress. Clicking this button in
+        the first second or two of a cycle will send a CQ in the ongoing cycle, even if
+        it has to switch odd/even to do so.</li>
         <li>Off</li>
         <li>On idle<br />Sends a CQ message if there are no other messages to send</li>
         <li>Use stream<br />Sends a CQ message in a stream along with other messages, but only if there is a stream available after allocating to all Qsos in progress.</li>
@@ -7486,6 +7490,8 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         <li>Fix failure to send on next TX cycle in the case of starting a QSO during the first
 		several seconds of the previous RX cycle.</li>
         <li>Put QSO in hold state on copying a message from that station to another with an "R" in it.</li>
+        <li>Add Single CQ button</li>
+        <li>Let FT4 transmits go out late, but only up to about 700msec.</li>
     </ul>
     1.1.38
     <ul>
