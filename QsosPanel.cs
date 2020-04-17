@@ -96,7 +96,7 @@ namespace DigiRite
             cb.TabStop = addedIndex == 0;
             qp.OnChangedCb = new QsoInProgress.OnChanged(() =>
             {
-                if (qp.IsLogged && !qp.Active)
+                if (qp.IsLogged && !qp.Active && qp.CyclesSinceMessagedToMe > 1)
                 {   // switch modes. qso is out of the gui and into loggedInactive
                     Remove(qp);
                     loggedInactive[qp.GetKey()] = qp;
@@ -229,7 +229,7 @@ namespace DigiRite
 
         private void OnLoggedInactiveChanged(QsoInProgress qp)
         {
-            if (qp.Active || qp.CyclesSinceMessaged  < 2)
+            if (qp.Active || qp.CyclesSinceMessagedToMe  <= 2)
             {   // back into the GUI when it becomes active.
                 qp.OnChangedCb = null;
                 loggedInactive.Remove(qp.GetKey());

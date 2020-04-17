@@ -125,6 +125,7 @@ namespace DigiRite
         private int cyclesSinceMessaged;
         public int CyclesSinceMessaged { get { return messagedThisCycle ? 0 : cyclesSinceMessaged; } }
         public int CyclesSinceMessagedNotHolding { get; private set; } = 0;
+        public int CyclesSinceMessagedToMe { get; private set; } = 0;
 
         public bool CanAcceptAckNotToMe { get; private set; } = true;
 
@@ -177,6 +178,7 @@ namespace DigiRite
             else if (wasReceiveCycle)
             {
                 cyclesSinceMessaged += 1;
+                CyclesSinceMessagedToMe += 1;
                 if (!holdingForAnotherQso)
                     CyclesSinceMessagedNotHolding += 1;
             }
@@ -187,13 +189,13 @@ namespace DigiRite
                 {
                     timedMyselfOut = true;
                     active = false;
-                    if (null != OnChangedCb) OnChangedCb();
                 }
             }
             else
                 timedMyselfOut = false;
             if (wasReceiveCycle)
                 messagedLastCycle = messagedThisCycle;
+            if (null != OnChangedCb) OnChangedCb();
             messagedThisCycle = false;
             return ret;
         }
@@ -227,11 +229,15 @@ namespace DigiRite
             try
             {
                 if (directlyToMe)
+                {
                     CanAcceptAckNotToMe = true;
+                    CyclesSinceMessagedToMe = 0;
+                }
                 else
                 {
                     if (!messagedThisCycle)
                     {
+                        CyclesSinceMessagedToMe += 1;
                         if (String.IsNullOrEmpty(callsQsled))
                         {
                             // if he sends multiple messages in the same cycle...

@@ -77,14 +77,14 @@
             return false;
         }
 
-        public void OnReceivedExchange(bool withAck)
+        public void OnReceivedExchange(bool withAck, bool allowSendAck = true)
         {
             deferredToEndOfReceive = null;
             HaveTheirExchange = true;
             HaveAck |= withAck && HaveSentExchange;
             if (!withAck)
             {   // if they don't have ours, send it
-                qsoSequencerCallbacks.SendExchange(true,  () => { HaveSentAck = true; HaveSentExchange = true;  });
+                qsoSequencerCallbacks.SendExchange(allowSendAck,  () => { HaveSentAck |= allowSendAck; HaveSentExchange = true;  });
                 State = 2;
             }
             else
@@ -166,7 +166,7 @@
         public void OnReceivedWrongExchange()
         {
             deferredToEndOfReceive = null;
-            if (WrongExchangeCount < MAX_WRONG_EXCHANGE)
+            if ((!HaveTheirExchange || !HaveSentExchange) && (WrongExchangeCount < MAX_WRONG_EXCHANGE))
             {
                 qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; WrongExchangeCount += 1;});
                 return;

@@ -1743,7 +1743,7 @@ namespace DigiRite
                     break;
 
                 case ExchangeTypes.GRID_SQUARE:
-                    qsoQueue =  new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                    qsoQueue =  new QsoQueueGridSquare(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                                 var sm = m as XDpack77.Pack77Message.StandardMessage;
                                 return (null != sm) && (!String.IsNullOrEmpty(sm.GridSquare) && sm.GridSquare.Length >= 4);
                             });

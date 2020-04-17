@@ -199,7 +199,7 @@
             this.checkBoxOnlyCQs.Name = "checkBoxOnlyCQs";
             this.checkBoxOnlyCQs.Size = new System.Drawing.Size(70, 17);
             this.checkBoxOnlyCQs.TabIndex = 2;
-            this.checkBoxOnlyCQs.Text = "&Only CQs";
+            this.checkBoxOnlyCQs.Text = "Only CQs";
             this.checkBoxOnlyCQs.ThreeState = true;
             this.checkBoxOnlyCQs.UseVisualStyleBackColor = true;
             this.checkBoxOnlyCQs.CheckedChanged += new System.EventHandler(this.checkBoxOnlyCQs_CheckedChanged);
@@ -592,7 +592,7 @@
             this.buttonCQnow.Name = "buttonCQnow";
             this.buttonCQnow.Size = new System.Drawing.Size(49, 23);
             this.buttonCQnow.TabIndex = 10;
-            this.buttonCQnow.Text = "Single";
+            this.buttonCQnow.Text = "&Once";
             this.buttonCQnow.UseVisualStyleBackColor = true;
             this.buttonCQnow.Click += new System.EventHandler(this.buttonCQnow_Click);
             // 
