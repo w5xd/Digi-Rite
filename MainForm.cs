@@ -73,7 +73,7 @@ namespace DigiRite
             labelPtt.Text = "";
         }
 
-        #region Logger customization
+#region Logger customization
 
         private DigiRiteLogger.IDigiRiteLogger logger;
 
@@ -92,7 +92,7 @@ namespace DigiRite
             labelPtt.Text = wl.SetWlEntry(e);
             logger = wl;
         }
-        #endregion
+#endregion
 
         public static uint StringToIndex(string MySetting, List<string> available)
         {
@@ -220,7 +220,7 @@ namespace DigiRite
                 return true;
             }
         }
-        #region TX output gain
+#region TX output gain
         int trackValueFromGain(float gain)
         {
             double g = trackBarTxGain.Maximum + Math.Log(gain) * AUDIO_SLIDER_SCALE / Math.Log(2);
@@ -233,9 +233,9 @@ namespace DigiRite
         {
             return (float)Math.Pow(2.0, (v - trackBarTxGain.Maximum) / AUDIO_SLIDER_SCALE);
         }
-        #endregion
+#endregion
 
-        #region received message interactions
+#region received message interactions
 
         private List<XDpack77.Pack77Message.ReceivedMessage> recentMessages =
             new List<XDpack77.Pack77Message.ReceivedMessage>();
@@ -380,9 +380,9 @@ namespace DigiRite
             lb.TopIndex = Math.Max(1 + lb.Items.Count - visibleItems, 0);
         }
 
-        #endregion
+#endregion
 
-        #region transmit management
+#region transmit management
 
         private int MAX_MESSAGES_PER_CYCLE { get { 
                 int ret = (int)numericUpDownStreams.Value; 
@@ -433,14 +433,17 @@ namespace DigiRite
         private int consecutiveTransmitCycles = 0;
         private bool CqMessageInProgress = false;
         private bool singleCQ = false;
+        private bool transmitAtZeroRan = false;
+        private bool nowOdd;
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
             if (null == genMessage)
                 return;
             DateTime toSend = getNowTime == null ? DateTime.UtcNow : getNowTime();
+            transmitAtZeroRan = true;
             int nowTenths = toSend.Second * 10 + toSend.Millisecond / 100;
             int cyclePosTenths = nowTenths % FT_CYCLE_TENTHS;
-            bool nowOdd = ((nowTenths / FT_CYCLE_TENTHS) & 1) != 0;
+            nowOdd = ((nowTenths / FT_CYCLE_TENTHS) & 1) != 0;
             int seconds = nowTenths;
             seconds /= FT_CYCLE_TENTHS;
             seconds *= FT_CYCLE_TENTHS; // round back to nearest 
@@ -879,6 +882,7 @@ namespace DigiRite
                 )
                 return;
 
+            checkBoxAutoXmit.Checked = true;
             // turn its check box ON since this is an interactive click
             for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
             {
@@ -895,21 +899,37 @@ namespace DigiRite
 
             RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
-            if (((rm.Message.CycleNumber & 1) != (cycleNumber & 1))
-                && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
+            bool sendOdd = ((rm.Message.CycleNumber + 1) & 1) != 0;
+            GetNowTime getNowTime;
+            if ((sendOdd == nowOdd)
+                && InModifyTransmitTimerWindow(out getNowTime))
             {   // start late if we can
                 if (CqMessageInProgress)
                     AbortMessage();
                 if (!SendInProgress)
-                    transmitAtZero(true);
+                    transmitAtZero(true, getNowTime);
             }
-            checkBoxAutoXmit.Checked = true;
+        }
+
+        private bool InModifyTransmitTimerWindow(out GetNowTime getNowTime)
+        {
+            getNowTime = null;
+            if (intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
+                return true;
+            if (transmitAtZeroRan)
+            {   // this is a mess. transmitAtZero already ran for the TX cycle, but its hasn't really begun
+                // tell transmitAtZero its 1 second later than now
+                var timeToReport = DateTime.UtcNow + TimeSpan.FromMilliseconds(1000);
+                getNowTime = new GetNowTime(() => timeToReport);
+                return true;
+            }
+            return false;
         }
 
         int MAX_UNANSWERED_MINUTES = 5;
-        #endregion
+#endregion
 
-        #region IQsoQueueCallBacks
+#region IQsoQueueCallBacks
         private const string BracketFormat = "<{0}>";
         
         private bool needBrackets(string call)
@@ -1274,7 +1294,7 @@ namespace DigiRite
             logger.LogGridSquareQso(sentdB, gridsquare, dbReport);
         }
         
-        #endregion
+#endregion
 
         private String MyCall {
             set { 
@@ -1311,7 +1331,7 @@ namespace DigiRite
         uint SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
 #endif
 
-        #region Form events
+#region Form events
         private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out int v)
         {
             v = 0;
@@ -2076,6 +2096,8 @@ namespace DigiRite
 
                         int msecInMinute = 1000 * nowTime.Second + nowTime.Millisecond;
                         msecIntoCycle = msecInMinute % ( FT_CYCLE_TENTHS * 100);
+                        if (msecIntoCycle < 1000)
+                            transmitAtZeroRan = false;
                     }
                     bool isOddCycle = (cycleNumber & 1) != 0;
                     bool isTransmitCycle = radioButtonOdd.Checked == isOddCycle;
@@ -2303,8 +2325,9 @@ namespace DigiRite
             if (checkState)
                 BeginInvoke(new Action(() =>
                 {
-                    if (!SendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
-                        transmitAtZero(true);
+                    GetNowTime getNowTime;
+                    if (!SendInProgress && InModifyTransmitTimerWindow(out getNowTime))
+                        transmitAtZero(true, getNowTime);
                 }));
         }
 
@@ -2532,8 +2555,9 @@ namespace DigiRite
             if (!sendInProgress)
             {
                 singleCQ = true;
-                if (intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
-                    transmitAtZero(true, null);
+                GetNowTime getNowTime;
+                if (InModifyTransmitTimerWindow(out getNowTime))
+                    transmitAtZero(true, getNowTime);
             }
             buttonCQnow.Enabled = false;
         }
@@ -2588,9 +2612,9 @@ namespace DigiRite
             numericUpDownStreamsPrevious = numericUpDownStreams.Value;
         }
 
-        #endregion
+#endregion
 
-        #region TX RX frequency
+#region TX RX frequency
         private void buttonTune_Click(object sender, EventArgs e)
         {
             if (SendInProgress)
@@ -2660,6 +2684,6 @@ namespace DigiRite
             }
         }
 
-        #endregion
+#endregion
     }
 }

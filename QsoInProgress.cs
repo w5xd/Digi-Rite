@@ -52,7 +52,8 @@ namespace DigiRite
         private List<XDpack77.Pack77Message.ReceivedMessage> messages = new List<XDpack77.Pack77Message.ReceivedMessage>();
         private const int MAX_CYCLES_WITHOUT_ANSWER = 5;
 
-        public delegate void OnChanged();
+        public enum ChangeReason { RECEIVE_CYCLE_END, MESSAGE_RECEIVED, ACTIVE_CHANGED, OTHER };
+        public delegate void OnChanged(ChangeReason cr);
         public OnChanged OnChangedCb { get; set; }
         public QsoInProgress(RecentMessage rm, short band)
         {            
@@ -141,20 +142,21 @@ namespace DigiRite
                     CyclesSinceMessagedNotHolding = 0;
                     holdingForAnotherQso = false;
                 }
+                bool changed = active != value;
                 active = value;
-                if (null != OnChangedCb) OnChangedCb();
+                if (changed && null != OnChangedCb) OnChangedCb(ChangeReason.ACTIVE_CHANGED);
                 } }
         public bool Dupe { get => originatingMessage.Dupe;  }
         public bool Mult { get => originatingMessage.Mult;  }
         public bool MarkedAsLogged { get => markedAsLogged; set { 
                 markedAsLogged = value;
-                if (null != OnChangedCb) OnChangedCb();
+                if (null != OnChangedCb) OnChangedCb(ChangeReason.OTHER);
             }
         }
         public uint TransmitFrequency { get => transmitFrequency; 
             set { transmitFrequency = value; 
                 holdingForAnotherQso = false;
-                if (null != OnChangedCb) OnChangedCb();
+                if (null != OnChangedCb) OnChangedCb(ChangeReason.OTHER);
             }
         }
 
@@ -194,8 +196,10 @@ namespace DigiRite
             else
                 timedMyselfOut = false;
             if (wasReceiveCycle)
+            {
                 messagedLastCycle = messagedThisCycle;
-            if (null != OnChangedCb) OnChangedCb();
+                if (null != OnChangedCb) OnChangedCb(ChangeReason.RECEIVE_CYCLE_END);
+            }
             messagedThisCycle = false;
             return ret;
         }
@@ -272,7 +276,7 @@ namespace DigiRite
             }
             finally
             {
-                if (null != OnChangedCb) OnChangedCb();
+                if (null != OnChangedCb) OnChangedCb(ChangeReason.MESSAGE_RECEIVED);
             }
         }
 

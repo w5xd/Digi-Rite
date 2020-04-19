@@ -54,7 +54,9 @@ namespace DigiRite
             public void SendAck(bool ofAnAck, QsoSequencer.MessageSent ms)  
                 { qsoQueue.sendAck(qso, ofAnAck, ms);  }
             public void SendExchange(bool withAck, QsoSequencer.MessageSent ms)  
-                {  qsoQueue.sendExchange(qso, withAck, ms); }
+                {  
+                    qsoQueue.sendExchange(qso, withAck, ms); 
+                }
             public void SendOnLoggedAck(QsoSequencer.MessageSent ms) {  qsoQueue.callbacks.SendOnLoggedAck(qso, ms);} 
             public override String ToString()         
                 { return qso.ToString(); }
