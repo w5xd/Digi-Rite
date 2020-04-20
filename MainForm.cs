@@ -414,7 +414,8 @@ namespace DigiRite
         private int FT_GAP_HZ = 60;
         private const int MAX_MULTI_STREAM_INCREMENT = 3;
 
-        private void AfterNmsec(Action d, int msec)
+        private void AfterNmsec(Action d, 
+            int msec = 1) // minimum, per the Timer API is one msec. zero throws an exception
         {
             var timer = new Timer { Interval = msec };
             timer.Tick += new EventHandler((o, e) =>
@@ -899,7 +900,12 @@ namespace DigiRite
 
             RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
-            bool sendOdd = ((rm.Message.CycleNumber + 1) & 1) != 0;
+            sendNowIfPossible(rm.Message);
+        }
+
+        private void sendNowIfPossible(XDpack77.Pack77Message.ReceivedMessage rm)
+        {
+            bool sendOdd = ((rm.CycleNumber + 1) & 1) != 0;
             GetNowTime getNowTime;
             if ((sendOdd == nowOdd)
                 && InModifyTransmitTimerWindow(out getNowTime))
@@ -2356,7 +2362,11 @@ namespace DigiRite
                 }
                 QueuedToSendListItem qli = listBoxAlternatives.Items[e.Index] as QueuedToSendListItem;
                 if (null != qli)
+                {
                     textBoxMessageEdit.Text = qli.MessageText;
+                    // the check box isn't actually checked yet, so have to defer to an Action
+                    AfterNmsec(new Action(() => sendNowIfPossible(qli.q.Message)));
+                }
             }
         }
 
