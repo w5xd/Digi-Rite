@@ -430,5 +430,17 @@ namespace DigiRite.Properties {
                 this["ReactivateQSOTimerMinutes"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public ushort MultiProcessCount {
+            get {
+                return ((ushort)(this["MultiProcessCount"]));
+            }
+            set {
+                this["MultiProcessCount"] = value;
+            }
+        }
     }
 }

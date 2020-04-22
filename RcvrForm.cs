@@ -52,7 +52,6 @@ namespace DigiRite
             panelRightGain.BackColor =
             panel1.BackColor = CustomColors.CommonBackgroundColor;
 
-
             object wlDir = Microsoft.Win32.Registry.GetValue(
                 "HKEY_LOCAL_MACHINE\\Software\\W5XD\\WriteLog\\Install", "Directory", "0");
             try
@@ -62,10 +61,15 @@ namespace DigiRite
                 string assemblyPath = System.IO.Path.GetFullPath(name);
 #if DEBUG
                 // debug environment its easier to copy the waterfall into our work area
-#else
-                // Use WriteLog's waterfall Control
+#elif BUILD_X86
+                // Use WriteLog's waterfall Control, but only if running 32 bit
                 if (null != wlDir)
                     assemblyPath = wlDir.ToString() + "Programs\\" + name;
+#else
+                string executing = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var idx = executing.LastIndexOf('\\');
+                if (idx >= 0)
+                    assemblyPath =  executing.Substring(0, idx+1) + name;
 #endif
                 System.Reflection.Assembly waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPath);
                 System.Type t = waterfallAssembly.GetType("WriteLog.Waterfall");
@@ -131,8 +135,8 @@ namespace DigiRite
             listBoxReceived.Font = font;
         }
 
-        XDft.Demodulator myDemod = null;
-        public XDft.Demodulator demodParams {  set { 
+        MultiDemodulatorWrapper myDemod = null;
+        public MultiDemodulatorWrapper demodParams {  set { 
                 myDemod = value;
                 if (null != value)
                 {

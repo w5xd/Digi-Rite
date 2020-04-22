@@ -25,7 +25,7 @@
 22:37:37 TX: F3ABC W5XD R EM10
 22:37:50 000130 -01  0.3 2345 +  CQ F3ABC JN18                       they multi-streamed a CQ to trip us up
 22:37:50 000130 -01  0.3 2345 +  W5XD F3ABC R+02                     ...along with a dB report we don't want
-22:37:52 TX: F3ABC W5XD RR73
+15:01:52 TX: F3ABC W5XD R EM10                                       still want his grid
 22:38:05 000145 -01  0.3 2345 +  W5XD F3ABC RR73                     they at least allow us to end the QSO
 22:38:07 TX: F3ABC W5XD RRR
 22:38:20 000200 -01  0.3 2345 +  W5XD F4DEF JN18                     another caller
@@ -39,11 +39,11 @@
 22:39:20 000300 -03  0.3 2345 +  CQ W3XYZ FN20                       a CQ to answer
 22:39:22 TX: W3XYZ W5XD EM10 
 22:39:35 000315 -03  0.3 2345 +  W5XD W3XYZ R-10                     but they don't send what we want
-22:39:37 TX: W3XYZ W5XD EM10
-22:39:50 000330 -03  0.3 2345 +  W5XD W3XYZ R-10                     ... and insist
-22:39:52 TX: W3XYZ W5XD EM10
+15:03:37 TX: W3XYZ W5XD 73                                           ...try to end QSO
+22:39:50 000330 -03  0.3 2345 +  W5XD W3XYZ R-10                     they insist
+15:03:52 TX: W3XYZ W5XD 73                                           ...try to end again
 22:40:05 000345 -03  0.3 2345 +  CQ W3XYZ FN20                       ...they go back to CQ
-22:40:07 TX: W3XYZ W5XD RRR                                          ...so we try to end the QSO
+22:40:07 TX: W3XYZ W5XD RRR                                          so we're done too
 22:40:20 000400 -03  0.3 2345 +  CQ W4ABC FN20                       hear another CQ
 22:40:22 TX: W4ABC W5XD EM10                                         try to work them
 22:40:35 000415 -03  0.3 2345 +  W5XD W4ABC 539 PA                   they are in RU mode
@@ -55,4 +55,8 @@
 22:41:20 000500 -03  0.3 2345 +  W5XD W4ABC 539 PA                   ... still stuck
 22:41:22 TX: W4ABC W5XD RRR                                          try to end the QSO
 22:41:35 000515 +15  0.0 1010 +  W5XD W5ABC R EM10                   Different guy sends exchange
+15:05:37 TX: W5ABC W5XD R EM10
+15:05:52 TX: W5ABC W5XD R EM10
 22:41:35 000545 +15  0.0 1010 +  W5XD W5ABC R EM10                   ...and again
+15:06:07 TX: W5ABC W5XD 73
+15:06:22 TX: CQ W5XD EM10

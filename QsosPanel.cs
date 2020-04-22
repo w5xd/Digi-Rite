@@ -94,22 +94,7 @@ namespace DigiRite
             // set active and checked on add
             cb.Checked = qp.Active;
             cb.TabStop = addedIndex == 0;
-            qp.OnChangedCb = new QsoInProgress.OnChanged(() =>
-            {
-                if (qp.IsLogged && !qp.Active)
-                {   // switch modes. qso is out of the gui and into loggedInactive
-                    Remove(qp);
-                    loggedInactive[qp.GetKey()] = qp;
-                    qp.InLoggedInactiveState = true;
-                    qp.OnChangedCb = new QsoInProgress.OnChanged(() => OnLoggedInactiveChanged(qp));
-                }
-                else
-                {   // update GUI
-                    lb.Invalidate();
-                    if (cb.Checked != qp.Active)
-                        cb.Checked = qp.Active;
-                }
-            });
+            qp.OnChangedCb = (QsoInProgress.ChangeReason cr) => OnQsoInProgressChanged(qp, cr, lb, cb);
 
             cb.onRightMouse = new MouseEventHandler((object o, MouseEventArgs target) =>
             {
@@ -158,6 +143,34 @@ namespace DigiRite
             cb.Size = cbSize;
             PositionEntry(cb, lb, addedIndex);
             qsoActiveChangedCb(qp);
+        }
+
+        private void OnLoggedInactiveChanged(QsoInProgress qp, QsoInProgress.ChangeReason cr)
+        {
+            if (qp.Active || (cr == QsoInProgress.ChangeReason.MESSAGE_RECEIVED && qp.CyclesSinceMessagedToMe < 1))
+            {   // back into the GUI when it becomes active.
+                qp.OnChangedCb = null;
+                loggedInactive.Remove(qp.GetKey());
+                Add(qp);
+                qp.InLoggedInactiveState = false;
+            }
+        }
+
+        private void OnQsoInProgressChanged(QsoInProgress qp, QsoInProgress.ChangeReason cr, QsoInProgressLabel lb, QsoCb cb)
+        {
+            if (qp.IsLogged && !qp.Active && ((cr == QsoInProgress.ChangeReason.ACTIVE_CHANGED) || qp.CyclesSinceMessagedToMe >= 1))
+            {   // switch modes. qso is out of the gui and into loggedInactive
+                Remove(qp);
+                loggedInactive[qp.GetKey()] = qp;
+                qp.InLoggedInactiveState = true;
+                qp.OnChangedCb = (QsoInProgress.ChangeReason x) => OnLoggedInactiveChanged(qp, x);
+            }
+            else
+            {   // update GUI
+                lb.Invalidate();
+                if (cb.Checked != qp.Active)
+                    cb.Checked = qp.Active;
+            }
         }
 
         public QsoInProgress FirstActive {
@@ -227,16 +240,6 @@ namespace DigiRite
             }
         }
 
-        private void OnLoggedInactiveChanged(QsoInProgress qp)
-        {
-            if (qp.Active || qp.CyclesSinceMessaged  < 2)
-            {   // back into the GUI when it becomes active.
-                qp.OnChangedCb = null;
-                loggedInactive.Remove(qp.GetKey());
-                Add(qp);
-                qp.InLoggedInactiveState = false;
-            }
-        }
 
         // our GUI check box handler:
         private void SetQsoActive(QsoInProgress qp, bool active)

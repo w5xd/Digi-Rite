@@ -15,9 +15,7 @@ namespace DigiRite
         public enum DigiMode { FT8, FT4 };
 
         // These are the objects needed to receive and send FT8.
-        private XDft.Demodulator demodulator;
-        private XDft.WsjtSharedMemory wsjtSharedMem;
-        private XDft.WsjtExe wsjtExe;
+        MultiDemodulatorWrapper demodulatorWrapper;
         private XD.WaveDevicePlayer waveDevicePlayer;
         private XD.WaveDeviceTx deviceTx = null; // to modulate
         private XDft.GeneratorContext genContext;
@@ -42,7 +40,9 @@ namespace DigiRite
             get { return sendInProgress; }
             set { sendInProgress = value;
                 if (!value)
-                    CqMessageInProgress = false;}
+                    CqMessageInProgress = false;
+                buttonCQnow.Enabled = !(value || (comboBoxCQ.SelectedIndex != 0));
+                }
         }
         private AltMessageShortcuts altMessageShortcuts;
 
@@ -73,7 +73,7 @@ namespace DigiRite
             labelPtt.Text = "";
         }
 
-        #region Logger customization
+#region Logger customization
 
         private DigiRiteLogger.IDigiRiteLogger logger;
 
@@ -92,7 +92,7 @@ namespace DigiRite
             labelPtt.Text = wl.SetWlEntry(e);
             logger = wl;
         }
-        #endregion
+#endregion
 
         public static uint StringToIndex(string MySetting, List<string> available)
         {
@@ -106,7 +106,7 @@ namespace DigiRite
             return ret;
         }
 
-        private string LogFilePath { get { return wsjtExe.AppDirectoryPath + "DigiRite.log"; } }
+        private string LogFilePath { get { return demodulatorWrapper.AppDirectoryPath + "DigiRite.log"; } }
 
         const double AUDIO_SLIDER_SCALE = 12;
         private bool InitSoundInAndOut()
@@ -119,15 +119,8 @@ namespace DigiRite
             timerFt8Clock.Enabled = false;
             timerSpectrum.Enabled = false;
             timerCleanup.Enabled = false;
-            if (null != demodulator)
-                demodulator.Dispose();
-            demodulator = null;
-            if (null != wsjtSharedMem)
-                wsjtSharedMem.Dispose();
-            wsjtSharedMem = null;
-            if (null != wsjtExe)
-                wsjtExe.Dispose();
-            wsjtExe = null;
+            if (null != demodulatorWrapper)
+                demodulatorWrapper.Dispose();
             if (null != waveDevicePlayer)
                 waveDevicePlayer.Dispose();
             waveDevicePlayer = null;
@@ -141,54 +134,34 @@ namespace DigiRite
                 conversationLogFile.Dispose();
             conversationLogFile = null;
 
+            ushort multiProc = Properties.Settings.Default.MultiProcessCount;
+            if (multiProc > System.Environment.ProcessorCount)
+                multiProc = (ushort)System.Environment.ProcessorCount;
+            demodulatorWrapper = new MultiDemodulatorWrapper(instanceNumber, multiProc);
+
             // The demodulator invokes the wsjtx decoder
-            demodulator = new XDft.Demodulator();
             // the names of its parameters are verbatim from the wsjt-x source code.
             // Don't ask this author what they mean.
-            demodulator.nftx = 1500;
-            demodulator.nfqso = 1500;
-            demodulator.nfa = 200;
-            demodulator.nfb = 6000;
+            demodulatorWrapper.nftx = 1500;
+            demodulatorWrapper.nfqso = 1500;
+            demodulatorWrapper.nfa = 200;
+            demodulatorWrapper.nfb = 6000;
 
             if (Properties.Settings.Default.Decode_ndepth < 1)
                 Properties.Settings.Default.Decode_ndepth = 1;
             if (Properties.Settings.Default.Decode_ndepth > 3)
                 Properties.Settings.Default.Decode_ndepth = 1;
-            demodulator.ndepth = Properties.Settings.Default.Decode_ndepth;
-            demodulator.lft8apon = Properties.Settings.Default.Decode_lft8apon;
-            demodulator.nQSOProgress = 5;
-            demodulator.digiMode = digiMode == DigiMode.FT8 ? XDft.DigiMode.DIGI_FT8 : XDft.DigiMode.DIGI_FT4;
+            demodulatorWrapper.ndepth = Properties.Settings.Default.Decode_ndepth;
+            demodulatorWrapper.lft8apon = Properties.Settings.Default.Decode_lft8apon;
+            demodulatorWrapper.nQSOProgress = 5;
+            demodulatorWrapper.digiMode = digiMode == DigiMode.FT8 ? XDft.DigiMode.DIGI_FT8 : XDft.DigiMode.DIGI_FT4;
 
             // When the decoder finds an FT8 message, it calls us back...
             // ...on a foreign thread. Call BeginInvoke to get back on this one. See below.
-            demodulator.DemodulatorResultCallback = new XDft.DemodResult(Decoded);
-
-            string sharedMemoryKey = "DigiRite-" + instanceNumber.ToString();
-            wsjtSharedMem = new XDft.WsjtSharedMemory(sharedMemoryKey, false);
-            if (!wsjtSharedMem.CreateWsjtSharedMem())
-            {
-                MessageBox.Show("Failed to create Shared Memory from " + sharedMemoryKey);
-                return false;
-            }
-
-            // The subprocess itself is managed by the XDft
-            wsjtExe = new XDft.WsjtExe();
-            wsjtExe.AppDataName = "DigiRite-" + instanceNumber.ToString();
-
-            if (!wsjtExe.CreateWsjtProcess(wsjtSharedMem))
-            {
-                MessageBox.Show("Failed to launch wsjt exe");
-                demodulator.Dispose();
-                wsjtExe.Dispose();
-                wsjtExe = null;
-                wsjtSharedMem.Dispose();
-                wsjtSharedMem = null;
-                demodulator = null;
-                return false;
-            }
+            demodulatorWrapper.DemodulatorResultCallback = new XDft.DemodResult(Decoded);
 
             logFile = new LogFile(LogFilePath);
-            String conversationLog = wsjtExe.AppDirectoryPath + "Conversation.log";
+            String conversationLog = demodulatorWrapper.AppDirectoryPath + "Conversation.log";
             conversationLogFile = new LogFile(conversationLog, false);
 
             rxForm.logFile = logFile;
@@ -202,7 +175,7 @@ namespace DigiRite
                 if (waveDevicePlayer != null)
                     waveDevicePlayer.Dispose();
                 waveDevicePlayer = new XD.WaveDevicePlayer();
-                if (!waveDevicePlayer.Open(RxInDevice, channel, demodulator.GetRealTimeRxSink()))
+                if (!waveDevicePlayer.Open(RxInDevice, channel, demodulatorWrapper.GetRealTimeRxSink()))
                 {
                     MessageBox.Show("Failed to open wave input");
                     waveDevicePlayer.Dispose();
@@ -213,7 +186,7 @@ namespace DigiRite
                 {
                     if (fromRegistryValue(rk, "RxInputGain", out float x) && x >= 0 && x <= 1)
                         waveDevicePlayer.Gain = x;
-                    rxForm.demodParams = demodulator;
+                    rxForm.demodParams = demodulatorWrapper;
                     waveDevicePlayer.Resume();
                     rxForm.Player = waveDevicePlayer;
                 }
@@ -247,7 +220,7 @@ namespace DigiRite
                 return true;
             }
         }
-        #region TX output gain
+#region TX output gain
         int trackValueFromGain(float gain)
         {
             double g = trackBarTxGain.Maximum + Math.Log(gain) * AUDIO_SLIDER_SCALE / Math.Log(2);
@@ -260,9 +233,9 @@ namespace DigiRite
         {
             return (float)Math.Pow(2.0, (v - trackBarTxGain.Maximum) / AUDIO_SLIDER_SCALE);
         }
-        #endregion
+#endregion
 
-        #region received message interactions
+#region received message interactions
 
         private List<XDpack77.Pack77Message.ReceivedMessage> recentMessages =
             new List<XDpack77.Pack77Message.ReceivedMessage>();
@@ -395,7 +368,7 @@ namespace DigiRite
                     if (ft4DecodeOffsetIdx < ft4DecodeOffsetMsec.Length)
                     {
                         ft4MsecOffset = 1e-3f * (float)((int)ft4DecodeOffsetMsec[ft4DecodeOffsetIdx] - (int)FT4_DECODER_CENTER_OFFSET_MSEC);
-                        bool started = demodulator.DecodeAgain(wsjtExe, cycleNumber, ft4DecodeOffsetMsec[ft4DecodeOffsetIdx]);
+                        bool started = demodulatorWrapper.DecodeAgain(cycleNumber, ft4DecodeOffsetMsec[ft4DecodeOffsetIdx]);
                     }
                 }
             }
@@ -407,9 +380,9 @@ namespace DigiRite
             lb.TopIndex = Math.Max(1 + lb.Items.Count - visibleItems, 0);
         }
 
-        #endregion
+#endregion
 
-        #region transmit management
+#region transmit management
 
         private int MAX_MESSAGES_PER_CYCLE { get { 
                 int ret = (int)numericUpDownStreams.Value; 
@@ -441,7 +414,8 @@ namespace DigiRite
         private int FT_GAP_HZ = 60;
         private const int MAX_MULTI_STREAM_INCREMENT = 3;
 
-        private void AfterNmsec(Action d, int msec)
+        private void AfterNmsec(Action d, 
+            int msec = 1) // minimum, per the Timer API is one msec. zero throws an exception
         {
             var timer = new Timer { Interval = msec };
             timer.Tick += new EventHandler((o, e) =>
@@ -459,16 +433,18 @@ namespace DigiRite
         private delegate DateTime GetNowTime();
         private int consecutiveTransmitCycles = 0;
         private bool CqMessageInProgress = false;
+        private bool singleCQ = false;
+        private bool transmitAtZeroRan = false;
+        private bool nowOdd;
         private void transmitAtZero(bool allowLate = false, GetNowTime getNowTime = null)
         {   // right now we're at zero second in the cycle.
-            if ((digiMode == DigiMode.FT4) && allowLate)
-                return;
             if (null == genMessage)
                 return;
             DateTime toSend = getNowTime == null ? DateTime.UtcNow : getNowTime();
+            transmitAtZeroRan = true;
             int nowTenths = toSend.Second * 10 + toSend.Millisecond / 100;
             int cyclePosTenths = nowTenths % FT_CYCLE_TENTHS;
-            bool nowOdd = ((nowTenths / FT_CYCLE_TENTHS) & 1) != 0;
+            nowOdd = ((nowTenths / FT_CYCLE_TENTHS) & 1) != 0;
             int seconds = nowTenths;
             seconds /= FT_CYCLE_TENTHS;
             seconds *= FT_CYCLE_TENTHS; // round back to nearest 
@@ -577,10 +553,20 @@ namespace DigiRite
             else
                 consecutiveTransmitCycles = 0;
 
+
             int cqMode = comboBoxCQ.SelectedIndex;
             bool onlyCQ = cqMode == 1 && !toSendList.Any();
-            if (onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE &&
-                    (onlyCQ || cqMode == 2))
+            bool doCQnow = onUserSelectedCycle && toSendList.Count < MAX_MESSAGES_PER_CYCLE && (onlyCQ || cqMode == 2);
+            if (!doCQnow)
+            {
+                if (singleCQ && !toSendList.Any())
+                {
+                    radioButtonOdd.Checked = nowOdd;
+                    doCQnow = true;
+                }
+            }
+            singleCQ = false;
+            if (doCQnow)
             {   // only CQ if we have nothing else to send
                 string cq = "CQ";
                 /* 77-bit pack is special w.r.t. CQ. can't sent directed CQ 
@@ -676,8 +662,6 @@ namespace DigiRite
                 ScrollListBoxToBottom(listBoxConversation);
             }
 
-            const int ALLOW_LATE_MSEC = 1800; // ft8 decoder only allows so much lateness.This is OK unless our clock is slow.
-
             if (itonesToSend.Any())
             {
                 SetTxCycle(nowOdd ? 1 : 0);
@@ -690,7 +674,7 @@ namespace DigiRite
                         if (cyclePosTenths > 0)
                         {
                             int msecToTruncate = toSend.Millisecond + 100 * cyclePosTenths; // how late we are
-                            msecToTruncate -= ALLOW_LATE_MSEC; // full itones don't last a full 15 seconds
+                            msecToTruncate -= SHIFT_OUTGOING_LATER_MSEC; // full itones don't last a full 15 seconds in FT8
                             int itonesToLose = msecToTruncate / 160;
                             if (itonesToLose > 0)
                             {
@@ -734,7 +718,7 @@ namespace DigiRite
                             if (cyclePosTenths > 0)
                             {
                                 int msecToTruncate = toSend.Millisecond + 100 * cyclePosTenths; // how late we are
-                                msecToTruncate -= ALLOW_LATE_MSEC; // full itones don't last a full 15 seconds
+                                msecToTruncate -= SHIFT_OUTGOING_LATER_MSEC; // full itones don't last a full 15 seconds
                                 int itonesToLose = msecToTruncate / 160;
                                 if (itonesToLose > 0)
                                 {
@@ -761,10 +745,13 @@ namespace DigiRite
             {
                 QueuedToSendListItem qli = checkedlbNextToSend.Items[j] as QueuedToSendListItem;
                 QsoInProgress qp;
-                if (null != qli && (null != (qp = qli.q)) && inProgress.Any((q) => Object.ReferenceEquals(q, qp)))
+                if (null != qli && 
+                    (null != (qp = qli.q)) && 
+                    inProgress.Any((q) => Object.ReferenceEquals(q, qp)))
                 {   // if the QSO remains active in progress, but still in this list, it didn't get sent,
                     // mark it unchecked so user can see that.
-                    checkedlbNextToSend.SetItemChecked(j, false);
+                    if (nowOdd == (((qp.Message.CycleNumber + 1) & 1) != 0))
+                        checkedlbNextToSend.SetItemChecked(j, false);
                     j += 1;
                 }
                 else
@@ -896,6 +883,7 @@ namespace DigiRite
                 )
                 return;
 
+            checkBoxAutoXmit.Checked = true;
             // turn its check box ON since this is an interactive click
             for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
             {
@@ -912,21 +900,42 @@ namespace DigiRite
 
             RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
-            if (((rm.Message.CycleNumber & 1) != (cycleNumber & 1))
-                && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
+            sendNowIfPossible(rm.Message);
+        }
+
+        private void sendNowIfPossible(XDpack77.Pack77Message.ReceivedMessage rm)
+        {
+            bool sendOdd = ((rm.CycleNumber + 1) & 1) != 0;
+            GetNowTime getNowTime;
+            if ((sendOdd == nowOdd)
+                && InModifyTransmitTimerWindow(out getNowTime))
             {   // start late if we can
                 if (CqMessageInProgress)
                     AbortMessage();
                 if (!SendInProgress)
-                    transmitAtZero(true);
+                    transmitAtZero(true, getNowTime);
             }
-            checkBoxAutoXmit.Checked = true;
+        }
+
+        private bool InModifyTransmitTimerWindow(out GetNowTime getNowTime)
+        {
+            getNowTime = null;
+            if (intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS)
+                return true;
+            if (transmitAtZeroRan)
+            {   // this is a mess. transmitAtZero already ran for the TX cycle, but its hasn't really begun
+                // tell transmitAtZero its 1 second later than now
+                var timeToReport = DateTime.UtcNow + TimeSpan.FromMilliseconds(1000);
+                getNowTime = new GetNowTime(() => timeToReport);
+                return true;
+            }
+            return false;
         }
 
         int MAX_UNANSWERED_MINUTES = 5;
-        #endregion
+#endregion
 
-        #region IQsoQueueCallBacks
+#region IQsoQueueCallBacks
         private const string BracketFormat = "<{0}>";
         
         private bool needBrackets(string call)
@@ -1291,7 +1300,7 @@ namespace DigiRite
             logger.LogGridSquareQso(sentdB, gridsquare, dbReport);
         }
         
-        #endregion
+#endregion
 
         private String MyCall {
             set { 
@@ -1328,7 +1337,7 @@ namespace DigiRite
         uint SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 130;
 #endif
 
-        #region Form events
+#region Form events
         private static bool fromRegistryValue(Microsoft.Win32.RegistryKey rk, string valueName, out int v)
         {
             v = 0;
@@ -1694,17 +1703,17 @@ namespace DigiRite
                     genContext = XDft.GeneratorContext.getFt4Context((ushort)UserPttToSound);
                     genMessage = new GenMessage(XDft.Generator.genft4);
                     checkTransmitAtZero = new CheckTransmitAtZero(Ft4CheckTransmitAtZero);
-                    demodulator.digiMode = XDft.DigiMode.DIGI_FT4;
-                    demodulator.DemodulateSoundPreUtcZeroMsec = (short)( DEFAULT_DECODER_LOOKBACK_MSEC + FT4_DECODER_CENTER_OFFSET_MSEC);
-                    demodulator.nzhsym = 18;
+                    demodulatorWrapper.digiMode = XDft.DigiMode.DIGI_FT4;
+                    demodulatorWrapper.DemodulateSoundPreUtcZeroMsec = (short)( DEFAULT_DECODER_LOOKBACK_MSEC + FT4_DECODER_CENTER_OFFSET_MSEC);
+                    demodulatorWrapper.nzhsym = 18;
 #if DEBUG
                     if ((1 & FT4_MULTIPLE_DECODE_COUNT) != 1)
                         throw new System.Exception("FT4_MULTIPLE_DECODE_COUNT must be an odd number");
-                    if (demodulator.DemodulateSoundPreUtcZeroMsec > 1000)
+                    if (demodulatorWrapper.DemodulateSoundPreUtcZeroMsec > 1000)
                         throw new System.Exception("Demodulator cannot look back further than 1000msec");
                     SIMULATOR_POPS_OUT_DECODED_MESSAGES_AT_TENTHS = 50;
 #endif
-                    demodulator.DemodulateDefaultSoundShiftMsec = FT4_DECODER_CENTER_OFFSET_MSEC;
+                    demodulatorWrapper.DemodulateDefaultSoundShiftMsec = FT4_DECODER_CENTER_OFFSET_MSEC;
                     ft4DecodeOffsetMsec = new ushort[FT4_MULTIPLE_DECODE_COUNT];
                     ft4DecodeOffsetMsec[0] = FT4_DECODER_CENTER_OFFSET_MSEC; // zero idx is run by OnClock
                     int middleIdx = FT4_MULTIPLE_DECODE_COUNT / 2;
@@ -1714,7 +1723,9 @@ namespace DigiRite
                         ft4DecodeOffsetMsec[i * 2 + 2] = (ushort)(FT4_DECODER_CENTER_OFFSET_MSEC - (i + 1) * FT4_MULTIPLE_DECODE_OFFSET_MSEC);
                     }
                     TRIGGER_DECODE_TENTHS = 20;
+                    START_LATE_MESSAGES_THROUGH_TENTHS = 10;
                     CLEAR_OLD_MESSAGES_AT_TENTHS = 10;
+                    SHIFT_OUTGOING_LATER_MSEC = 200;
                     cl.CYCLE = 75;
                     rxForm.CYCLE = 75;
                     FT_CYCLE_TENTHS = 75;
@@ -1727,13 +1738,15 @@ namespace DigiRite
                     genContext = XDft.GeneratorContext.getFt8Context((ushort)UserPttToSound);
                     genMessage = new GenMessage(XDft.Generator.genft8);
                     checkTransmitAtZero = new CheckTransmitAtZero(Ft8CheckTransmitAtZero);
-                    demodulator.digiMode = XDft.DigiMode.DIGI_FT8;
-                    demodulator.DemodulateSoundPreUtcZeroMsec = DEFAULT_DECODER_LOOKBACK_MSEC;
-                    demodulator.nzhsym = 50;
+                    demodulatorWrapper.digiMode = XDft.DigiMode.DIGI_FT8;
+                    demodulatorWrapper.DemodulateSoundPreUtcZeroMsec = DEFAULT_DECODER_LOOKBACK_MSEC;
+                    demodulatorWrapper.nzhsym = 50;
                     TRIGGER_DECODE_TENTHS = 50;
+                    START_LATE_MESSAGES_THROUGH_TENTHS = 60;
                     CLEAR_OLD_MESSAGES_AT_TENTHS = 50;
                     cl.CYCLE = 150;
                     FT_CYCLE_TENTHS = 150;
+                    SHIFT_OUTGOING_LATER_MSEC = 1000;
                     rxForm.CYCLE = 150;
                     FT_GAP_HZ = 60;
                     MESSAGE_SEPARATOR = '~';
@@ -1756,7 +1769,7 @@ namespace DigiRite
                     break;
 
                 case ExchangeTypes.GRID_SQUARE:
-                    qsoQueue =  new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
+                    qsoQueue =  new QsoQueueGridSquare(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
                                 var sm = m as XDpack77.Pack77Message.StandardMessage;
                                 return (null != sm) && (!String.IsNullOrEmpty(sm.GridSquare) && sm.GridSquare.Length >= 4);
                             });
@@ -1840,17 +1853,9 @@ namespace DigiRite
                         rk.SetValue("RxInputGain", waveDevicePlayer.Gain.ToString());
                 }
             }
-            if (demodulator != null)
-                demodulator.Dispose();
-            demodulator = null;
-
-            if (wsjtExe != null)
-                wsjtExe.Dispose();
-            wsjtExe = null;
-
-            if (wsjtSharedMem != null)
-                wsjtSharedMem.Dispose();
-            wsjtSharedMem = null;
+            if (demodulatorWrapper != null)
+                demodulatorWrapper.Dispose();
+            demodulatorWrapper = null;
 
             if (waveDevicePlayer != null)
                 waveDevicePlayer.Dispose();
@@ -1897,8 +1902,8 @@ namespace DigiRite
 
         private void timerSpectrum_Tick(object sender, EventArgs e)
         {
-            if ((null != rxForm) && (null != demodulator))
-                rxForm.DisplaySpectrum(demodulator);
+            if ((null != rxForm) && (null != demodulatorWrapper))
+                rxForm.DisplaySpectrum(demodulatorWrapper.demodulator);
         }
         
         private void timerCleanup_Tick(object sender, EventArgs e)
@@ -1954,8 +1959,9 @@ namespace DigiRite
         private int cycleNumber = 0;
         uint CLEAR_OLD_MESSAGES_AT_TENTHS = 50;
         uint TRIGGER_DECODE_TENTHS = 50; // At this second and later, see if we see any messages
+        int SHIFT_OUTGOING_LATER_MSEC = 1000; // ft8 decoder only allows so much lateness.This is OK unless our clock is slow.
 
-        const uint START_LATE_MESSAGES_THROUGH_TENTHS = 60;
+        uint START_LATE_MESSAGES_THROUGH_TENTHS = 60;
         private delegate void CheckTransmitAtZero(int cycleNumber, int msecIntoCycle);
         private CheckTransmitAtZero checkTransmitAtZero;
 
@@ -2067,14 +2073,14 @@ namespace DigiRite
                 {
                     labelClock.Text = "";
                     int msecIntoCycle = -1;
-                    if ((null != demodulator) && (null != waveDevicePlayer))
+                    if ((null != demodulatorWrapper) && (null != waveDevicePlayer))
                     {
                         // TRIGGER_DECODE tells the demodulator whether to actually demodulate
                         bool invokedDecode = false;
                         String hiscall = qsosPanel.FirstActive?.HisCall;
-                        demodulator.mycall = myCall;
-                        demodulator.hiscall = hiscall;
-                        intervalTenths = demodulator.Clock(TRIGGER_DECODE_TENTHS, wsjtExe, ref invokedDecode, ref cycleNumber);
+                        demodulatorWrapper.mycall = myCall;
+                        demodulatorWrapper.hiscall = hiscall;
+                        intervalTenths = demodulatorWrapper.Clock(TRIGGER_DECODE_TENTHS, ref invokedDecode, ref cycleNumber);
                         // invokedDecode tells us whether it actually was able to invoke the wsjtx decoder.
                         // Some reasons it might not: interval is less than TRIGGER_DECODE.
                         // We have recently called into Clock which did invoke a decode, and that one isn't finished yet.
@@ -2096,6 +2102,8 @@ namespace DigiRite
 
                         int msecInMinute = 1000 * nowTime.Second + nowTime.Millisecond;
                         msecIntoCycle = msecInMinute % ( FT_CYCLE_TENTHS * 100);
+                        if (msecIntoCycle < 1000)
+                            transmitAtZeroRan = false;
                     }
                     bool isOddCycle = (cycleNumber & 1) != 0;
                     bool isTransmitCycle = radioButtonOdd.Checked == isOddCycle;
@@ -2265,6 +2273,8 @@ namespace DigiRite
 
         public void SendRttyMessage(String toSend) // WriteLog pressed an F-key
         {   // automation call from WriteLog....
+            if (toSend.StartsWith("CQ "))
+                buttonCQnow_Click(null, null);
         }
 
         public void AbortMessage()
@@ -2317,12 +2327,14 @@ namespace DigiRite
         {   // ItemCheck event preceeds checking the check box. 
             // ..but I want the check box true before calling transmitAtZero...
             // ..so have to work around recursion issues
-                bool checkState = e.NewValue == CheckState.Checked;
-                if (checkState)
-                    BeginInvoke(new Action(() => {
-                        if (!SendInProgress && intervalTenths <= START_LATE_MESSAGES_THROUGH_TENTHS) 
-                            transmitAtZero(true);
-                        }));
+            bool checkState = e.NewValue == CheckState.Checked;
+            if (checkState)
+                BeginInvoke(new Action(() =>
+                {
+                    GetNowTime getNowTime;
+                    if (!SendInProgress && InModifyTransmitTimerWindow(out getNowTime))
+                        transmitAtZero(true, getNowTime);
+                }));
         }
 
         private void checkBoxAutoXmit_CheckedChanged(object sender, EventArgs e)
@@ -2350,7 +2362,11 @@ namespace DigiRite
                 }
                 QueuedToSendListItem qli = listBoxAlternatives.Items[e.Index] as QueuedToSendListItem;
                 if (null != qli)
+                {
                     textBoxMessageEdit.Text = qli.MessageText;
+                    // the check box isn't actually checked yet, so have to defer to an Action
+                    AfterNmsec(new Action(() => sendNowIfPossible(qli.q.Message)));
+                }
             }
         }
 
@@ -2538,9 +2554,24 @@ namespace DigiRite
         
         private void comboBoxCQ_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBoxCQ.SelectedIndex != 0)
+            bool CqOn = comboBoxCQ.SelectedIndex != 0;
+            if (CqOn)
                 checkBoxAutoXmit.Checked = true;
+            buttonCQnow.Enabled = !(SendInProgress || CqOn);             
         }
+
+        private void buttonCQnow_Click(object sender, EventArgs e)
+        {
+            if (!sendInProgress)
+            {
+                singleCQ = true;
+                GetNowTime getNowTime;
+                if (InModifyTransmitTimerWindow(out getNowTime))
+                    transmitAtZero(true, getNowTime);
+            }
+            buttonCQnow.Enabled = false;
+        }
+
         int TUNE_LEN;
 
         private void ApplyFontControls()
@@ -2591,14 +2622,9 @@ namespace DigiRite
             numericUpDownStreamsPrevious = numericUpDownStreams.Value;
         }
 
-        private void numericUpDownStreams_Scroll(object sender, ScrollEventArgs e)
-        {
-            
-        }
+#endregion
 
-        #endregion
-
-        #region TX RX frequency
+#region TX RX frequency
         private void buttonTune_Click(object sender, EventArgs e)
         {
             if (SendInProgress)
@@ -2624,16 +2650,16 @@ namespace DigiRite
 
         public int RxFrequency {
             get {
-                if (null != demodulator)
-                    return (int)demodulator.nfqso;
+                if (null != demodulatorWrapper)
+                    return (int)demodulatorWrapper.nfqso;
                 return 0;
             }
             set {
                 if ((value <= 0) || (value > 6000))
                     return;
                 int v = value;
-                if (null != demodulator)
-                    demodulator.nfqso = v;
+                if (null != demodulatorWrapper)
+                    demodulatorWrapper.nfqso = v;
                 rxForm.RxHz = v;
                 if (v != (int)numericUpDownRxFrequency.Value)
                 {
@@ -2668,9 +2694,6 @@ namespace DigiRite
             }
         }
 
-        #endregion
-
- 
-     
+#endregion
     }
 }

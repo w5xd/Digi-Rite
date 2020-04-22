@@ -54,7 +54,9 @@ namespace DigiRite
             public void SendAck(bool ofAnAck, QsoSequencer.MessageSent ms)  
                 { qsoQueue.sendAck(qso, ofAnAck, ms);  }
             public void SendExchange(bool withAck, QsoSequencer.MessageSent ms)  
-                {  qsoQueue.sendExchange(qso, withAck, ms); }
+                {  
+                    qsoQueue.sendExchange(qso, withAck, ms); 
+                }
             public void SendOnLoggedAck(QsoSequencer.MessageSent ms) {  qsoQueue.callbacks.SendOnLoggedAck(qso, ms);} 
             public override String ToString()         
                 { return qso.ToString(); }
@@ -63,7 +65,7 @@ namespace DigiRite
             private QsoInProgress qso;
         }
 
-        private ContestMessageSelector messageSelector;
+        protected ContestMessageSelector messageSelector;
 
         public QsoQueue(QsosPanel listBox, IQsoQueueCallBacks cb, ContestMessageSelector selector) : base(listBox)
         {   
@@ -172,5 +174,31 @@ namespace DigiRite
 
         private string ackMessage(QsoInProgress q, bool ofAnAck)
         { return callbacks.GetAckMessage(q, ofAnAck); }
+    }
+
+    class QsoQueueGridSquare : QsoQueue
+    {
+        public QsoQueueGridSquare(QsosPanel listBox, IQsoQueueCallBacks cb, ContestMessageSelector selector) : base(listBox, cb, selector)
+        {}
+
+        protected override void StartQso(QsoInProgress q)
+        {   // q needs to already be in our qsosPanel list
+            QsoSequencer qs = new QsoSequencer(new QsoSequencerCbImpl(this, q), false);
+            q.Sequencer = qs;
+            XDpack77.Pack77Message.Exchange exc = ExchangeFromMessage(q.Message.Pack77Message);
+            if (exc != null)
+                qs.OnReceivedExchange(false, exc.Exchange != null); // like base class, but don't allow send of ack on initiating
+            else
+                qs.Initiate();
+        }
+
+
+        protected override XDpack77.Pack77Message.Exchange ExchangeFromMessage(XDpack77.Pack77Message.Message m)
+        {
+            if (!messageSelector(m))
+                return null;
+            XDpack77.Pack77Message.Exchange exc = m as XDpack77.Pack77Message.Exchange;
+            return exc;
+        }
     }
 }

@@ -78,6 +78,8 @@
             this.tabPageAudioDevices = new System.Windows.Forms.TabPage();
             this.tabPageRigControl = new System.Windows.Forms.TabPage();
             this.tabPageOther = new System.Windows.Forms.TabPage();
+            this.label12 = new System.Windows.Forms.Label();
+            this.numericUpDownMultiProc = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -92,6 +94,7 @@
             this.tabPageAudioDevices.SuspendLayout();
             this.tabPageRigControl.SuspendLayout();
             this.tabPageOther.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMultiProc)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -676,6 +679,8 @@
             // 
             // tabPageOther
             // 
+            this.tabPageOther.Controls.Add(this.label12);
+            this.tabPageOther.Controls.Add(this.numericUpDownMultiProc);
             this.tabPageOther.Controls.Add(this.groupBox5);
             this.tabPageOther.Location = new System.Drawing.Point(4, 22);
             this.tabPageOther.Name = "tabPageOther";
@@ -684,6 +689,33 @@
             this.tabPageOther.TabIndex = 4;
             this.tabPageOther.Text = "Other";
             this.tabPageOther.UseVisualStyleBackColor = true;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(24, 111);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(136, 13);
+            this.label12.TabIndex = 22;
+            this.label12.Text = "Multiple WSJT-X decoders:";
+            this.label12.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // numericUpDownMultiProc
+            // 
+            this.numericUpDownMultiProc.Location = new System.Drawing.Point(173, 109);
+            this.numericUpDownMultiProc.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDownMultiProc.Name = "numericUpDownMultiProc";
+            this.numericUpDownMultiProc.Size = new System.Drawing.Size(39, 20);
+            this.numericUpDownMultiProc.TabIndex = 21;
+            this.numericUpDownMultiProc.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // SetupForm
             // 
@@ -724,6 +756,8 @@
             this.tabPageRigControl.ResumeLayout(false);
             this.tabPageRigControl.PerformLayout();
             this.tabPageOther.ResumeLayout(false);
+            this.tabPageOther.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMultiProc)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -780,5 +814,7 @@
         private System.Windows.Forms.TabPage tabPageOther;
         private System.Windows.Forms.RadioButton radioButtonL;
         private System.Windows.Forms.Label labelExchangeHint;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.NumericUpDown numericUpDownMultiProc;
     }
 }
