@@ -46,11 +46,14 @@
             this.listBoxReceived = new System.Windows.Forms.ListBox();
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.panelRightGain = new System.Windows.Forms.Panel();
+            this.labelVUmeter = new System.Windows.Forms.Label();
             this.trackBarRxGain = new System.Windows.Forms.TrackBar();
             this.eventLog1 = new System.Diagnostics.EventLog();
             this.contextMenuStripOnReceived = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyItemToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timerVU = new System.Windows.Forms.Timer(this.components);
+            this.checkBoxAnnotate = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.chartSpectrum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxFreq)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinFreq)).BeginInit();
@@ -100,7 +103,7 @@
             0,
             0,
             0});
-            this.numericUpDownMaxFreq.Location = new System.Drawing.Point(241, 10);
+            this.numericUpDownMaxFreq.Location = new System.Drawing.Point(204, 10);
             this.numericUpDownMaxFreq.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -128,7 +131,7 @@
             0,
             0,
             0});
-            this.numericUpDownMinFreq.Location = new System.Drawing.Point(81, 10);
+            this.numericUpDownMinFreq.Location = new System.Drawing.Point(78, 10);
             this.numericUpDownMinFreq.Maximum = new decimal(new int[] {
             4500,
             0,
@@ -152,7 +155,7 @@
             // checkBoxEnableAP
             // 
             this.checkBoxEnableAP.AutoSize = true;
-            this.checkBoxEnableAP.Location = new System.Drawing.Point(462, 12);
+            this.checkBoxEnableAP.Location = new System.Drawing.Point(401, 12);
             this.checkBoxEnableAP.Name = "checkBoxEnableAP";
             this.checkBoxEnableAP.Size = new System.Drawing.Size(76, 17);
             this.checkBoxEnableAP.TabIndex = 5;
@@ -168,25 +171,25 @@
             "Fast",
             "Normal",
             "Deep"});
-            this.comboBoxnDepth.Location = new System.Drawing.Point(327, 10);
+            this.comboBoxnDepth.Location = new System.Drawing.Point(285, 10);
             this.comboBoxnDepth.Name = "comboBoxnDepth";
-            this.comboBoxnDepth.Size = new System.Drawing.Size(126, 21);
+            this.comboBoxnDepth.Size = new System.Drawing.Size(105, 21);
             this.comboBoxnDepth.TabIndex = 4;
             this.comboBoxnDepth.SelectedIndexChanged += new System.EventHandler(this.comboBoxnDepth_SelectedIndexChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(166, 14);
+            this.label2.Location = new System.Drawing.Point(153, 14);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(70, 13);
+            this.label2.Size = new System.Drawing.Size(51, 13);
             this.label2.TabIndex = 2;
-            this.label2.Text = "M&ax freq (Hz)";
+            this.label2.Text = "M&ax freq:";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 14);
+            this.label1.Location = new System.Drawing.Point(7, 14);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(67, 13);
             this.label1.TabIndex = 0;
@@ -195,14 +198,15 @@
             // labelPower
             // 
             this.labelPower.AutoSize = true;
-            this.labelPower.Location = new System.Drawing.Point(552, 14);
+            this.labelPower.Location = new System.Drawing.Point(580, 14);
             this.labelPower.Name = "labelPower";
             this.labelPower.Size = new System.Drawing.Size(36, 13);
-            this.labelPower.TabIndex = 6;
+            this.labelPower.TabIndex = 7;
             this.labelPower.Text = "power";
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.checkBoxAnnotate);
             this.panel1.Controls.Add(this.labelWaterfall);
             this.panel1.Controls.Add(this.comboBoxnDepth);
             this.panel1.Controls.Add(this.labelPower);
@@ -283,6 +287,7 @@
             // 
             // panelRightGain
             // 
+            this.panelRightGain.Controls.Add(this.labelVUmeter);
             this.panelRightGain.Controls.Add(this.labelClockAnimation);
             this.panelRightGain.Controls.Add(this.labelClock);
             this.panelRightGain.Controls.Add(this.trackBarRxGain);
@@ -291,6 +296,14 @@
             this.panelRightGain.Name = "panelRightGain";
             this.panelRightGain.Size = new System.Drawing.Size(40, 377);
             this.panelRightGain.TabIndex = 1;
+            // 
+            // labelVUmeter
+            // 
+            this.labelVUmeter.Location = new System.Drawing.Point(14, 257);
+            this.labelVUmeter.Name = "labelVUmeter";
+            this.labelVUmeter.Size = new System.Drawing.Size(8, 44);
+            this.labelVUmeter.TabIndex = 3;
+            this.labelVUmeter.Text = "VU";
             // 
             // trackBarRxGain
             // 
@@ -315,7 +328,7 @@
             this.clearToolStripMenuItem,
             this.copyItemToClipboardToolStripMenuItem});
             this.contextMenuStripOnReceived.Name = "contextMenuStripOnReceived";
-            this.contextMenuStripOnReceived.Size = new System.Drawing.Size(197, 70);
+            this.contextMenuStripOnReceived.Size = new System.Drawing.Size(197, 48);
             this.contextMenuStripOnReceived.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuStripOnReceived_Closing);
             // 
             // clearToolStripMenuItem
@@ -331,6 +344,23 @@
             this.copyItemToClipboardToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.copyItemToClipboardToolStripMenuItem.Text = "Copy item to clipboard";
             this.copyItemToClipboardToolStripMenuItem.Click += new System.EventHandler(this.copyItemToClipboardToolStripMenuItem_Click);
+            // 
+            // timerVU
+            // 
+            this.timerVU.Interval = 200;
+            this.timerVU.Tick += new System.EventHandler(this.timerVU_Tick);
+            // 
+            // checkBoxAnnotate
+            // 
+            this.checkBoxAnnotate.AutoSize = true;
+            this.checkBoxAnnotate.Enabled = false;
+            this.checkBoxAnnotate.Location = new System.Drawing.Point(497, 12);
+            this.checkBoxAnnotate.Name = "checkBoxAnnotate";
+            this.checkBoxAnnotate.Size = new System.Drawing.Size(69, 17);
+            this.checkBoxAnnotate.TabIndex = 6;
+            this.checkBoxAnnotate.Text = "Annotate";
+            this.checkBoxAnnotate.UseVisualStyleBackColor = true;
+            this.checkBoxAnnotate.CheckedChanged += new System.EventHandler(this.checkBoxAnnotate_CheckedChanged);
             // 
             // RcvrForm
             // 
@@ -387,5 +417,8 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStripOnReceived;
         private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyItemToClipboardToolStripMenuItem;
+        private System.Windows.Forms.Label labelVUmeter;
+        private System.Windows.Forms.Timer timerVU;
+        private System.Windows.Forms.CheckBox checkBoxAnnotate;
     }
 }
