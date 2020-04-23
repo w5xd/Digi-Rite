@@ -590,12 +590,15 @@ namespace DigiRite
             int freqIncrement = freqRange + 1;
             bool doingMultiStream = toSendList.Count > 1;
             Conversation.Origin origin = Conversation.Origin.TRANSMIT;
+            uint SetRxFreqHzTo = 0;
             foreach (var item in toSendList)
             {
                 QsoInProgress q = item.q;
                 int freq = TxFrequency;
                 if (null != q)
                 {
+                    if ((null != q.Message) && SetRxFreqHzTo == 0)
+                        SetRxFreqHzTo = q.MessageList.Last().Hz;
                     uint assigned = q.TransmitFrequency;
                     if (assigned != 0)
                     {
@@ -769,6 +772,9 @@ namespace DigiRite
                 if (null != item.q)
                     item.q.TransmitedLastOpportunity = true;
             }
+
+            if (SetRxFreqHzTo != 0)
+                RxFrequency = (int)SetRxFreqHzTo;
         }
 
         delegate void VfoOnTxEnd();
@@ -898,7 +904,6 @@ namespace DigiRite
                 }
             }
 
-            RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
             sendNowIfPossible(rm.Message);
         }

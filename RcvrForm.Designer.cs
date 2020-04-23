@@ -40,6 +40,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.labelPower = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.checkBoxAnnotate = new System.Windows.Forms.CheckBox();
             this.labelWaterfall = new System.Windows.Forms.Label();
             this.labelClockAnimation = new System.Windows.Forms.Label();
             this.labelClock = new System.Windows.Forms.Label();
@@ -53,7 +54,6 @@
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyItemToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timerVU = new System.Windows.Forms.Timer(this.components);
-            this.checkBoxAnnotate = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.chartSpectrum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxFreq)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinFreq)).BeginInit();
@@ -221,6 +221,18 @@
             this.panel1.Size = new System.Drawing.Size(729, 37);
             this.panel1.TabIndex = 0;
             // 
+            // checkBoxAnnotate
+            // 
+            this.checkBoxAnnotate.AutoSize = true;
+            this.checkBoxAnnotate.Enabled = false;
+            this.checkBoxAnnotate.Location = new System.Drawing.Point(485, 12);
+            this.checkBoxAnnotate.Name = "checkBoxAnnotate";
+            this.checkBoxAnnotate.Size = new System.Drawing.Size(77, 17);
+            this.checkBoxAnnotate.TabIndex = 6;
+            this.checkBoxAnnotate.Text = "Show calls";
+            this.checkBoxAnnotate.UseVisualStyleBackColor = true;
+            this.checkBoxAnnotate.CheckedChanged += new System.EventHandler(this.checkBoxAnnotate_CheckedChanged);
+            // 
             // labelWaterfall
             // 
             this.labelWaterfall.AutoSize = true;
@@ -347,20 +359,8 @@
             // 
             // timerVU
             // 
-            this.timerVU.Interval = 200;
+            this.timerVU.Interval = 500;
             this.timerVU.Tick += new System.EventHandler(this.timerVU_Tick);
-            // 
-            // checkBoxAnnotate
-            // 
-            this.checkBoxAnnotate.AutoSize = true;
-            this.checkBoxAnnotate.Enabled = false;
-            this.checkBoxAnnotate.Location = new System.Drawing.Point(497, 12);
-            this.checkBoxAnnotate.Name = "checkBoxAnnotate";
-            this.checkBoxAnnotate.Size = new System.Drawing.Size(69, 17);
-            this.checkBoxAnnotate.TabIndex = 6;
-            this.checkBoxAnnotate.Text = "Annotate";
-            this.checkBoxAnnotate.UseVisualStyleBackColor = true;
-            this.checkBoxAnnotate.CheckedChanged += new System.EventHandler(this.checkBoxAnnotate_CheckedChanged);
             // 
             // RcvrForm
             // 
