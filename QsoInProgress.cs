@@ -144,19 +144,19 @@ namespace DigiRite
                 }
                 bool changed = active != value;
                 active = value;
-                if (changed && null != OnChangedCb) OnChangedCb(ChangeReason.ACTIVE_CHANGED);
+                if (changed) OnChangedCb?.Invoke(ChangeReason.ACTIVE_CHANGED);
                 } }
         public bool Dupe { get => originatingMessage.Dupe;  }
         public bool Mult { get => originatingMessage.Mult;  }
         public bool MarkedAsLogged { get => markedAsLogged; set { 
                 markedAsLogged = value;
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.OTHER);
+                OnChangedCb?.Invoke(ChangeReason.OTHER);
             }
         }
         public uint TransmitFrequency { get => transmitFrequency; 
             set { transmitFrequency = value; 
                 holdingForAnotherQso = false;
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.OTHER);
+                OnChangedCb?.Invoke(ChangeReason.OTHER);
             }
         }
 
@@ -198,7 +198,7 @@ namespace DigiRite
             if (wasReceiveCycle)
             {
                 messagedLastCycle = messagedThisCycle;
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.RECEIVE_CYCLE_END);
+                OnChangedCb?.Invoke(ChangeReason.RECEIVE_CYCLE_END);
             }
             messagedThisCycle = false;
             return ret;
@@ -241,7 +241,6 @@ namespace DigiRite
                 {
                     if (!messagedThisCycle)
                     {
-                        CyclesSinceMessagedToMe += 1;
                         if (String.IsNullOrEmpty(callsQsled))
                         {
                             // if he sends multiple messages in the same cycle...
@@ -276,7 +275,7 @@ namespace DigiRite
             }
             finally
             {
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.MESSAGE_RECEIVED);
+                OnChangedCb?.Invoke(ChangeReason.MESSAGE_RECEIVED);
             }
         }
 
