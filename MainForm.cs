@@ -2561,7 +2561,10 @@ namespace DigiRite
         {
             bool CqOn = comboBoxCQ.SelectedIndex != 0;
             if (CqOn)
+            {
                 checkBoxAutoXmit.Checked = true;
+                buttonCQnow_Click(sender, e);
+            }
             buttonCQnow.Enabled = !(SendInProgress || CqOn);             
         }
 
@@ -2570,6 +2573,7 @@ namespace DigiRite
             if (!sendInProgress)
             {
                 singleCQ = true;
+                checkBoxAutoXmit.Checked = true;
                 GetNowTime getNowTime;
                 if (InModifyTransmitTimerWindow(out getNowTime))
                     transmitAtZero(true, getNowTime);

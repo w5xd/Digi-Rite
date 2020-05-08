@@ -35,7 +35,7 @@
             // buttonOK
             // 
             this.buttonOK.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonOK.Location = new System.Drawing.Point(241, 188);
+            this.buttonOK.Location = new System.Drawing.Point(239, 217);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 0;
@@ -48,7 +48,7 @@
             this.textBoxIntro.Location = new System.Drawing.Point(0, 0);
             this.textBoxIntro.Multiline = true;
             this.textBoxIntro.Name = "textBoxIntro";
-            this.textBoxIntro.Size = new System.Drawing.Size(361, 171);
+            this.textBoxIntro.Size = new System.Drawing.Size(377, 211);
             this.textBoxIntro.TabIndex = 7;
             // 
             // AboutForm
@@ -57,7 +57,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonOK;
-            this.ClientSize = new System.Drawing.Size(361, 223);
+            this.ClientSize = new System.Drawing.Size(377, 241);
             this.Controls.Add(this.textBoxIntro);
             this.Controls.Add(this.buttonOK);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
