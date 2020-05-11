@@ -2563,7 +2563,14 @@ namespace DigiRite
             if (CqOn)
             {
                 checkBoxAutoXmit.Checked = true;
-                buttonCQnow_Click(sender, e);
+                if (!sendInProgress)
+                {
+                    bool sendOdd = radioButtonOdd.Checked;
+                    GetNowTime getNowTime;
+                    if ((sendOdd == nowOdd)
+                        && InModifyTransmitTimerWindow(out getNowTime))
+                        transmitAtZero(true, getNowTime);
+                }
             }
             buttonCQnow.Enabled = !(SendInProgress || CqOn);             
         }
