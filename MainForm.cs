@@ -155,6 +155,18 @@ namespace DigiRite
             demodulatorWrapper.lft8apon = Properties.Settings.Default.Decode_lft8apon;
             demodulatorWrapper.nQSOProgress = 5;
             demodulatorWrapper.digiMode = digiMode == DigiMode.FT8 ? XDft.DigiMode.DIGI_FT8 : XDft.DigiMode.DIGI_FT4;
+            switch ((ExchangeTypes)Properties.Settings.Default.ContestExchange)
+            {   // see wsjtx source lib/ft8/ft8b.f90
+                case ExchangeTypes.ARRL_FIELD_DAY:
+                    demodulatorWrapper.nexp_decode = 3;
+                    break;
+                case ExchangeTypes.ARRL_RTTY:
+                    demodulatorWrapper.nexp_decode = 4;
+                    break;
+                default:
+                    demodulatorWrapper.nexp_decode = 0;
+                    break;
+            }
 
             // When the decoder finds an FT8 message, it calls us back...
             // ...on a foreign thread. Call BeginInvoke to get back on this one. See below.

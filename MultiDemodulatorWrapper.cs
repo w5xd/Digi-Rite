@@ -205,7 +205,6 @@ namespace DigiRite
 
         public string AppDirectoryPath { get { return wsjtExes[0].AppDirectoryPath; } }
 
-
         private interface IMultibandManager
         {
             bool ClockInProgress { get; set; }
