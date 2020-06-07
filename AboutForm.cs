@@ -24,7 +24,7 @@ namespace DigiRite
             string version = fvi.ProductVersion; 
             textBoxIntro.Text = "DigiRite" + version  +
                 " Copyright (c) 2020 WriteLog Contesting Software, LLC\r\n\r\n" +
-                "This program is based on wsjtx-2.2.0 which is licensed software.\r\n" +
+                "This program is based on wsjtx-2.2.1 which is licensed software.\r\n" +
                 "See the file COPYING.\r\n\r\n" +
 
 "The algorithms, source code, look-and-feel of WSJT-X and related" +
@@ -33,7 +33,7 @@ namespace DigiRite
 " 2001-2020 by one or more of the following authors: Joseph Taylor," +
 " K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo," +
 " IV3NWV; Greg Beam, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR;" +
-" Philip Karn, KA9Q; and other members of the WSJT Development Group.\r\nr\n"  ;
+" Philip Karn, KA9Q; and other members of the WSJT Development Group.\r\n\r\n"  ;
 
             BackColor = CustomColors.CommonBackgroundColor;
             textBoxIntro.BackColor = CustomColors.TxBackgroundColor;
