@@ -46,6 +46,14 @@ namespace DigiRite
             labelClockAnimation.Dispose();
             labelClockAnimation = cl;
 
+            var verticalBarLabel = new VerticalBarLabel();
+            verticalBarLabel.Location = labelVUmeter.Location;
+            verticalBarLabel.Size = labelVUmeter.Size;
+            panelRightGain.Controls.Remove(labelVUmeter);
+            panelRightGain.Controls.Add(verticalBarLabel);
+            labelVUmeter.Dispose();
+            labelVUmeter = verticalBarLabel;
+
             comboBoxnDepth.SelectedIndex = Properties.Settings.Default.Decode_ndepth - 1;
             checkBoxEnableAP.Checked = Properties.Settings.Default.Decode_lft8apon;
 
@@ -57,21 +65,37 @@ namespace DigiRite
             try
             {
                 // if WriteLog's DigiRiteWaterfall assembly loads, use it.
-                const string name = "WriteLogWaterfall.dll";
+                const string name = "WriteLogWaterfall-V2.dll";
                 string assemblyPath = System.IO.Path.GetFullPath(name);
+                const string nameOld = "WriteLogWaterfall.dll";
+                string assemblyPathOld = System.IO.Path.GetFullPath(nameOld);
 #if DEBUG
                 // debug environment its easier to copy the waterfall into our work area
 #elif BUILD_X86
                 // Use WriteLog's waterfall Control, but only if running 32 bit
                 if (null != wlDir)
+                {
                     assemblyPath = wlDir.ToString() + "Programs\\" + name;
+                    assemblyPathOld = wlDir.ToString() + "Programs\\" + nameOld;
+                }
 #else
                 string executing = System.Reflection.Assembly.GetExecutingAssembly().Location;
                 var idx = executing.LastIndexOf('\\');
                 if (idx >= 0)
+                {
                     assemblyPath =  executing.Substring(0, idx+1) + name;
+                    assemblyPathOld =  executing.Substring(0, idx+1) + nameOld;
+                }
 #endif
-                System.Reflection.Assembly waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPath);
+                System.Reflection.Assembly waterfallAssembly;
+                try
+                {   // try the new one first
+                    waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPath);
+                }
+                catch (System.Exception)
+                {   // try old WL install (prior to WL 12.49)
+                    waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPathOld);
+                }
                 System.Type t = waterfallAssembly.GetType("WriteLog.Waterfall");
                 if (t == null)
                     throw new System.Exception("Waterfall type not found");
@@ -111,6 +135,16 @@ namespace DigiRite
                 iwaterfall.TimeToFreqPowerOfTwo = 12;
                 myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount, 
                     iwaterfall.TimeToFreqSampleCount, iwaterfall.GetAudioProcessor());
+
+                var peak = iwaterfall as WriteLog.IPeakRx;
+                if (null != peak)
+                    timerVU.Enabled = true;
+                var annotate = iwaterfall as WriteLog.IAnnotations;
+                if (null != annotate)
+                {
+                    checkBoxAnnotate.Checked = annotate.Visible;
+                    checkBoxAnnotate.Enabled = true;
+                }
             }
             prevSplitter = splitContainerMain.SplitterDistance;
             locationToSave = Location;
@@ -298,7 +332,6 @@ namespace DigiRite
 
         const int MAX_RECEIVED_LOOKBACK = 10000; // number of entries in the history listbox
 
-        string mostRecentMessageTimeTag;
         public void OnReceived(XDpack77.Pack77Message.ReceivedMessage m)
         {
             while (listBoxReceived.Items.Count > MAX_RECEIVED_LOOKBACK)
@@ -306,7 +339,20 @@ namespace DigiRite
             listBoxReceived.Items.Add(new DisplayReceivedMessage(m));
             int visibleItems = listBoxReceived.ClientSize.Height / listBoxReceived.ItemHeight;
             listBoxReceived.TopIndex = Math.Max(listBoxReceived.Items.Count - visibleItems + 1, 0);
-            mostRecentMessageTimeTag = m.TimeTag;
+
+            if (null != iwaterfall)
+            {
+                var call = m.Pack77Message as XDpack77.Pack77Message.ToFromCall;
+                if (null != call)
+                {
+                    int tag = 1;
+                    var tgString = m.TimeTag;
+                    if (!String.IsNullOrEmpty(tgString))
+                        Int32.TryParse(tgString, out tag);
+                    iwaterfall.AddAnnotation(tag, (int)m.Hz, call.FromCall);
+                }
+            }
+
         }
 
         bool markedWaterfallThisCycle = false;
@@ -319,11 +365,14 @@ namespace DigiRite
                 {
                     if (null != iwaterfall)
                     {
-                        int tag = 1;
-                        if (!String.IsNullOrEmpty(mostRecentMessageTimeTag))
-                            Int32.TryParse(mostRecentMessageTimeTag, out tag);
+                        var dt = System.DateTime.UtcNow;
+                        int tag = dt.Second + dt.Minute * 100 + dt.Hour * 10000;
                         iwaterfall.MarkCurrentRaster(tag);
-                        mostRecentMessageTimeTag = null;
+#if DEBUG
+                        int f = (MinDecodeFrequency + MaxDecodeFrequency) / 2;
+                        iwaterfall.AddAnnotation(tag, f, "TEST " + f.ToString());
+#endif
+
                     }
                 }
                 markedWaterfallThisCycle = true;
@@ -379,7 +428,7 @@ namespace DigiRite
                 }
         }
 
-        #region splitter handler kludge
+#region splitter handler kludge
         int prevSplitter = -1;
         bool armSplitterMoved = false;
         private void splitContainerMain_SizeChanged(object sender, EventArgs e)
@@ -401,7 +450,7 @@ namespace DigiRite
                 prevSplitter = splitContainerMain.SplitterDistance;
             }
         }
-        #endregion
+#endregion
 
         private void XcvrForm_LocationChanged(object sender, EventArgs e)
         {
@@ -434,6 +483,23 @@ namespace DigiRite
         private void contextMenuStripOnReceived_Closing(object sender, ToolStripDropDownClosingEventArgs e)
         {
             listBoxReceived.SelectedIndex = ListBox.NoMatches;
+        }
+
+        private void timerVU_Tick(object sender, EventArgs e)
+        {
+            var peak = iwaterfall as WriteLog.IPeakRx;
+            if (null != peak)
+            {
+                var vu = (labelVUmeter as VerticalBarLabel);
+                vu.Value = peak.GetPeakRxAndReset();
+            }
+        }
+
+        private void checkBoxAnnotate_CheckedChanged(object sender, EventArgs e)
+        {
+            var annotate = iwaterfall as WriteLog.IAnnotations;
+            if (null != annotate)
+                annotate.Visible = checkBoxAnnotate.Checked;
         }
     }
 }

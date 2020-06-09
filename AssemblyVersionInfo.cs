@@ -9,7 +9,7 @@ using System.Reflection;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.39.8")]
-[assembly: AssemblyFileVersion("1.1.39.8")]
+[assembly: AssemblyVersion("1.1.40.6")]
+[assembly: AssemblyFileVersion("1.1.40.6")]
 //    If you plan to give the built files ot another Op, please add your callsign in the Version string.
-[assembly: AssemblyInformationalVersion("1.1.39.8 built by - YOURCALLSIGN")]
+[assembly: AssemblyInformationalVersion("1.1.40.6 built by - YOURCALLSIGN")]

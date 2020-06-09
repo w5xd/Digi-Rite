@@ -50,9 +50,9 @@ namespace DigiRite
         private bool markedAsLogged = false;
         private uint transmitFrequency = 0;
         private List<XDpack77.Pack77Message.ReceivedMessage> messages = new List<XDpack77.Pack77Message.ReceivedMessage>();
-        private const int MAX_CYCLES_WITHOUT_ANSWER = 5;
+        private const int MAX_CYCLES_WITHOUT_ANSWER = 4;
 
-        public enum ChangeReason { RECEIVE_CYCLE_END, MESSAGE_RECEIVED, ACTIVE_CHANGED, OTHER };
+        public enum ChangeReason { RECEIVE_CYCLE_END, TRANSMIT_CYCLE_END, MESSAGE_RECEIVED, ACTIVE_CHANGED, OTHER };
         public delegate void OnChanged(ChangeReason cr);
         public OnChanged OnChangedCb { get; set; }
         public QsoInProgress(RecentMessage rm, short band)
@@ -144,19 +144,19 @@ namespace DigiRite
                 }
                 bool changed = active != value;
                 active = value;
-                if (changed && null != OnChangedCb) OnChangedCb(ChangeReason.ACTIVE_CHANGED);
+                if (changed) OnChangedCb?.Invoke(ChangeReason.ACTIVE_CHANGED);
                 } }
         public bool Dupe { get => originatingMessage.Dupe;  }
         public bool Mult { get => originatingMessage.Mult;  }
         public bool MarkedAsLogged { get => markedAsLogged; set { 
                 markedAsLogged = value;
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.OTHER);
+                OnChangedCb?.Invoke(ChangeReason.OTHER);
             }
         }
         public uint TransmitFrequency { get => transmitFrequency; 
             set { transmitFrequency = value; 
                 holdingForAnotherQso = false;
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.OTHER);
+                OnChangedCb?.Invoke(ChangeReason.OTHER);
             }
         }
 
@@ -171,7 +171,7 @@ namespace DigiRite
 
         public bool OnCycleBegin(bool wasReceiveCycle)
         {
-            bool ret = MessagedThisCycle;
+            bool ret = messagedThisCycle;
             if (ret)
             {
                 CyclesSinceMessagedNotHolding = 0;
@@ -181,6 +181,9 @@ namespace DigiRite
             {
                 cyclesSinceMessaged += 1;
                 CyclesSinceMessagedToMe += 1;
+            }
+            else if (!messagedLastCycle)
+            {
                 if (!holdingForAnotherQso)
                     CyclesSinceMessagedNotHolding += 1;
             }
@@ -198,8 +201,10 @@ namespace DigiRite
             if (wasReceiveCycle)
             {
                 messagedLastCycle = messagedThisCycle;
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.RECEIVE_CYCLE_END);
+                OnChangedCb?.Invoke(ChangeReason.RECEIVE_CYCLE_END);
             }
+            else
+                OnChangedCb?.Invoke(ChangeReason.TRANSMIT_CYCLE_END);
             messagedThisCycle = false;
             return ret;
         }
@@ -241,7 +246,6 @@ namespace DigiRite
                 {
                     if (!messagedThisCycle)
                     {
-                        CyclesSinceMessagedToMe += 1;
                         if (String.IsNullOrEmpty(callsQsled))
                         {
                             // if he sends multiple messages in the same cycle...
@@ -276,7 +280,7 @@ namespace DigiRite
             }
             finally
             {
-                if (null != OnChangedCb) OnChangedCb(ChangeReason.MESSAGE_RECEIVED);
+                OnChangedCb?.Invoke(ChangeReason.MESSAGE_RECEIVED);
             }
         }
 

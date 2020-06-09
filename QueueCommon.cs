@@ -45,12 +45,13 @@ namespace DigiRite
 
         public void OnCycleBeginning(int cycleNumber)
         {
-            var inProgList = qsosPanel.QsosInProgress;
-            foreach (QsoInProgress q in inProgList)
+            var inProgList = qsosPanel.QsosInProgressDictionary;
+            foreach (var qp in inProgList)
             {
+                var q = qp.Value;
                 bool wasReceiveCycle = (q.Message.CycleNumber & 1) != (cycleNumber & 1);
                 bool messagedThisCycle = q.OnCycleBegin(wasReceiveCycle);
-                if (wasReceiveCycle && q.Sequencer != null )
+                if (!q.InLoggedInactiveState && wasReceiveCycle && q.Sequencer != null )
                 {
                     q.Sequencer.OnReceiveCycleEnd(messagedThisCycle);
                     if (!messagedThisCycle && q.Sequencer.IsFinished && q.IsLogged)

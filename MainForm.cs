@@ -590,12 +590,15 @@ namespace DigiRite
             int freqIncrement = freqRange + 1;
             bool doingMultiStream = toSendList.Count > 1;
             Conversation.Origin origin = Conversation.Origin.TRANSMIT;
+            uint SetRxFreqHzTo = 0;
             foreach (var item in toSendList)
             {
                 QsoInProgress q = item.q;
                 int freq = TxFrequency;
                 if (null != q)
                 {
+                    if ((null != q.Message) && SetRxFreqHzTo == 0)
+                        SetRxFreqHzTo = q.MessageList.Last().Hz;
                     uint assigned = q.TransmitFrequency;
                     if (assigned != 0)
                     {
@@ -769,6 +772,9 @@ namespace DigiRite
                 if (null != item.q)
                     item.q.TransmitedLastOpportunity = true;
             }
+
+            if (SetRxFreqHzTo != 0)
+                RxFrequency = (int)SetRxFreqHzTo;
         }
 
         delegate void VfoOnTxEnd();
@@ -898,7 +904,6 @@ namespace DigiRite
                 }
             }
 
-            RxFrequency = (int)rm.Message.Hz;
             watchDogTime = DateTime.UtcNow;
             sendNowIfPossible(rm.Message);
         }
@@ -2556,7 +2561,17 @@ namespace DigiRite
         {
             bool CqOn = comboBoxCQ.SelectedIndex != 0;
             if (CqOn)
+            {
                 checkBoxAutoXmit.Checked = true;
+                if (!sendInProgress)
+                {
+                    bool sendOdd = radioButtonOdd.Checked;
+                    GetNowTime getNowTime;
+                    if ((sendOdd == nowOdd)
+                        && InModifyTransmitTimerWindow(out getNowTime))
+                        transmitAtZero(true, getNowTime);
+                }
+            }
             buttonCQnow.Enabled = !(SendInProgress || CqOn);             
         }
 
@@ -2565,6 +2580,7 @@ namespace DigiRite
             if (!sendInProgress)
             {
                 singleCQ = true;
+                checkBoxAutoXmit.Checked = true;
                 GetNowTime getNowTime;
                 if (InModifyTransmitTimerWindow(out getNowTime))
                     transmitAtZero(true, getNowTime);
