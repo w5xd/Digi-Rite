@@ -1082,9 +1082,9 @@ namespace DigiRite
                         if (sentgrid.Length >= 4)
                         {
                             q.SentGrid = sentgrid;
-                            return String.Format("{0} {1} {2} {3}",
+                            return String.Format("{0} {1}{2} {3}",
                                 hiscall, mycall,
-                                addAck ? "R" : "", sentgrid);
+                                addAck ? " R" : "", sentgrid);
                         }
                     }
                     break;
@@ -2551,6 +2551,7 @@ namespace DigiRite
                 if (logLength != 0)
                     logFileLengthToolStripMenuItem.Text = 
                         String.Format("Log file length: {0:#,##0.0} MB", logLength/(1024.0*1024.0));
+                numberOfRestartsToolStripMenuItem.Text = "Decoder restarts: " + demodulatorWrapper.NumberOfRestarts.ToString();
             }
         }
 

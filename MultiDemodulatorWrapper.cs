@@ -28,6 +28,7 @@ namespace DigiRite
         private XDft.Demodulator[] demodulators;
         private XDft.WsjtSharedMemory[] wsjtSharedMems;
         private XDft.WsjtExe[] wsjtExes;
+        private string[] sharedMemoryKeys;
         private bool[] enabled;
 
         private XDft.RxSinkRepeater rxSinkRepeater; // need help repeating the RX audio to each decoder
@@ -44,6 +45,7 @@ namespace DigiRite
             wsjtSharedMems = new XDft.WsjtSharedMemory[numDemodulators];
             wsjtExes = new XDft.WsjtExe[numDemodulators];
             enabled = new bool[numDemodulators];
+            sharedMemoryKeys = new string[numDemodulators];
 
             for (uint i = 0; i < numDemodulators; i++)
             {
@@ -61,6 +63,7 @@ namespace DigiRite
                 // The subprocess itself is managed by the XDft
                 wsjtExes[i] = new XDft.WsjtExe();
                 wsjtExes[i].AppDataName = sharedMemoryKey;
+                sharedMemoryKeys[i] = sharedMemoryKey;
 
                 if (!wsjtExes[i].CreateWsjtProcess(wsjtSharedMems[i]))
                 {
@@ -301,6 +304,8 @@ namespace DigiRite
         }
         private IMultibandManager multibandManager;
 
+        public uint NumberOfRestarts { get; private set; } = 0;
+
         public uint Clock(uint tenthToTriggerDecode,  ref bool invokedDecode, ref int cycleNumber)
         {
             bool invDecodeAtEnd = false;
@@ -312,7 +317,23 @@ namespace DigiRite
                 if (enabled[i])
                 {
                     bool ivd = false;
-                    ret = a.Clock(tenthToTriggerDecode, wsjtExes[i++], ref ivd, ref cycleNumber);
+                    var exeIdx = i;
+                    try
+                    {
+                        ret = a.Clock(tenthToTriggerDecode, wsjtExes[i++], ref ivd, ref cycleNumber);
+                    }
+                    catch (XDft.WsjtExeBase.XDftDemodExitException e)
+                    {
+                        wsjtExes[exeIdx].Dispose();
+                        wsjtExes[exeIdx] = new XDft.WsjtExe();
+                        wsjtExes[exeIdx].AppDataName = sharedMemoryKeys[exeIdx];
+                        if (!wsjtExes[exeIdx].CreateWsjtProcess(wsjtSharedMems[exeIdx]))
+                        {
+                            Dispose();
+                            throw new System.Exception(e.Message);
+                        }
+                        NumberOfRestarts += 1;
+                    }
                     if (ivd)
                         invDecodeAtEnd = true;
                 }
