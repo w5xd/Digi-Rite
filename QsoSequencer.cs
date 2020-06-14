@@ -80,7 +80,7 @@
         public void OnReceivedExchange(bool withAck, bool allowSendAck = true)
         {
             deferredToEndOfReceive = null;
-            HaveTheirExchange = true;
+            HaveTheirExchange = allowSendAck;
             HaveAck |= withAck && HaveSentExchange;
             if (!withAck)
             {   // if they don't have ours, send it
