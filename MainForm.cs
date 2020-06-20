@@ -2475,7 +2475,8 @@ namespace DigiRite
             form.digiMode = digiMode;
             form.PttToSound = UserPttToSound;
             form.VfoSplitToPtt = UserVfoSplitToPtt;
-            var res = form.ShowDialog();
+            form.StartPosition = FormStartPosition.CenterParent;
+            var res = form.ShowDialog(this);
             if (res == DialogResult.OK)
             {
                 controlVFOsplit = form.controlSplit;
