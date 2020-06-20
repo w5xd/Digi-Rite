@@ -33,7 +33,7 @@ namespace DigiRiteLogger
         void LogFieldDayQso(string category, string section);
         void LogRoundUpQso(string sentRst, string receivedRst, string stateOrSerial);
         void LogGridSquareQso(string sentRst, string receivedGrid, string receivedDbReport);
-        // DigiRite tells the logger what call its trying to work now. and its grid, if known.
-        void SetCurrentCallAndGrid(string call, string grid);
+        // DigiRite tells the logger what call its trying to work now. and its grid, if known. and serial number, if assigned
+        void SetCurrentCallAndGridAndSerial(string call, string grid, uint serialNumber);
     }
 }

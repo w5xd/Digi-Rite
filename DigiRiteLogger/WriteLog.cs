@@ -398,13 +398,15 @@ namespace DigiRiteLogger
             }
         }
 
-        public void SetCurrentCallAndGrid(string call, string grid)
+        public void SetCurrentCallAndGridAndSerial(string call, string grid, uint serial)
         {
             iWlEntry.ClearEntry();
             if (!String.IsNullOrEmpty(call))
                 iWlEntry.Callsign = call;
             if (GridSquareReceivedFieldNumber >= 0)
                 iWlEntry.SetFieldN((short)GridSquareReceivedFieldNumber, grid);
+            if (serial != 0)
+                iWlEntry.SerialNumber = serial;
         }
     }
 }

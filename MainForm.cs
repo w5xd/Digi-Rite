@@ -2254,12 +2254,12 @@ namespace DigiRite
                             break;
                         }
                     }
-                    logger.SetCurrentCallAndGrid(qp.HisCall, grid);
+                    logger.SetCurrentCallAndGridAndSerial(qp.HisCall, grid, qp.SentSerialNumber);
                 }
                 return;
             }
             m_previousCallToWriteLog = "";
-            logger.SetCurrentCallAndGrid("", "");
+            logger.SetCurrentCallAndGridAndSerial("", "", 0);
         }
 
 #endregion
