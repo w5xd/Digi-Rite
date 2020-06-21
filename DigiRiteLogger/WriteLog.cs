@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace DigiRiteLogger
@@ -23,7 +20,21 @@ namespace DigiRiteLogger
             this.instanceNumber = instanceNumber;
         }
 
-        public string CallUsed { get { return iWlDoc.CallUsed; } }
+        public string CallUsed { get { return iWlDoc.CallUsed; }
+            set {
+                WritePrivateProfileString("Configuration", "CallUsed", value, "WriteLog.ini");
+                }
+        }
+
+        [DllImport("KERNEL32.DLL", EntryPoint = "WritePrivateProfileStringW",
+                   SetLastError = true,
+                   CharSet = CharSet.Unicode, ExactSpelling = true,
+                   CallingConvention = CallingConvention.StdCall)]
+        private static extern int WritePrivateProfileString(
+                    string lpAppName,
+                    string lpKeyName,
+                    string lpString,
+                    string lpFilename);
 
         public string SetWlEntry(object wl)
         {

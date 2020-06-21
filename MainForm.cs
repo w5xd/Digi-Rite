@@ -1430,8 +1430,7 @@ namespace DigiRite
                     break;
                 var sf = new SetupForm(
                     instanceNumber,
-                    SetupMaySelectDevices, SetupMaySelectLR,
-                    null == logger);
+                    SetupMaySelectDevices, SetupMaySelectLR);
                 sf.controlSplit = controlVFOsplit;
                 sf.forceRigUsb = forceRigUsb;
                 sf.txHighLimit = TxHighFreqLimit;
@@ -1447,6 +1446,8 @@ namespace DigiRite
                 TxHighFreqLimit = sf.txHighLimit;
                 digiMode = sf.digiMode;
                 MyCall = Properties.Settings.Default.CallUsed;
+                if (null != logger)
+                    logger.CallUsed = Properties.Settings.Default.CallUsed;
                 UserPttToSound = sf.PttToSound;
                 UserVfoSplitToPtt = sf.VfoSplitToPtt;
             }
@@ -2454,8 +2455,7 @@ namespace DigiRite
 
         private void setupToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            bool maySelectCallUsed = null == logger;
-            if (!maySelectCallUsed)
+            if (null != logger)
             {
                 String curCall = logger.CallUsed;
                 if (!String.IsNullOrEmpty(curCall))
@@ -2467,8 +2467,7 @@ namespace DigiRite
                 }
             }
             var form = new SetupForm(instanceNumber,
-                SetupMaySelectDevices, SetupMaySelectLR,
-                maySelectCallUsed);
+                SetupMaySelectDevices, SetupMaySelectLR);
             form.controlSplit = controlVFOsplit;
             form.forceRigUsb = forceRigUsb;
             form.txHighLimit = TxHighFreqLimit;
@@ -2494,12 +2493,11 @@ namespace DigiRite
                     if (form.whichTxDevice >= 0)
                         TxOutDevice = (uint)form.whichTxDevice;
                 }
-                if (maySelectCallUsed)
-                {
-                    MyCall = Properties.Settings.Default.CallUsed;
-                    qsoQueue.MyCall = myCall;
-                    qsoQueue.MyBaseCall = myBaseCall;
-                }
+                MyCall = Properties.Settings.Default.CallUsed;
+                if (null != logger)
+                    logger.CallUsed = Properties.Settings.Default.CallUsed;
+                qsoQueue.MyCall = myCall;
+                qsoQueue.MyBaseCall = myBaseCall;
                 InitSoundInAndOut();
                 if (form.MustResetState)
                     initQsoQueue();
