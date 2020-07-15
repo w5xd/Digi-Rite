@@ -95,6 +95,7 @@
             this.viewReadMeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.logFileLengthToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.numberOfRestartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetLogFileToEmpyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainerCqLeft = new System.Windows.Forms.SplitContainer();
             this.splitContainerAnswerUpCqsDown = new System.Windows.Forms.SplitContainer();
@@ -107,9 +108,9 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new DigiRite.ConversationListBox();
             this.checkedlbNextToSend = new DigiRite.ToSendListBox();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -834,6 +835,7 @@
             this.viewReadMeToolStripMenuItem,
             this.viewLogToolStripMenuItem,
             this.logFileLengthToolStripMenuItem,
+            this.numberOfRestartsToolStripMenuItem,
             this.resetLogFileToEmpyToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
@@ -866,6 +868,12 @@
             this.logFileLengthToolStripMenuItem.Name = "logFileLengthToolStripMenuItem";
             this.logFileLengthToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
             this.logFileLengthToolStripMenuItem.Text = "&Log file length:";
+            // 
+            // numberOfRestartsToolStripMenuItem
+            // 
+            this.numberOfRestartsToolStripMenuItem.Name = "numberOfRestartsToolStripMenuItem";
+            this.numberOfRestartsToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.numberOfRestartsToolStripMenuItem.Text = "Decoder restarts:";
             // 
             // resetLogFileToEmpyToolStripMenuItem
             // 
@@ -1035,11 +1043,6 @@
             this.panelInProgress.Size = new System.Drawing.Size(345, 136);
             this.panelInProgress.TabIndex = 1;
             // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
-            // 
             // listBoxConversation
             // 
             this.listBoxConversation.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -1066,6 +1069,11 @@
             this.checkedlbNextToSend.Sorted = true;
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
+            // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
             // 
             // MainForm
             // 
@@ -1207,6 +1215,7 @@
         private System.Windows.Forms.ComboBox comboBoxOnLoggedMessage;
         private System.Windows.Forms.CheckBox checkBoxCalcNextToSend;
         private System.Windows.Forms.Button buttonCQnow;
+        private System.Windows.Forms.ToolStripMenuItem numberOfRestartsToolStripMenuItem;
     }
 }
 

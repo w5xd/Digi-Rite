@@ -155,6 +155,18 @@ namespace DigiRite
             demodulatorWrapper.lft8apon = Properties.Settings.Default.Decode_lft8apon;
             demodulatorWrapper.nQSOProgress = 5;
             demodulatorWrapper.digiMode = digiMode == DigiMode.FT8 ? XDft.DigiMode.DIGI_FT8 : XDft.DigiMode.DIGI_FT4;
+            switch ((ExchangeTypes)Properties.Settings.Default.ContestExchange)
+            {   // see wsjtx source lib/ft8/ft8b.f90
+                case ExchangeTypes.ARRL_FIELD_DAY:
+                    demodulatorWrapper.nexp_decode = 3;
+                    break;
+                case ExchangeTypes.ARRL_RTTY:
+                    demodulatorWrapper.nexp_decode = 4;
+                    break;
+                default:
+                    demodulatorWrapper.nexp_decode = 0;
+                    break;
+            }
 
             // When the decoder finds an FT8 message, it calls us back...
             // ...on a foreign thread. Call BeginInvoke to get back on this one. See below.
@@ -1070,9 +1082,9 @@ namespace DigiRite
                         if (sentgrid.Length >= 4)
                         {
                             q.SentGrid = sentgrid;
-                            return String.Format("{0} {1} {2} {3}",
+                            return String.Format("{0} {1}{2} {3}",
                                 hiscall, mycall,
-                                addAck ? "R" : "", sentgrid);
+                                addAck ? " R" : "", sentgrid);
                         }
                     }
                     break;
@@ -1418,8 +1430,7 @@ namespace DigiRite
                     break;
                 var sf = new SetupForm(
                     instanceNumber,
-                    SetupMaySelectDevices, SetupMaySelectLR,
-                    null == logger);
+                    SetupMaySelectDevices, SetupMaySelectLR);
                 sf.controlSplit = controlVFOsplit;
                 sf.forceRigUsb = forceRigUsb;
                 sf.txHighLimit = TxHighFreqLimit;
@@ -1435,6 +1446,8 @@ namespace DigiRite
                 TxHighFreqLimit = sf.txHighLimit;
                 digiMode = sf.digiMode;
                 MyCall = Properties.Settings.Default.CallUsed;
+                if (null != logger)
+                    logger.CallUsed = Properties.Settings.Default.CallUsed;
                 UserPttToSound = sf.PttToSound;
                 UserVfoSplitToPtt = sf.VfoSplitToPtt;
             }
@@ -1890,6 +1903,7 @@ namespace DigiRite
                 MyCall = logger.CallUsed;
                 if (!String.IsNullOrEmpty(myCall))
                     Properties.Settings.Default.CallUsed = myCall;
+                MyCall = myCall.ToUpper().Trim();
                 var wlSetup = logger as DigiRiteLogger.WriteLog;
                 if (null != wlSetup)// we are connected to WriteLog's automation interface
                      return wlSetup.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
@@ -2241,12 +2255,12 @@ namespace DigiRite
                             break;
                         }
                     }
-                    logger.SetCurrentCallAndGrid(qp.HisCall, grid);
+                    logger.SetCurrentCallAndGridAndSerial(qp.HisCall, grid, qp.SentSerialNumber);
                 }
                 return;
             }
             m_previousCallToWriteLog = "";
-            logger.SetCurrentCallAndGrid("", "");
+            logger.SetCurrentCallAndGridAndSerial("", "", 0);
         }
 
 #endregion
@@ -2441,8 +2455,7 @@ namespace DigiRite
 
         private void setupToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            bool maySelectCallUsed = null == logger;
-            if (!maySelectCallUsed)
+            if (null != logger)
             {
                 String curCall = logger.CallUsed;
                 if (!String.IsNullOrEmpty(curCall))
@@ -2454,15 +2467,15 @@ namespace DigiRite
                 }
             }
             var form = new SetupForm(instanceNumber,
-                SetupMaySelectDevices, SetupMaySelectLR,
-                maySelectCallUsed);
+                SetupMaySelectDevices, SetupMaySelectLR);
             form.controlSplit = controlVFOsplit;
             form.forceRigUsb = forceRigUsb;
             form.txHighLimit = TxHighFreqLimit;
             form.digiMode = digiMode;
             form.PttToSound = UserPttToSound;
             form.VfoSplitToPtt = UserVfoSplitToPtt;
-            var res = form.ShowDialog();
+            form.StartPosition = FormStartPosition.CenterParent;
+            var res = form.ShowDialog(this);
             if (res == DialogResult.OK)
             {
                 controlVFOsplit = form.controlSplit;
@@ -2480,12 +2493,11 @@ namespace DigiRite
                     if (form.whichTxDevice >= 0)
                         TxOutDevice = (uint)form.whichTxDevice;
                 }
-                if (maySelectCallUsed)
-                {
-                    MyCall = Properties.Settings.Default.CallUsed;
-                    qsoQueue.MyCall = myCall;
-                    qsoQueue.MyBaseCall = myBaseCall;
-                }
+                MyCall = Properties.Settings.Default.CallUsed;
+                if (null != logger)
+                    logger.CallUsed = Properties.Settings.Default.CallUsed;
+                qsoQueue.MyCall = myCall;
+                qsoQueue.MyBaseCall = myBaseCall;
                 InitSoundInAndOut();
                 if (form.MustResetState)
                     initQsoQueue();
@@ -2538,6 +2550,7 @@ namespace DigiRite
                 if (logLength != 0)
                     logFileLengthToolStripMenuItem.Text = 
                         String.Format("Log file length: {0:#,##0.0} MB", logLength/(1024.0*1024.0));
+                numberOfRestartsToolStripMenuItem.Text = "Decoder restarts: " + demodulatorWrapper.NumberOfRestarts.ToString();
             }
         }
 

@@ -2,7 +2,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>DigiRite Readme 1.1.40</title>
+    <title>DigiRite Readme 2.2.2</title>
 </head>
 <body>
     <p>
@@ -20,12 +20,13 @@
         <a href="http://github.com/w5xd/Digi-Rite">http://github.com/w5xd/Digi-Rite</a>.
     </p>
     <blockquote>
-        The algorithms, source code, look-and-feel of WSJT-X and related programs, and
-        protocol specifications for the modes FSK441, FT8, JT4, JT6M JT9, JT65, JTMS, QRA64,
-        ISCAT, MSK144 are Copyright (C) 2001-2018 by one or more of the following authors:
-        Joseph Taylor, K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo,
-        IV3NWV; Grea Bream, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR; Philip Karn,
-        KA9Q; and other members of the WSJT Development Group.
+The algorithms, source code, look-and-feel of WSJT-X and related
+programs, and protocol specifications for the modes FSK441, FT8, JT4,
+JT6M, JT9, JT65, JTMS, QRA64, ISCAT, MSK144 are Copyright (C)
+2001-2020 by one or more of the following authors: Joseph Taylor,
+K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo,
+IV3NWV; Greg Beam, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR;
+Philip Karn, KA9Q; and other members of the WSJT Development Group.
     </blockquote>
     <h2>Installation</h2>
     You may install DigiRite regardless of whether WriteLog is installed. It
@@ -711,8 +712,7 @@ U6ZMMSmML5H/D1zZ1Uf5nkz4AAAAAElFTkSuQmCC" />
     </p>
     <p>
         DigiRite gets your CALL from Writelog. It usually figures out the CALL you want,
-        but if its not right, do a Cabrillo Export in WriteLog to choose the
-        CALL you are operating now and DigiRite will see that one.
+        but if its not right, set it in DigiRite's File/Setup menu.
     </p>
     <p>
         The 77 bit packing allows a bare CQ message (as pictured here) or, optionally,
@@ -7498,6 +7498,14 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         the entries in DigiRite's Conversation History window. The conversation log file is
         erased and started over every time you restart DigiRite.
     </p>
+    2.2.2
+    <ul>
+        <li>Use the FT4/FT8 decoders from WSJTX version 2.2.2</li>
+        <li>In Grid Square mode, don't send R until receipt of a grid square exchange directly to me.</li>
+        <li>Fix extra space in Grid message when sent without "R"</li>
+        <li>Restart WSJTX decoder if it crashes. Display number of restarts in Help menu.</li>
+        <li>Allow CALL to be edited from File/Setup and update logger interface to enable DigiRite to set the logger's CALL.</li>
+    </ul>
     1.1.40
     <ul>
         <li>Draw decoded CALL on waterfall.</li>

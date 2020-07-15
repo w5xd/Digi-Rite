@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace DigiRiteLogger
@@ -23,7 +20,24 @@ namespace DigiRiteLogger
             this.instanceNumber = instanceNumber;
         }
 
-        public string CallUsed { get { return iWlDoc.CallUsed; } }
+        public string CallUsed
+        {
+            get { return iWlDoc.CallUsed; }
+            set
+            {
+                WritePrivateProfileString("Configuration", "CallUsed", value, "WriteLog.ini");
+            }
+        }
+
+        [DllImport("KERNEL32.DLL", EntryPoint = "WritePrivateProfileStringW",
+                   SetLastError = true,
+                   CharSet = CharSet.Unicode, ExactSpelling = true,
+                   CallingConvention = CallingConvention.StdCall)]
+        private static extern int WritePrivateProfileString(
+                    string lpAppName,
+                    string lpKeyName,
+                    string lpString,
+                    string lpFilename);
 
         public string SetWlEntry(object wl)
         {
@@ -160,12 +174,12 @@ namespace DigiRiteLogger
                             if (String.Equals(XD.WaveDeviceEnumerator.waveInInstanceId(i).ToUpper(), id))
                             {
 #if DEBUG
-                                    // have a look at the user-friendly name of the device
-                                    var waveIns = XD.WaveDeviceEnumerator.waveInDevices();
-                                    if (i < waveIns.Count)
-                                    {
-                                        string name = waveIns[i];
-                                    }
+                                // have a look at the user-friendly name of the device
+                                var waveIns = XD.WaveDeviceEnumerator.waveInDevices();
+                                if (i < waveIns.Count)
+                                {
+                                    string name = waveIns[i];
+                                }
 #endif
                                 RxInDevice = (uint)i;
                                 break;
@@ -296,7 +310,7 @@ namespace DigiRiteLogger
             return iWlEntry.GetBand();
         }
 
-        public void SetRigFrequency( double rxKHz, double txKHz, bool split)
+        public void SetRigFrequency(double rxKHz, double txKHz, bool split)
         {
             iWlEntry.SetLogFrequencyEx(wlmode, rxKHz, txKHz, (short)(split ? 1 : 0));
         }
@@ -398,13 +412,24 @@ namespace DigiRiteLogger
             }
         }
 
-        public void SetCurrentCallAndGrid(string call, string grid)
+        public void SetCurrentCallAndGridAndSerial(string call, string grid, uint serial)
         {
             iWlEntry.ClearEntry();
             if (!String.IsNullOrEmpty(call))
                 iWlEntry.Callsign = call;
             if (GridSquareReceivedFieldNumber >= 0)
                 iWlEntry.SetFieldN((short)GridSquareReceivedFieldNumber, grid);
+            if (serial != 0)
+                iWlEntry.SerialNumber = serial;
+            try
+            {
+                // Only WriteLog 12.51 and forward have this.
+                iWlEntry.UpdateDisplaysFromCall();
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                // ignore this exception
+            }
         }
     }
 }

@@ -18,7 +18,7 @@
 !!
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define VersionNumber = 1.1.40.6 ?>
+    <?define VersionNumber = 2.2.2.1 ?>
     <Product Manufacturer="builders name here" 
              Name="DigiRite open source" 
              Version="$(var.VersionNumber)" 
@@ -89,6 +89,7 @@
             </Component>
             <Component Id="gcc" Guid="{589509C9-C77A-45E8-9ED7-A0F5142AC127}" >
                 <File Source="$(var.LocalBinDir)libgcc_s_dw2-1.dll" Name="libgcc_s_dw2-1.dll"/>
+                <File Source="$(var.LocalBinDir)libstdc++-6.dll" Name="libstdc++-6.dll"/>
             </Component>
             <Component Id="XDwsjt" Guid="{E948C6AF-9D2E-4297-8227-E4CF73673E14}" >
                 <File Source="$(var.LocalBinDir)XDwsjtFT.dll" Name="XDwsjtFT.dll"/>

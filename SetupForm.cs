@@ -18,7 +18,6 @@ namespace DigiRite
         private int instanceNumber;
         private bool maySelectDevices;
         private bool maySelectLR;
-        private bool maySelectCallUsed;
         private int contestExchangeOrig;
         private MainForm.DigiMode digiModeOrig;
         private bool mustResetState = false;
@@ -33,12 +32,11 @@ namespace DigiRite
         public int VfoSplitToPtt;
         public int PttToSound;
  
-        public SetupForm(int instanceNumber, bool maySelectDevices, bool maySelectLR, bool maySelectCallUsed)
+        public SetupForm(int instanceNumber, bool maySelectDevices, bool maySelectLR)
         {
             this.instanceNumber = instanceNumber; // some of the parameters are for multiple instances on a PC
             this.maySelectDevices = maySelectDevices;
             this.maySelectLR = maySelectLR;
-            this.maySelectCallUsed = maySelectCallUsed;
             InitializeComponent();
         }
 
@@ -82,7 +80,7 @@ namespace DigiRite
                 radioButtonOutputRight.Enabled =
                 radioButtonOutputMono.Enabled = maySelectLR;
 
-            textBoxCallUsed.Enabled = maySelectCallUsed;
+            textBoxCallUsed.Enabled = true;
             textBoxCallUsed.Text = Properties.Settings.Default.CallUsed.ToUpper();
 
             var inDevices = XD.WaveDeviceEnumerator.waveInDevices();
@@ -228,8 +226,7 @@ namespace DigiRite
                 whichRxDevice = comboBoxWaveIn.SelectedIndex;
                 whichTxDevice = comboBoxWaveOut.SelectedIndex;
             }
-            if (maySelectCallUsed)
-                Properties.Settings.Default.CallUsed = textBoxCallUsed.Text;
+            Properties.Settings.Default.CallUsed = textBoxCallUsed.Text.ToUpper();
 
             if (validateGridSquare(textBoxMyGrid.Text))
             {

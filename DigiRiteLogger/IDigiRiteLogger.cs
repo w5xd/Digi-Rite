@@ -8,7 +8,7 @@ namespace DigiRiteLogger
 {
     public interface IDigiRiteLogger
     {
-        string CallUsed { get; } // call we are transmitting
+        string CallUsed { get; set; } // call we are transmitting
         // For a given call and message, return whether it is a dupe and/or a multiplier. mult < 0 means "unknown", ==0 means no, >0 means yes.
         void CheckDupeAndMult(string call, string digitalMode, XDpack77.Pack77Message.Message m, out bool dupe, out short mult);
         // we're about to transmit on our radio.
@@ -33,7 +33,7 @@ namespace DigiRiteLogger
         void LogFieldDayQso(string category, string section);
         void LogRoundUpQso(string sentRst, string receivedRst, string stateOrSerial);
         void LogGridSquareQso(string sentRst, string receivedGrid, string receivedDbReport);
-        // DigiRite tells the logger what call its trying to work now. and its grid, if known.
-        void SetCurrentCallAndGrid(string call, string grid);
+        // DigiRite tells the logger what call its trying to work now. and its grid, if known. and serial number, if assigned
+        void SetCurrentCallAndGridAndSerial(string call, string grid, uint serialNumber);
     }
 }
