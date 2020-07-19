@@ -40,6 +40,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.labelPower = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.comboBoxLinesPerSec = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.checkBoxAnnotate = new System.Windows.Forms.CheckBox();
             this.labelWaterfall = new System.Windows.Forms.Label();
             this.labelClockAnimation = new System.Windows.Forms.Label();
@@ -93,7 +95,7 @@
             series1.Name = "Amp";
             series1.SmartLabelStyle.Enabled = false;
             this.chartSpectrum.Series.Add(series1);
-            this.chartSpectrum.Size = new System.Drawing.Size(335, 340);
+            this.chartSpectrum.Size = new System.Drawing.Size(366, 340);
             this.chartSpectrum.TabIndex = 0;
             // 
             // numericUpDownMaxFreq
@@ -198,14 +200,16 @@
             // labelPower
             // 
             this.labelPower.AutoSize = true;
-            this.labelPower.Location = new System.Drawing.Point(580, 14);
+            this.labelPower.Location = new System.Drawing.Point(677, 14);
             this.labelPower.Name = "labelPower";
             this.labelPower.Size = new System.Drawing.Size(36, 13);
-            this.labelPower.TabIndex = 7;
+            this.labelPower.TabIndex = 9;
             this.labelPower.Text = "power";
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.comboBoxLinesPerSec);
+            this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.checkBoxAnnotate);
             this.panel1.Controls.Add(this.labelWaterfall);
             this.panel1.Controls.Add(this.comboBoxnDepth);
@@ -218,14 +222,33 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 340);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(729, 37);
+            this.panel1.Size = new System.Drawing.Size(794, 37);
             this.panel1.TabIndex = 0;
+            // 
+            // comboBoxLinesPerSec
+            // 
+            this.comboBoxLinesPerSec.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxLinesPerSec.FormattingEnabled = true;
+            this.comboBoxLinesPerSec.Location = new System.Drawing.Point(623, 11);
+            this.comboBoxLinesPerSec.Name = "comboBoxLinesPerSec";
+            this.comboBoxLinesPerSec.Size = new System.Drawing.Size(36, 21);
+            this.comboBoxLinesPerSec.TabIndex = 8;
+            this.comboBoxLinesPerSec.SelectedIndexChanged += new System.EventHandler(this.comboBoxLinesPerSec_SelectedIndexChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(565, 14);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(57, 13);
+            this.label3.TabIndex = 7;
+            this.label3.Text = "&Lines/sec:";
             // 
             // checkBoxAnnotate
             // 
             this.checkBoxAnnotate.AutoSize = true;
             this.checkBoxAnnotate.Enabled = false;
-            this.checkBoxAnnotate.Location = new System.Drawing.Point(485, 12);
+            this.checkBoxAnnotate.Location = new System.Drawing.Point(481, 12);
             this.checkBoxAnnotate.Name = "checkBoxAnnotate";
             this.checkBoxAnnotate.Size = new System.Drawing.Size(77, 17);
             this.checkBoxAnnotate.TabIndex = 6;
@@ -242,7 +265,7 @@
             this.labelWaterfall.Location = new System.Drawing.Point(729, 13);
             this.labelWaterfall.Name = "labelWaterfall";
             this.labelWaterfall.Size = new System.Drawing.Size(48, 15);
-            this.labelWaterfall.TabIndex = 8;
+            this.labelWaterfall.TabIndex = 10;
             this.labelWaterfall.Text = "waterfall";
             this.labelWaterfall.Visible = false;
             // 
@@ -273,7 +296,7 @@
             this.listBoxReceived.ItemHeight = 12;
             this.listBoxReceived.Location = new System.Drawing.Point(0, 0);
             this.listBoxReceived.Name = "listBoxReceived";
-            this.listBoxReceived.Size = new System.Drawing.Size(390, 340);
+            this.listBoxReceived.Size = new System.Drawing.Size(424, 340);
             this.listBoxReceived.TabIndex = 0;
             this.listBoxReceived.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listBoxReceived_MouseUp);
             // 
@@ -290,8 +313,8 @@
             // splitContainerMain.Panel2
             // 
             this.splitContainerMain.Panel2.Controls.Add(this.chartSpectrum);
-            this.splitContainerMain.Size = new System.Drawing.Size(729, 340);
-            this.splitContainerMain.SplitterDistance = 390;
+            this.splitContainerMain.Size = new System.Drawing.Size(794, 340);
+            this.splitContainerMain.SplitterDistance = 424;
             this.splitContainerMain.TabIndex = 24;
             this.splitContainerMain.SplitterMoving += new System.Windows.Forms.SplitterCancelEventHandler(this.splitContainerMain_SplitterMoving);
             this.splitContainerMain.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainerMain_SplitterMoved);
@@ -304,7 +327,7 @@
             this.panelRightGain.Controls.Add(this.labelClock);
             this.panelRightGain.Controls.Add(this.trackBarRxGain);
             this.panelRightGain.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panelRightGain.Location = new System.Drawing.Point(729, 0);
+            this.panelRightGain.Location = new System.Drawing.Point(794, 0);
             this.panelRightGain.Name = "panelRightGain";
             this.panelRightGain.Size = new System.Drawing.Size(40, 377);
             this.panelRightGain.TabIndex = 1;
@@ -366,7 +389,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(769, 377);
+            this.ClientSize = new System.Drawing.Size(834, 377);
             this.Controls.Add(this.splitContainerMain);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panelRightGain);
@@ -420,5 +443,7 @@
         private System.Windows.Forms.Label labelVUmeter;
         private System.Windows.Forms.Timer timerVU;
         private System.Windows.Forms.CheckBox checkBoxAnnotate;
+        private System.Windows.Forms.ComboBox comboBoxLinesPerSec;
+        private System.Windows.Forms.Label label3;
     }
 }

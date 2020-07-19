@@ -101,6 +101,14 @@ namespace DigiRite
                     throw new System.Exception("Waterfall type not found");
                 waterfall = (Control)System.Activator.CreateInstance(t);
                 iwaterfall = (WriteLog.IWaterfall)waterfall;
+                try
+                {
+                    var pi = t.GetProperty("TimeToFreqSampleInterval");
+                    linesPerSecMethod = pi.GetSetMethod();
+                }
+                catch (System.Exception) {
+                    linesPerSecMethod = null;
+                }
             }
             catch (System.Exception ex)
             {   // if WriteLog is not installed, this is "normal successful completion" 
@@ -133,7 +141,7 @@ namespace DigiRite
                 splitContainerMain.Panel2.Controls.Add(waterfall);
                 splitContainerMain.Panel2.Controls.SetChildIndex(waterfall, 0);
                 iwaterfall.TimeToFreqPowerOfTwo = 12;
-                myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount, 
+                myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount,
                     iwaterfall.TimeToFreqSampleCount, iwaterfall.GetAudioProcessor());
 
                 var peak = iwaterfall as WriteLog.IPeakRx;
@@ -145,7 +153,22 @@ namespace DigiRite
                     checkBoxAnnotate.Checked = annotate.Visible;
                     checkBoxAnnotate.Enabled = true;
                 }
+                if (null != linesPerSecMethod)
+                {
+                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(3, 4096u));
+                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(4, 3000u));
+                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(5, 2400u));
+                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(10, 1200u));
+                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(15, 800u));
+                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(20, 600u));
+                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(30, 400u));
+                    comboBoxLinesPerSec.SelectedIndex = 0;
+                }
+                else
+                    comboBoxLinesPerSec.Enabled = false;
             }
+            else
+                comboBoxLinesPerSec.Enabled = false;
             prevSplitter = splitContainerMain.SplitterDistance;
             locationToSave = Location;
             sizeToSave = Size;
@@ -202,6 +225,23 @@ namespace DigiRite
         public int MaxDecodeFrequency { get {
                 return (int)numericUpDownMaxFreq.Value; }
             set { numericUpDownMaxFreq.Value = value; }
+        }
+        public int SpectrumLinesPerSecondIdx
+        {
+            set
+            {
+                if (value > 0)
+                {
+                    if (comboBoxLinesPerSec.Enabled && comboBoxLinesPerSec.Items.Count > value)
+                        comboBoxLinesPerSec.SelectedIndex = value;
+                }
+            }
+            get
+            {
+                if (comboBoxLinesPerSec.Enabled)
+                    return comboBoxLinesPerSec.SelectedIndex;
+                return -1;
+            }
         }
 
         #region chart spectrum
@@ -501,5 +541,31 @@ namespace DigiRite
             if (null != annotate)
                 annotate.Visible = checkBoxAnnotate.Checked;
         }
+
+        private System.Reflection.MethodInfo linesPerSecMethod = null;
+
+        private void comboBoxLinesPerSec_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (null != linesPerSecMethod)
+            {
+                var v = comboBoxLinesPerSec.SelectedItem as LinesPerSecItem;
+                if (null != v)
+                    linesPerSecMethod.Invoke(waterfall, new object[] { v.SamplesPerFft });
+            }
+        }
+    }
+
+    class LinesPerSecItem
+    {
+        public LinesPerSecItem(int label, uint samplesPerFft)
+        {
+            this.label = label;
+            this.SamplesPerFft = samplesPerFft;
+        }
+        public override string ToString()  
+            { return label.ToString(); }
+
+        public uint SamplesPerFft { get; private set; }
+        int label;
     }
 }
