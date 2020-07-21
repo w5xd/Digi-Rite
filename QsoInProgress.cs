@@ -159,6 +159,8 @@ namespace DigiRite
                 OnChangedCb?.Invoke(ChangeReason.OTHER);
             }
         }
+        public bool OnHold 
+            { get { return holdingForAnotherQso; } }
 
         public void OnSentAlternativeMessage()
         {

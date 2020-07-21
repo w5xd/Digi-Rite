@@ -92,7 +92,7 @@ namespace DigiRite
                 {   // try the new one first
                     waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPath);
                 }
-                catch (System.Exception)
+                catch (System.Exception exc)
                 {   // try old WL install (prior to WL 12.49)
                     waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPathOld);
                 }
@@ -143,6 +143,13 @@ namespace DigiRite
                 iwaterfall.TimeToFreqPowerOfTwo = 12;
                 myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount,
                     iwaterfall.TimeToFreqSampleCount, iwaterfall.GetAudioProcessor());
+
+                comboBoxHz.Enabled = true;
+                comboBoxHz.Items.Add(new HzItem("3Hz", 11));
+                comboBoxHz.Items.Add(new HzItem("1.5Hz", 12));
+                comboBoxHz.SelectedIndex = 1;
+                comboBoxHz.Items.Add(new HzItem(".7Hz", 13));
+                comboBoxHz.Items.Add(new HzItem(".3Hz", 14));
 
                 var peak = iwaterfall as WriteLog.IPeakRx;
                 if (null != peak)
@@ -553,6 +560,16 @@ namespace DigiRite
                     linesPerSecMethod.Invoke(waterfall, new object[] { v.SamplesPerFft });
             }
         }
+
+        private void comboBoxHz_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (null != iwaterfall)
+            {
+                var v = comboBoxHz.SelectedItem as HzItem;
+                if (null != v)
+                    iwaterfall.TimeToFreqPowerOfTwo = v.PowerOf2;
+            }
+        }
     }
 
     class LinesPerSecItem
@@ -566,6 +583,20 @@ namespace DigiRite
             { return label.ToString(); }
 
         public uint SamplesPerFft { get; private set; }
-        int label;
+        private int label;
+    }
+
+    class HzItem
+    {
+        public HzItem(string label, uint powerOf2)
+        {
+            this.label = label;
+            this.PowerOf2 = powerOf2;
+        }
+        public override string ToString()
+        { return label; }
+
+        public uint PowerOf2 { get; private set; }
+        private string label;
     }
 }

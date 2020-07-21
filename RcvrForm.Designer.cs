@@ -40,6 +40,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.labelPower = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.comboBoxHz = new System.Windows.Forms.ComboBox();
             this.comboBoxLinesPerSec = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.checkBoxAnnotate = new System.Windows.Forms.CheckBox();
@@ -105,7 +106,7 @@
             0,
             0,
             0});
-            this.numericUpDownMaxFreq.Location = new System.Drawing.Point(204, 10);
+            this.numericUpDownMaxFreq.Location = new System.Drawing.Point(192, 10);
             this.numericUpDownMaxFreq.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -133,7 +134,7 @@
             0,
             0,
             0});
-            this.numericUpDownMinFreq.Location = new System.Drawing.Point(78, 10);
+            this.numericUpDownMinFreq.Location = new System.Drawing.Point(72, 10);
             this.numericUpDownMinFreq.Maximum = new decimal(new int[] {
             4500,
             0,
@@ -157,7 +158,7 @@
             // checkBoxEnableAP
             // 
             this.checkBoxEnableAP.AutoSize = true;
-            this.checkBoxEnableAP.Location = new System.Drawing.Point(401, 12);
+            this.checkBoxEnableAP.Location = new System.Drawing.Point(375, 12);
             this.checkBoxEnableAP.Name = "checkBoxEnableAP";
             this.checkBoxEnableAP.Size = new System.Drawing.Size(76, 17);
             this.checkBoxEnableAP.TabIndex = 5;
@@ -173,7 +174,7 @@
             "Fast",
             "Normal",
             "Deep"});
-            this.comboBoxnDepth.Location = new System.Drawing.Point(285, 10);
+            this.comboBoxnDepth.Location = new System.Drawing.Point(263, 10);
             this.comboBoxnDepth.Name = "comboBoxnDepth";
             this.comboBoxnDepth.Size = new System.Drawing.Size(105, 21);
             this.comboBoxnDepth.TabIndex = 4;
@@ -182,7 +183,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(153, 14);
+            this.label2.Location = new System.Drawing.Point(141, 14);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(51, 13);
             this.label2.TabIndex = 2;
@@ -191,7 +192,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 14);
+            this.label1.Location = new System.Drawing.Point(4, 14);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(67, 13);
             this.label1.TabIndex = 0;
@@ -200,14 +201,15 @@
             // labelPower
             // 
             this.labelPower.AutoSize = true;
-            this.labelPower.Location = new System.Drawing.Point(677, 14);
+            this.labelPower.Location = new System.Drawing.Point(694, 14);
             this.labelPower.Name = "labelPower";
             this.labelPower.Size = new System.Drawing.Size(36, 13);
-            this.labelPower.TabIndex = 9;
+            this.labelPower.TabIndex = 10;
             this.labelPower.Text = "power";
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.comboBoxHz);
             this.panel1.Controls.Add(this.comboBoxLinesPerSec);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.checkBoxAnnotate);
@@ -225,11 +227,26 @@
             this.panel1.Size = new System.Drawing.Size(794, 37);
             this.panel1.TabIndex = 0;
             // 
+            // comboBoxHz
+            // 
+            this.comboBoxHz.DropDownHeight = 130;
+            this.comboBoxHz.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxHz.Enabled = false;
+            this.comboBoxHz.FormattingEnabled = true;
+            this.comboBoxHz.IntegralHeight = false;
+            this.comboBoxHz.Location = new System.Drawing.Point(632, 10);
+            this.comboBoxHz.Name = "comboBoxHz";
+            this.comboBoxHz.Size = new System.Drawing.Size(59, 21);
+            this.comboBoxHz.TabIndex = 9;
+            this.comboBoxHz.SelectedIndexChanged += new System.EventHandler(this.comboBoxHz_SelectedIndexChanged);
+            // 
             // comboBoxLinesPerSec
             // 
+            this.comboBoxLinesPerSec.DropDownHeight = 130;
             this.comboBoxLinesPerSec.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLinesPerSec.FormattingEnabled = true;
-            this.comboBoxLinesPerSec.Location = new System.Drawing.Point(623, 11);
+            this.comboBoxLinesPerSec.IntegralHeight = false;
+            this.comboBoxLinesPerSec.Location = new System.Drawing.Point(594, 10);
             this.comboBoxLinesPerSec.Name = "comboBoxLinesPerSec";
             this.comboBoxLinesPerSec.Size = new System.Drawing.Size(36, 21);
             this.comboBoxLinesPerSec.TabIndex = 8;
@@ -238,7 +255,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(565, 14);
+            this.label3.Location = new System.Drawing.Point(538, 14);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(57, 13);
             this.label3.TabIndex = 7;
@@ -248,7 +265,7 @@
             // 
             this.checkBoxAnnotate.AutoSize = true;
             this.checkBoxAnnotate.Enabled = false;
-            this.checkBoxAnnotate.Location = new System.Drawing.Point(481, 12);
+            this.checkBoxAnnotate.Location = new System.Drawing.Point(457, 12);
             this.checkBoxAnnotate.Name = "checkBoxAnnotate";
             this.checkBoxAnnotate.Size = new System.Drawing.Size(77, 17);
             this.checkBoxAnnotate.TabIndex = 6;
@@ -262,10 +279,10 @@
             this.labelWaterfall.BackColor = System.Drawing.Color.Black;
             this.labelWaterfall.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.labelWaterfall.ForeColor = System.Drawing.Color.White;
-            this.labelWaterfall.Location = new System.Drawing.Point(729, 13);
+            this.labelWaterfall.Location = new System.Drawing.Point(739, 13);
             this.labelWaterfall.Name = "labelWaterfall";
             this.labelWaterfall.Size = new System.Drawing.Size(48, 15);
-            this.labelWaterfall.TabIndex = 10;
+            this.labelWaterfall.TabIndex = 11;
             this.labelWaterfall.Text = "waterfall";
             this.labelWaterfall.Visible = false;
             // 
@@ -445,5 +462,6 @@
         private System.Windows.Forms.CheckBox checkBoxAnnotate;
         private System.Windows.Forms.ComboBox comboBoxLinesPerSec;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox comboBoxHz;
     }
 }

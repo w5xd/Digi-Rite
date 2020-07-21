@@ -52,11 +52,11 @@
 
         public string DisplayState { get { return State.ToString(); } }
         private System.Action deferredToEndOfReceive;
-        public void OnReceiveCycleEnd(bool messagedThisCycle)
+        public void OnReceiveCycleEnd(bool messagedThisCycle, bool onHold)
         {
             if (!messagedThisCycle)
             {
-                if (!IsFinished)
+                if (!IsFinished && !onHold)
                     OnReceivedNothing();
             }
             else if (null != deferredToEndOfReceive)

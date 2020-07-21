@@ -53,7 +53,7 @@ namespace DigiRite
                 bool messagedThisCycle = q.OnCycleBegin(wasReceiveCycle);
                 if (!q.InLoggedInactiveState && wasReceiveCycle && q.Sequencer != null )
                 {
-                    q.Sequencer.OnReceiveCycleEnd(messagedThisCycle);
+                    q.Sequencer.OnReceiveCycleEnd(messagedThisCycle, q.OnHold);
                     if (!messagedThisCycle && q.Sequencer.IsFinished && q.IsLogged)
                         q.Active = false;
                 }

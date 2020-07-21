@@ -18,7 +18,7 @@ namespace DigiRite
 
     public interface IQsoSequencer
     {
-        void OnReceiveCycleEnd(bool messagedThisCycle);
+        void OnReceiveCycleEnd(bool messagedThisCycle, bool onHold);
         bool IsFinished { get; }
         string DisplayState { get; }
     }
