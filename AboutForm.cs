@@ -24,7 +24,7 @@ namespace DigiRite
             string version = fvi.ProductVersion; 
             textBoxIntro.Text = "DigiRite" + version  +
                 " Copyright (c) 2020 WriteLog Contesting Software, LLC\r\n\r\n" +
-                "This program is based on wsjtx-2.2.1 which is licensed software.\r\n" +
+                "This program is based on wsjtx-2.2.2 which is licensed software.\r\n" +
                 "See the file COPYING.\r\n\r\n" +
 
 "The algorithms, source code, look-and-feel of WSJT-X and related" +
