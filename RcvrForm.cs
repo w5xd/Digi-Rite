@@ -24,7 +24,10 @@ namespace DigiRite
         int instanceNumber;
         LogFile logfile;
         Control waterfall;
-        WriteLog.IWaterfall iwaterfall;
+        Form waterfallEditor;
+        WriteLog.IWaterfallV3 iwaterfall;
+        WriteLog.IAnnotations annotations;
+        WriteLog.IWaterfallFactory wfFactory;
 
         public uint CYCLE { set {
                 ClockLabel cl = labelClockAnimation as ClockLabel;
@@ -60,60 +63,21 @@ namespace DigiRite
             panelRightGain.BackColor =
             panel1.BackColor = CustomColors.CommonBackgroundColor;
 
-            object wlDir = Microsoft.Win32.Registry.GetValue(
-                "HKEY_LOCAL_MACHINE\\Software\\W5XD\\WriteLog\\Install", "Directory", "0");
             try
             {
                 // if WriteLog's DigiRiteWaterfall assembly loads, use it.
-                const string name = "WriteLogWaterfall-V2.dll";
-                string assemblyPath = System.IO.Path.GetFullPath(name);
-                const string nameOld = "WriteLogWaterfall.dll";
-                string assemblyPathOld = System.IO.Path.GetFullPath(nameOld);
-#if DEBUG
-                // debug environment its easier to copy the waterfall into our work area
-#elif BUILD_X86
-                // Use WriteLog's waterfall Control, but only if running 32 bit
-                if (null != wlDir)
-                {
-                    assemblyPath = wlDir.ToString() + "Programs\\" + name;
-                    assemblyPathOld = wlDir.ToString() + "Programs\\" + nameOld;
-                }
-#else
-                string executing = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                var idx = executing.LastIndexOf('\\');
-                if (idx >= 0)
-                {
-                    assemblyPath =  executing.Substring(0, idx+1) + name;
-                    assemblyPathOld =  executing.Substring(0, idx+1) + nameOld;
-                }
-#endif
-                System.Reflection.Assembly waterfallAssembly;
-                try
-                {   // try the new one first
-                    waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPath);
-                }
-                catch (System.Exception exc)
-                {   // try old WL install (prior to WL 12.49)
-                    waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPathOld);
-                }
-                System.Type t = waterfallAssembly.GetType("WriteLog.Waterfall");
+                System.Reflection.Assembly waterfallAssembly = System.Reflection.Assembly.Load("WriteLogWaterfallDigiRite, Version=12.0.52.5, Culture=neutral, PublicKeyToken=e34bde9f0678e8b6");
+                System.Type t = waterfallAssembly.GetType("WriteLog.WaterfallFactory");
                 if (t == null)
-                    throw new System.Exception("Waterfall type not found");
-                waterfall = (Control)System.Activator.CreateInstance(t);
-                iwaterfall = (WriteLog.IWaterfall)waterfall;
-                try
-                {
-                    var pi = t.GetProperty("TimeToFreqSampleInterval");
-                    linesPerSecMethod = pi.GetSetMethod();
-                }
-                catch (System.Exception) {
-                    linesPerSecMethod = null;
-                }
+                    throw new System.Exception("WaterfallFactory type not found");
+                wfFactory = (WriteLog.IWaterfallFactory)System.Activator.CreateInstance(t);
+                waterfall = (Control)wfFactory.GetWaterfall();
+                iwaterfall = (WriteLog.IWaterfallV3)waterfall;
+                waterfallEditor = wfFactory.GetEditor() as Form;
             }
             catch (System.Exception ex)
             {   // if WriteLog is not installed, this is "normal successful completion" 
-                if (null != wlDir)
-                    logfile.SendToLog("Xcvr exception " + ex.ToString()); // not normal
+                    logfile.SendToLog("Load waterfall exception " + ex.ToString()); // not normal
             }
 
             if (null != waterfall)
@@ -121,7 +85,8 @@ namespace DigiRite
                 ((System.ComponentModel.ISupportInitialize)waterfall).BeginInit();
                 waterfall.Location = chartSpectrum.Location;
                 waterfall.Dock = chartSpectrum.Dock;
-                waterfall.Size = chartSpectrum.Size;
+                
+waterfall.Size = chartSpectrum.Size;
                 waterfall.TabIndex = chartSpectrum.TabIndex;
                 waterfall.Name = "waterfall";
                 waterfall.Font = labelWaterfall.Font; // labelWaterfall is placeholder for properties
@@ -140,58 +105,25 @@ namespace DigiRite
                 chartSpectrum = null;
                 splitContainerMain.Panel2.Controls.Add(waterfall);
                 splitContainerMain.Panel2.Controls.SetChildIndex(waterfall, 0);
-                iwaterfall.TimeToFreqPowerOfTwo = 12;
-                myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount,
-                    iwaterfall.TimeToFreqSampleCount, iwaterfall.GetAudioProcessor());
-
-                comboBoxHz.Enabled = true;
-                comboBoxHz.Items.Add(new HzItem("3Hz", 11));
-                comboBoxHz.Items.Add(new HzItem("1.5Hz", 12));
-                comboBoxHz.SelectedIndex = 1;
-                comboBoxHz.Items.Add(new HzItem(".7Hz", 13));
-                comboBoxHz.Items.Add(new HzItem(".3Hz", 14));
+                myDemod.SetAudioSamplesCallback(null, 4096,
+                    4096, iwaterfall.GetAudioProcessor());
 
                 var peak = iwaterfall as WriteLog.IPeakRx;
                 if (null != peak)
                     timerVU.Enabled = true;
-                var annotate = iwaterfall as WriteLog.IAnnotations;
-                if (null != annotate)
+                annotations = iwaterfall as WriteLog.IAnnotations;
+                if (null != annotations)
                 {
-                    checkBoxAnnotate.Checked = annotate.Visible;
+                    checkBoxAnnotate.Checked = annotations.Visible;
                     checkBoxAnnotate.Enabled = true;
                 }
-                if (null != linesPerSecMethod)
-                {
-                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(3, 4096u));
-                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(4, 3000u));
-                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(5, 2400u));
-                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(10, 1200u));
-                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(15, 800u));
-                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(20, 600u));
-                    comboBoxLinesPerSec.Items.Add(new LinesPerSecItem(30, 400u));
-                    comboBoxLinesPerSec.SelectedIndex = 0;
-                }
-                else
-                    comboBoxLinesPerSec.Enabled = false;
-            }
-            else
-                comboBoxLinesPerSec.Enabled = false;
+             }
+            if (null != waterfallEditor)
+                buttonOptions.Enabled = true;
             prevSplitter = splitContainerMain.SplitterDistance;
             locationToSave = Location;
             sizeToSave = Size;
 
-#if DEBUG   // test the waterfall's ability to change frequency resolution
-            if (null != iwaterfall)
-            {
-                labelWaterfall.Visible = true;
-                labelWaterfall.Click += new EventHandler((object o, EventArgs ev) =>
-                {
-                    iwaterfall.TimeToFreqPowerOfTwo += 1;
-                    myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount, 
-                        iwaterfall.TimeToFreqSampleCount, iwaterfall.GetAudioProcessor());
-                });
-            }
-#endif
         }
 
         public void SetFixedFont(System.Drawing.Font font)
@@ -207,13 +139,19 @@ namespace DigiRite
                     if (null != iwaterfall)
                     {   //plumb the demodulator's audio stream to the waterfall
                         myDemod.SetAudioSamplesCallback(null,
-                            iwaterfall.TimeToFreqSampleCount,
-                            iwaterfall.TimeToFreqSampleCount,
+                            4096,
+                            4096,
                             iwaterfall.GetAudioProcessor());
                     }
                     DecodeFrequencyRangeChanged(null,null);
                 }
             } }
+
+        public void StoreProperties()
+        {
+            if (null != wfFactory)
+                wfFactory.StoreProperties();
+        }
 
         XD.WaveDevicePlayer waveDevicePlayer;
         public XD.WaveDevicePlayer Player { set { 
@@ -236,17 +174,10 @@ namespace DigiRite
         public int SpectrumLinesPerSecondIdx
         {
             set
-            {
-                if (value > 0)
-                {
-                    if (comboBoxLinesPerSec.Enabled && comboBoxLinesPerSec.Items.Count > value)
-                        comboBoxLinesPerSec.SelectedIndex = value;
-                }
+            {   // FIXME
             }
             get
             {
-                if (comboBoxLinesPerSec.Enabled)
-                    return comboBoxLinesPerSec.SelectedIndex;
                 return -1;
             }
         }
@@ -396,7 +327,8 @@ namespace DigiRite
                     var tgString = m.TimeTag;
                     if (!String.IsNullOrEmpty(tgString))
                         Int32.TryParse(tgString, out tag);
-                    iwaterfall.AddAnnotation(tag, (int)m.Hz, call.FromCall);
+                    if (null != annotations)
+                        annotations.AddAnnotation(tag, (int)m.Hz, call.FromCall, 0);
                 }
             }
 
@@ -417,7 +349,7 @@ namespace DigiRite
                         iwaterfall.MarkCurrentRaster(tag);
 #if DEBUG
                         int f = (MinDecodeFrequency + MaxDecodeFrequency) / 2;
-                        iwaterfall.AddAnnotation(tag, f, "TEST " + f.ToString());
+                        annotations.AddAnnotation(tag, f, "TEST " + f.ToString(), 0);
 #endif
 
                     }
@@ -454,7 +386,7 @@ namespace DigiRite
                 this.WindowState = FormWindowState.Minimized;
             }
         }
-
+       
         private System.Drawing.Point locationToSave;
         public System.Drawing.Point LocationToSave {
             get { return locationToSave; }
@@ -544,59 +476,21 @@ namespace DigiRite
 
         private void checkBoxAnnotate_CheckedChanged(object sender, EventArgs e)
         {
-            var annotate = iwaterfall as WriteLog.IAnnotations;
-            if (null != annotate)
-                annotate.Visible = checkBoxAnnotate.Checked;
+            if (null != annotations)
+                annotations.Visible = checkBoxAnnotate.Checked;
         }
 
-        private System.Reflection.MethodInfo linesPerSecMethod = null;
-
-        private void comboBoxLinesPerSec_SelectedIndexChanged(object sender, EventArgs e)
+        private void buttonOptions_Click(object sender, EventArgs e)
         {
-            if (null != linesPerSecMethod)
+            if (waterfallEditor != null)
             {
-                var v = comboBoxLinesPerSec.SelectedItem as LinesPerSecItem;
-                if (null != v)
-                    linesPerSecMethod.Invoke(waterfall, new object[] { v.SamplesPerFft });
+                if (waterfallEditor.WindowState == FormWindowState.Minimized)
+                    waterfallEditor.WindowState = FormWindowState.Normal;
+                else if (!waterfallEditor.Visible)
+                    waterfallEditor.Show(this);
             }
         }
 
-        private void comboBoxHz_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (null != iwaterfall)
-            {
-                var v = comboBoxHz.SelectedItem as HzItem;
-                if (null != v)
-                    iwaterfall.TimeToFreqPowerOfTwo = v.PowerOf2;
-            }
-        }
     }
-
-    class LinesPerSecItem
-    {
-        public LinesPerSecItem(int label, uint samplesPerFft)
-        {
-            this.label = label;
-            this.SamplesPerFft = samplesPerFft;
-        }
-        public override string ToString()  
-            { return label.ToString(); }
-
-        public uint SamplesPerFft { get; private set; }
-        private int label;
-    }
-
-    class HzItem
-    {
-        public HzItem(string label, uint powerOf2)
-        {
-            this.label = label;
-            this.PowerOf2 = powerOf2;
-        }
-        public override string ToString()
-        { return label; }
-
-        public uint PowerOf2 { get; private set; }
-        private string label;
-    }
+    
 }

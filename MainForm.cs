@@ -1872,6 +1872,8 @@ namespace DigiRite
                     if (null != waveDevicePlayer)
                         rk.SetValue("RxInputGain", waveDevicePlayer.Gain.ToString());
                 }
+                if (null != rxForm)
+                    rxForm.StoreProperties();
             }
             if (demodulatorWrapper != null)
                 demodulatorWrapper.Dispose();

@@ -76,8 +76,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WriteLogIWaterfall">
-      <HintPath>WriteLogApi\WriteLogIWaterfall.dll</HintPath>
+    <Reference Include="WriteLogIWaterfallV3, Version=12.0.52.5, Culture=neutral, PublicKeyToken=e34bde9f0678e8b6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>WriteLogApi\WriteLogIWaterfallV3.dll</HintPath>
     </Reference>
     <Reference Include="XDft">
       <HintPath>$(XDftSdkDir)XDft.dll</HintPath>
