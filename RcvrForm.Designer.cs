@@ -40,9 +40,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.labelPower = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.comboBoxHz = new System.Windows.Forms.ComboBox();
-            this.comboBoxLinesPerSec = new System.Windows.Forms.ComboBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.checkBoxAnnotate = new System.Windows.Forms.CheckBox();
             this.labelWaterfall = new System.Windows.Forms.Label();
             this.labelClockAnimation = new System.Windows.Forms.Label();
@@ -57,6 +54,7 @@
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyItemToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timerVU = new System.Windows.Forms.Timer(this.components);
+            this.buttonOptions = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chartSpectrum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxFreq)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinFreq)).BeginInit();
@@ -209,9 +207,7 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.comboBoxHz);
-            this.panel1.Controls.Add(this.comboBoxLinesPerSec);
-            this.panel1.Controls.Add(this.label3);
+            this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxAnnotate);
             this.panel1.Controls.Add(this.labelWaterfall);
             this.panel1.Controls.Add(this.comboBoxnDepth);
@@ -226,40 +222,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(794, 37);
             this.panel1.TabIndex = 0;
-            // 
-            // comboBoxHz
-            // 
-            this.comboBoxHz.DropDownHeight = 130;
-            this.comboBoxHz.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxHz.Enabled = false;
-            this.comboBoxHz.FormattingEnabled = true;
-            this.comboBoxHz.IntegralHeight = false;
-            this.comboBoxHz.Location = new System.Drawing.Point(632, 10);
-            this.comboBoxHz.Name = "comboBoxHz";
-            this.comboBoxHz.Size = new System.Drawing.Size(59, 21);
-            this.comboBoxHz.TabIndex = 9;
-            this.comboBoxHz.SelectedIndexChanged += new System.EventHandler(this.comboBoxHz_SelectedIndexChanged);
-            // 
-            // comboBoxLinesPerSec
-            // 
-            this.comboBoxLinesPerSec.DropDownHeight = 130;
-            this.comboBoxLinesPerSec.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxLinesPerSec.FormattingEnabled = true;
-            this.comboBoxLinesPerSec.IntegralHeight = false;
-            this.comboBoxLinesPerSec.Location = new System.Drawing.Point(594, 10);
-            this.comboBoxLinesPerSec.Name = "comboBoxLinesPerSec";
-            this.comboBoxLinesPerSec.Size = new System.Drawing.Size(36, 21);
-            this.comboBoxLinesPerSec.TabIndex = 8;
-            this.comboBoxLinesPerSec.SelectedIndexChanged += new System.EventHandler(this.comboBoxLinesPerSec_SelectedIndexChanged);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(538, 14);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(57, 13);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "&Lines/sec:";
             // 
             // checkBoxAnnotate
             // 
@@ -402,6 +364,17 @@
             this.timerVU.Interval = 500;
             this.timerVU.Tick += new System.EventHandler(this.timerVU_Tick);
             // 
+            // buttonOptions
+            // 
+            this.buttonOptions.Enabled = false;
+            this.buttonOptions.Location = new System.Drawing.Point(536, 9);
+            this.buttonOptions.Name = "buttonOptions";
+            this.buttonOptions.Size = new System.Drawing.Size(75, 23);
+            this.buttonOptions.TabIndex = 7;
+            this.buttonOptions.Text = "Options...";
+            this.buttonOptions.UseVisualStyleBackColor = true;
+            this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
+            // 
             // RcvrForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -460,8 +433,6 @@
         private System.Windows.Forms.Label labelVUmeter;
         private System.Windows.Forms.Timer timerVU;
         private System.Windows.Forms.CheckBox checkBoxAnnotate;
-        private System.Windows.Forms.ComboBox comboBoxLinesPerSec;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ComboBox comboBoxHz;
+        private System.Windows.Forms.Button buttonOptions;
     }
 }

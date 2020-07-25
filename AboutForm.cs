@@ -21,9 +21,14 @@ namespace DigiRite
         {
             var assembly = System.Reflection.Assembly.GetEntryAssembly();
             System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-            string version = fvi.ProductVersion; 
+            string version = fvi.ProductVersion;
             textBoxIntro.Text = "DigiRite" + version  +
-                " Copyright (c) 2020 WriteLog Contesting Software, LLC\r\n\r\n" +
+#if BUILD_X86
+            "     (X86 build)" +
+#elif BUILD_X64
+            "     (X64 build)" +
+#endif
+                "\r\nCopyright (c) 2020 WriteLog Contesting Software, LLC\r\n\r\n" +
                 "This program is based on wsjtx-2.2.2 which is licensed software.\r\n" +
                 "See the file COPYING.\r\n\r\n" +
 

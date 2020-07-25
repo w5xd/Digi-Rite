@@ -20,11 +20,11 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <?define VersionNumber = 2.2.2.6 ?>
     <Product Manufacturer="builders name here" 
-             Name="DigiRite open source" 
+             Name="DigiRite X64 open source" 
              Version="$(var.VersionNumber)" 
              UpgradeCode="ac196bff-3463-4788-8638-d730254967f4"
              Language="1033" Id="*" >
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64"/>
 
 		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
         
@@ -45,18 +45,28 @@
         <Feature Id="ProductFeature" Title="DigiRite" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
             <ComponentRef Id="ProgramMenuDir"/>
+            <ComponentRef Id="WriteLogProgId"/>
         </Feature>
 	</Product>
 
     <Fragment>
         <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="ProgramFilesFolder">
+            <Directory Id="ProgramFiles64Folder">
                     <Directory Id="INSTALLFOLDER" Name="DigiRite" >
                     </Directory>
             </Directory>
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="DigiRite32">
+                    <Component Id="WriteLogProgId" Guid="{BC08F397-F09F-4E73-A5AB-DD3578E38701}" Win64="no">
+                        <RegistryKey Root="HKLM" Key="Software\W5XD\WriteLog\DigitalProgIds" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="no">
+                            <RegistryValue Action="write" Type="string" Name="DigiRite" Value="WriteLog.Ft8Auto"></RegistryValue>
+                        </RegistryKey>
+                    </Component>
+                </Directory>
+            </Directory>
             <Directory Id="ProgramMenuFolder" Name="Programs">
                 <Directory Id="ProgramMenuDir" Name="DigiRite">
-                    <Component Id="ProgramMenuDir" Guid="{31FDB8C0-03A7-4197-9150-6D9265CB4DE1}">
+                    <Component Id="ProgramMenuDir" Guid="{22DDF3DD-7674-4FD1-8282-BC27968B5117}">
                         <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
                         <RegistryValue Root='HKCU' Key='Software\DigiRite\Install' Type='string' Value='' KeyPath='yes' />
                     </Component>
@@ -66,9 +76,9 @@
     </Fragment>
 
     <Fragment>
-        <?define LocalBinDir=..\bin\x86\Release\?>
+        <?define LocalBinDir=..\bin\x64\Release\?>
         <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-            <Component Id="DigiRite" Guid="7776F59B-0796-41E2-900E-FCB9A7E891D4" Win64="no">
+            <Component Id="DigiRite" Guid="{B6980BE2-6EF2-4DB4-A4AD-92C16F2FD680}" Win64="yes">
                 <File Id="DigiRiteexe" Name="DigiRite.exe" Source="$(var.LocalBinDir)DigiRite.exe" KeyPath="yes">
                     <Shortcut Id="DigiRiteSC" Name="DigiRite" Directory="ProgramMenuDir" Advertise="yes"/>
                 </File>
@@ -80,43 +90,37 @@
                 <RegistryValue Root='HKCR' Key='WriteLog.Ft8Auto' Value='WriteLog.Ft8Auto' Type="string"/>
                 <RegistryValue Root='HKCR' Key='WriteLog.Ft8Auto\CLSID' Value='{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}' Type="string"/>
             </Component>
-            <Component Id="libfftw" Guid="{3C54D613-A0F6-4F2C-884F-2E674CA6F812}" >
-                <File Source="$(var.LocalBinDir)libfftw3f-3.dll" Name="libfftw3f-3.dll" />
+            <Component Id="libfftw" Guid="{F7556D37-B786-4121-AC10-BBEC17344DDD}" >
+                <File Source="$(var.LocalBinDir)libfftw3f-3.dll"  />
             </Component>
-            <Component Id="gfortran" Guid="{02FF27C1-A821-4DCF-A2F0-74465BFED59C}" >
-                <File Source="$(var.LocalBinDir)libgfortran-5.dll" Name="libgfortran-5.dll" />
-                <File Source="$(var.LocalBinDir)libquadmath-0.dll" Name="libquadmath-0.dll"/>
+            <Component Id="gfortran" Guid="{953BEAD7-686F-4CAA-B729-3CF63F1F8C9F}" >
+                <File Source="$(var.LocalBinDir)libquadmath-0.dll" />
             </Component>
-            <Component Id="gcc" Guid="{589509C9-C77A-45E8-9ED7-A0F5142AC127}" >
-                <File Source="$(var.LocalBinDir)libgcc_s_dw2-1.dll" Name="libgcc_s_dw2-1.dll"/>
-                <File Source="$(var.LocalBinDir)libstdc++-6.dll" Name="libstdc++-6.dll"/>
+            <Component Id="gcc" Guid="{58A737D1-099A-4462-B05A-BD35D47E4B82}" >
+                <File Source="$(var.LocalBinDir)libgcc_s_seh-1.dll" />
+                <File Source="$(var.LocalBinDir)libstdc++-6.dll" />
             </Component>
-            <Component Id="XDwsjt" Guid="{E948C6AF-9D2E-4297-8227-E4CF73673E14}" >
+            <Component Id="XDwsjt" Guid="{B4C049AE-8E82-4DC2-A7BF-BED79155FADF}" >
                 <File Source="$(var.LocalBinDir)XDwsjtFT.dll" Name="XDwsjtFT.dll"/>
             </Component>
-            <Component Id="XDft8" Guid="{6EC1A5C5-0E79-4EDB-AD1E-B9A6AE338F65}" >
+            <Component Id="XDft8" Guid="{A07EDA81-E0CF-4772-8379-4E6AEA4C2772}" >
                 <File Source="$(var.LocalBinDir)XDft.dll" Name="XDft.dll"/>
                 <File Source="$(var.LocalBinDir)XDAudioDevice.dll" Name="XDAudioDevice.dll"/>
                 <File Source="$(var.LocalBinDir)XDpack77Message.dll" Name="XDpack77Message.dll" />
                 <File Source="$(var.LocalBinDir)XDftDemod.exe" Name="XDftDemod.exe"/>
             </Component>
-            <Component Id="iwaterfallV3" Guid="{5860BA3C-3DBD-4D92-BF21-2609B39012E4}" >
+            <Component Id="iwaterfallV3" Guid="{A4E3147D-97B4-42C5-8E50-28AB2615D15A}" >
                 <File Source="$(var.LocalBinDir)WriteLogIWaterfallV3.dll" Name="WriteLogIWaterfallV3.dll" />
             </Component>
-            <Component Id="Redmehtm" Guid="{B821DAB1-AA05-40C1-BFFE-41B9D6BA5E48}">
+            <Component Id="Redmehtm" Guid="{F56DF43D-BBD9-4EE8-968C-FB586CFE45BE}">
                 <File Id="Readme" Name="ReadMe.htm" Source="$(var.LocalBinDir)ReadMe.htm" KeyPath="yes">
                     <Shortcut Id="ReadmeSC" Name="Read Me" Directory="ProgramMenuDir" Advertise="yes"/>
                 </File>
             </Component>
-             <Component Id="COPYING_c" Guid="{7F11EDDB-CC1D-45BC-9749-02FC1F15D00F}">
+             <Component Id="COPYING_c" Guid="{85DDF967-4AAD-45E3-A94B-EED2969A8B9C}">
                 <File Id="COPYING_f" Name="COPYING" Source="..\COPYING" KeyPath="yes"/>
             </Component>
-            <Component Id="WriteLogProgId" Guid="{64AFC390-1B1D-4F80-BE72-08516F3DC72C}">
-                <RegistryKey Root="HKLM" Key="Software\W5XD\WriteLog\DigitalProgIds" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="no">
-                    <RegistryValue Action="write" Type="string" Name="DigiRite" Value="WriteLog.Ft8Auto"></RegistryValue>
-                </RegistryKey>
-            </Component>
-            <Component Id="digiritelogger" Guid="{73F0FE8E-F436-4331-9E1D-817E7B8978CC}" >
+            <Component Id="digiritelogger" Guid="{5A7D483A-2337-4A2E-A627-B29516C407B5}" >
                 <File Source="$(var.LocalBinDir)DigiRiteLogger.dll" Name="DigiRiteLogger.dll" />
             </Component>
         </ComponentGroup>

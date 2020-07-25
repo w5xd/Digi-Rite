@@ -1684,7 +1684,6 @@ namespace DigiRite
             rxForm.RxHz = (int)numericUpDownRxFrequency.Value;
             rxForm.MinDecodeFrequency = decodeMin;
             rxForm.MaxDecodeFrequency = decodeMax;
-            rxForm.SpectrumLinesPerSecondIdx = Properties.Settings.Default.SpectrumLinesPerSecondIdx;
             comboBoxCQ.SelectedIndex = 0;
             cqListEven.FilterCqs = cqListOdd.FilterCqs = checkBoxOnlyCQs.CheckState;
             listBoxConversation.DrawMode = DrawMode.OwnerDrawFixed;
@@ -1827,7 +1826,6 @@ namespace DigiRite
                 Properties.Settings.Default.OnLoggedAcknowedgeMessage = (ushort)comboBoxOnLoggedMessage.SelectedIndex;
                 Properties.Settings.Default.ShowMenu = checkBoxShowMenu.Checked;
                 Properties.Settings.Default.ShowCalcNextToSend = checkBoxCalcNextToSend.Checked;
-                Properties.Settings.Default.SpectrumLinesPerSecondIdx = rxForm.SpectrumLinesPerSecondIdx;
                 Properties.Settings.Default.Save();
                 Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(instanceRegKeyName);
                 if (null != rk)
@@ -1872,6 +1870,8 @@ namespace DigiRite
                     if (null != waveDevicePlayer)
                         rk.SetValue("RxInputGain", waveDevicePlayer.Gain.ToString());
                 }
+                if (null != rxForm)
+                    rxForm.StoreProperties();
             }
             if (demodulatorWrapper != null)
                 demodulatorWrapper.Dispose();

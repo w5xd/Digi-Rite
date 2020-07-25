@@ -15,6 +15,12 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "InstallDigiRite", "InstallD
 		{23B67EC2-AC1E-4849-B431-231641E3D85B} = {23B67EC2-AC1E-4849-B431-231641E3D85B}
 	EndProjectSection
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "InstallDigiRiteX64", "InstallDigiRiteX64\InstallDigiRiteX64.wixproj", "{56440367-0855-4015-AF8F-5A60C5A7C1C5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{45480F0A-3C72-45F1-B3D1-F6BDFDD040C0} = {45480F0A-3C72-45F1-B3D1-F6BDFDD040C0}
+		{23B67EC2-AC1E-4849-B431-231641E3D85B} = {23B67EC2-AC1E-4849-B431-231641E3D85B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -52,6 +58,11 @@ Global
 		{F7D23E9C-70D0-4057-9882-2B87C314FEDF}.Release|x64.ActiveCfg = Release|x86
 		{F7D23E9C-70D0-4057-9882-2B87C314FEDF}.Release|x86.ActiveCfg = Release|x86
 		{F7D23E9C-70D0-4057-9882-2B87C314FEDF}.Release|x86.Build.0 = Release|x86
+		{56440367-0855-4015-AF8F-5A60C5A7C1C5}.Debug|x64.ActiveCfg = Debug|x64
+		{56440367-0855-4015-AF8F-5A60C5A7C1C5}.Debug|x86.ActiveCfg = Debug|x64
+		{56440367-0855-4015-AF8F-5A60C5A7C1C5}.Release|x64.ActiveCfg = Release|x64
+		{56440367-0855-4015-AF8F-5A60C5A7C1C5}.Release|x64.Build.0 = Release|x64
+		{56440367-0855-4015-AF8F-5A60C5A7C1C5}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
