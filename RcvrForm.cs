@@ -23,11 +23,6 @@ namespace DigiRite
         MainForm mainForm;
         int instanceNumber;
         LogFile logfile;
-        Control waterfall;
-        Form waterfallEditor;
-        WriteLog.IWaterfallV3 iwaterfall;
-        WriteLog.IAnnotations annotations;
-        WriteLog.IWaterfallFactory wfFactory;
 
         public uint CYCLE { set {
                 ClockLabel cl = labelClockAnimation as ClockLabel;
@@ -37,6 +32,30 @@ namespace DigiRite
 
         public LogFile logFile { set { logfile = value; } }
 
+        private WaterfallManager waterfallManager;
+        private WriteLog.IWaterfallV3 iwaterfall
+        {
+            get
+            {
+                if (null != waterfallManager)
+                    return waterfallManager.iwaterfall;
+                return null;
+            }
+        }
+        private WriteLog.IAnnotations annotations
+        {
+            get
+            {
+                if (null != waterfallManager)
+                    return waterfallManager.annotations;
+                return null;
+            }
+        }
+        private WriteLog.IPeakRx peak { get {
+                if (null != waterfallManager) return waterfallManager.peak;
+                return null;
+            } }
+        private static uint AUDIO_BUFFER_SAMPLE_COUNT = 4096;
         private void XcvrForm_Load(object sender, EventArgs e)
         {
             this.Text = String.Format("{0}-{1}", this.Text, instanceNumber);
@@ -63,67 +82,28 @@ namespace DigiRite
             panelRightGain.BackColor =
             panel1.BackColor = CustomColors.CommonBackgroundColor;
 
-            try
+            waterfallManager = new WaterfallManager();
+            if (waterfallManager.OnLoad(logfile, chartSpectrum, labelWaterfall, splitContainerMain.Panel2.Controls, mainForm))
             {
-                // if WriteLog's DigiRiteWaterfall assembly loads, use it.
-                System.Reflection.Assembly waterfallAssembly = System.Reflection.Assembly.Load("WriteLogWaterfallDigiRite, Version=12.0.52.5, Culture=neutral, PublicKeyToken=e34bde9f0678e8b6");
-                System.Type t = waterfallAssembly.GetType("WriteLog.WaterfallFactory");
-                if (t == null)
-                    throw new System.Exception("WaterfallFactory type not found");
-                wfFactory = (WriteLog.IWaterfallFactory)System.Activator.CreateInstance(t);
-                waterfall = (Control)wfFactory.GetWaterfall();
-                iwaterfall = (WriteLog.IWaterfallV3)waterfall;
-                waterfallEditor = wfFactory.GetEditor() as Form;
-            }
-            catch (System.Exception ex)
-            {   // if WriteLog is not installed, this is "normal successful completion" 
-                    logfile.SendToLog("Load waterfall exception " + ex.ToString()); // not normal
-            }
-
-            if (null != waterfall)
-            {   // waterfall loaded. it goes where chartSpectrum was.
-                ((System.ComponentModel.ISupportInitialize)waterfall).BeginInit();
-                waterfall.Location = chartSpectrum.Location;
-                waterfall.Dock = chartSpectrum.Dock;
-                
-waterfall.Size = chartSpectrum.Size;
-                waterfall.TabIndex = chartSpectrum.TabIndex;
-                waterfall.Name = "waterfall";
-                waterfall.Font = labelWaterfall.Font; // labelWaterfall is placeholder for properties
-                waterfall.BackColor = labelWaterfall.BackColor;
-                waterfall.ForeColor = labelWaterfall.ForeColor;
-                waterfall.Visible = true;
                 iwaterfall.MaxHz = MaxDecodeFrequency;
                 iwaterfall.MinHz = MinDecodeFrequency;
-                iwaterfall.TxFreqHz = mainForm.TxFrequency;
-                iwaterfall.RxFreqHz = mainForm.RxFrequency;
-                iwaterfall.onTxFreqMove = new WriteLog.OnFreqMove((int hz) => { mainForm.TxFrequency = hz; });
-                iwaterfall.onRxFreqMove = new WriteLog.OnFreqMove((int hz) => { mainForm.RxFrequency = hz; });
-                ((System.ComponentModel.ISupportInitialize)waterfall).EndInit();
-                splitContainerMain.Panel2.Controls.Remove(chartSpectrum);
+                myDemod.SetAudioSamplesCallback(null, AUDIO_BUFFER_SAMPLE_COUNT,
+                    AUDIO_BUFFER_SAMPLE_COUNT, iwaterfall.GetAudioProcessor());
+                buttonOptions.Enabled = true;
                 chartSpectrum.Dispose();
                 chartSpectrum = null;
-                splitContainerMain.Panel2.Controls.Add(waterfall);
-                splitContainerMain.Panel2.Controls.SetChildIndex(waterfall, 0);
-                myDemod.SetAudioSamplesCallback(null, 4096,
-                    4096, iwaterfall.GetAudioProcessor());
+            }
+            if (null != annotations)
+            {
+                checkBoxAnnotate.Checked = annotations.Visible;
+                checkBoxAnnotate.Enabled = true;
+            }
+            if (null != peak)
+                timerVU.Enabled = true;
 
-                var peak = iwaterfall as WriteLog.IPeakRx;
-                if (null != peak)
-                    timerVU.Enabled = true;
-                annotations = iwaterfall as WriteLog.IAnnotations;
-                if (null != annotations)
-                {
-                    checkBoxAnnotate.Checked = annotations.Visible;
-                    checkBoxAnnotate.Enabled = true;
-                }
-             }
-            if (null != waterfallEditor)
-                buttonOptions.Enabled = true;
             prevSplitter = splitContainerMain.SplitterDistance;
             locationToSave = Location;
             sizeToSave = Size;
-
         }
 
         public void SetFixedFont(System.Drawing.Font font)
@@ -149,8 +129,8 @@ waterfall.Size = chartSpectrum.Size;
 
         public void StoreProperties()
         {
-            if (null != wfFactory)
-                wfFactory.StoreProperties();
+            if (null != waterfallManager)
+                waterfallManager.StoreProperties();
         }
 
         XD.WaveDevicePlayer waveDevicePlayer;
@@ -170,16 +150,6 @@ waterfall.Size = chartSpectrum.Size;
         public int MaxDecodeFrequency { get {
                 return (int)numericUpDownMaxFreq.Value; }
             set { numericUpDownMaxFreq.Value = value; }
-        }
-        public int SpectrumLinesPerSecondIdx
-        {
-            set
-            {   // FIXME
-            }
-            get
-            {
-                return -1;
-            }
         }
 
         #region chart spectrum
@@ -466,11 +436,11 @@ waterfall.Size = chartSpectrum.Size;
 
         private void timerVU_Tick(object sender, EventArgs e)
         {
-            var peak = iwaterfall as WriteLog.IPeakRx;
-            if (null != peak)
+            var p = peak;
+            if (null != p)
             {
                 var vu = (labelVUmeter as VerticalBarLabel);
-                vu.Value = peak.GetPeakRxAndReset();
+                vu.Value = p.GetPeakRxAndReset();
             }
         }
 
@@ -482,13 +452,8 @@ waterfall.Size = chartSpectrum.Size;
 
         private void buttonOptions_Click(object sender, EventArgs e)
         {
-            if (waterfallEditor != null)
-            {
-                if (waterfallEditor.WindowState == FormWindowState.Minimized)
-                    waterfallEditor.WindowState = FormWindowState.Normal;
-                else if (!waterfallEditor.Visible)
-                    waterfallEditor.Show(this);
-            }
+            if (waterfallManager != null)
+                waterfallManager.ShowOptionsDialog(this);
         }
 
     }
