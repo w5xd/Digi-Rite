@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Building this installer requires the Wix toolset version three
-!!  https://wixtoolset.org/releases/
-!! on that page you want to install TWO things:
-!!  Download the WIX kit itself and install it.
-!!  Download and install the Visual Studio Extension for your version of VS.
-!!
-!! Recommendation to builder of DigiRite:
-!!  Decide which deployment method to use: 
-!!  Build the msi with the InstallDigiRite project and distribute the resulting msi file.
-!!  OR
-!!  Bundle the exe's into a zip file along with Register.exe and distribute
-!!  the resulting zip file.
-!!
-!!  Register.exe and  DigiRiteOpenSource.msi file can both be invoked
-!! on the same PC but they work in "last one wins" mode. WriteLog will invoke
-!! whichever one was most recently installed.
-!!
+<!--
+This is the x64 version of the DigiRite installer.
+GUIDS: UpgradeCode MUST match between x64 and x86
+All other GUIDs must NOT match.
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define VersionNumber = 2.2.2.6 ?>
+    <?define VersionNumber = 202.2.7.0 ?>
+    <!--The numbering convention depends on the number of the WSJTX build DigiRite is derived from. Call that number A.B.C.
+        For DigiRite, this installer version number is AB.C.D.0 where AB is 100 time A plus B, and D is the
+        build number for DigiRite.-->
     <Product Manufacturer="builders name here" 
              Name="DigiRite X64 open source" 
              Version="$(var.VersionNumber)" 
@@ -26,7 +16,10 @@
              Language="1033" Id="*" >
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64"/>
 
-		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+        <!--We have AllowSameVersionUpgrades="yes" so that the x86 and x64 installers of DigiRite can replace each other if their versions match.
+            Having that feature requires DigiRite to avoid use of the fourth digit in its product Version, otherwise downgrades would be allowed
+            by the installer, but, because of the file version numbers used in DigiRite, only some files would be downgraded.-->
+        <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
         
         <Upgrade Id='ab84756b-b9d8-4064-b1f0-f69f296eacf1'>
             <!-- This is the UpgradeCode that WriteLog used-->
@@ -56,6 +49,7 @@
                     </Directory>
             </Directory>
             <Directory Id="ProgramFilesFolder">
+                <!--registry key in 32 bit registry has to be in this ProgramFilesFolder Directory -->
                 <Directory Id="DigiRite32">
                     <Component Id="WriteLogProgId" Guid="{BC08F397-F09F-4E73-A5AB-DD3578E38701}" Win64="no">
                         <RegistryKey Root="HKLM" Key="Software\W5XD\WriteLog\DigitalProgIds" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="no">

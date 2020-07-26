@@ -40,6 +40,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.labelPower = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.buttonOptions = new System.Windows.Forms.Button();
             this.checkBoxAnnotate = new System.Windows.Forms.CheckBox();
             this.labelWaterfall = new System.Windows.Forms.Label();
             this.labelClockAnimation = new System.Windows.Forms.Label();
@@ -54,7 +55,6 @@
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyItemToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timerVU = new System.Windows.Forms.Timer(this.components);
-            this.buttonOptions = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chartSpectrum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxFreq)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinFreq)).BeginInit();
@@ -223,6 +223,17 @@
             this.panel1.Size = new System.Drawing.Size(794, 37);
             this.panel1.TabIndex = 0;
             // 
+            // buttonOptions
+            // 
+            this.buttonOptions.Enabled = false;
+            this.buttonOptions.Location = new System.Drawing.Point(536, 9);
+            this.buttonOptions.Name = "buttonOptions";
+            this.buttonOptions.Size = new System.Drawing.Size(75, 23);
+            this.buttonOptions.TabIndex = 7;
+            this.buttonOptions.Text = "&Options...";
+            this.buttonOptions.UseVisualStyleBackColor = true;
+            this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
+            // 
             // checkBoxAnnotate
             // 
             this.checkBoxAnnotate.AutoSize = true;
@@ -231,7 +242,7 @@
             this.checkBoxAnnotate.Name = "checkBoxAnnotate";
             this.checkBoxAnnotate.Size = new System.Drawing.Size(77, 17);
             this.checkBoxAnnotate.TabIndex = 6;
-            this.checkBoxAnnotate.Text = "Show calls";
+            this.checkBoxAnnotate.Text = "Show &calls";
             this.checkBoxAnnotate.UseVisualStyleBackColor = true;
             this.checkBoxAnnotate.CheckedChanged += new System.EventHandler(this.checkBoxAnnotate_CheckedChanged);
             // 
@@ -363,17 +374,6 @@
             // 
             this.timerVU.Interval = 500;
             this.timerVU.Tick += new System.EventHandler(this.timerVU_Tick);
-            // 
-            // buttonOptions
-            // 
-            this.buttonOptions.Enabled = false;
-            this.buttonOptions.Location = new System.Drawing.Point(536, 9);
-            this.buttonOptions.Name = "buttonOptions";
-            this.buttonOptions.Size = new System.Drawing.Size(75, 23);
-            this.buttonOptions.TabIndex = 7;
-            this.buttonOptions.Text = "Options...";
-            this.buttonOptions.UseVisualStyleBackColor = true;
-            this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
             // 
             // RcvrForm
             // 

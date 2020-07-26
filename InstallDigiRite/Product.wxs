@@ -18,7 +18,10 @@
 !!
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define VersionNumber = 2.2.2.6 ?>
+    <?define VersionNumber = 202.2.7.0 ?>
+    <!--The numbering convention depends on the number of the WSJTX build DigiRite is derived from. Call that number A.B.C.
+        For DigiRite, this installer version number is AB.C.D.0 where AB is 100 times A plus B, and D is the
+        build number for DigiRite.-->
     <Product Manufacturer="builders name here" 
              Name="DigiRite open source" 
              Version="$(var.VersionNumber)" 
@@ -26,6 +29,9 @@
              Language="1033" Id="*" >
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
+        <!--We have AllowSameVersionUpgrades="yes" so that the x86 and x64 installers of DigiRite can replace each other if their versions match.
+            Having that feature requires DigiRite to avoid use of the fourth digit in its product Version, otherwise downgrades would be allowed
+            by the installer, but, because of the file version numbers used in DigiRite, only some files would be downgraded.-->
 		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
         
         <Upgrade Id='ab84756b-b9d8-4064-b1f0-f69f296eacf1'>
