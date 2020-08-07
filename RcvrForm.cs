@@ -23,8 +23,6 @@ namespace DigiRite
         MainForm mainForm;
         int instanceNumber;
         LogFile logfile;
-        Control waterfall;
-        WriteLog.IWaterfall iwaterfall;
 
         public uint CYCLE { set {
                 ClockLabel cl = labelClockAnimation as ClockLabel;
@@ -34,6 +32,30 @@ namespace DigiRite
 
         public LogFile logFile { set { logfile = value; } }
 
+        private WaterfallManager waterfallManager;
+        private WriteLog.IWaterfallV3 iwaterfall
+        {
+            get
+            {
+                if (null != waterfallManager)
+                    return waterfallManager.iwaterfall;
+                return null;
+            }
+        }
+        private WriteLog.IAnnotations annotations
+        {
+            get
+            {
+                if (null != waterfallManager)
+                    return waterfallManager.annotations;
+                return null;
+            }
+        }
+        private WriteLog.IPeakRx peak { get {
+                if (null != waterfallManager) return waterfallManager.peak;
+                return null;
+            } }
+        private static uint AUDIO_BUFFER_SAMPLE_COUNT = 4096;
         private void XcvrForm_Load(object sender, EventArgs e)
         {
             this.Text = String.Format("{0}-{1}", this.Text, instanceNumber);
@@ -60,108 +82,28 @@ namespace DigiRite
             panelRightGain.BackColor =
             panel1.BackColor = CustomColors.CommonBackgroundColor;
 
-            object wlDir = Microsoft.Win32.Registry.GetValue(
-                "HKEY_LOCAL_MACHINE\\Software\\W5XD\\WriteLog\\Install", "Directory", "0");
-            try
+            waterfallManager = new WaterfallManager();
+            if (waterfallManager.OnLoad(logfile, chartSpectrum, labelWaterfall, splitContainerMain.Panel2.Controls, mainForm))
             {
-                // if WriteLog's DigiRiteWaterfall assembly loads, use it.
-                const string name = "WriteLogWaterfall-V2.dll";
-                string assemblyPath = System.IO.Path.GetFullPath(name);
-                const string nameOld = "WriteLogWaterfall.dll";
-                string assemblyPathOld = System.IO.Path.GetFullPath(nameOld);
-#if DEBUG
-                // debug environment its easier to copy the waterfall into our work area
-#elif BUILD_X86
-                // Use WriteLog's waterfall Control, but only if running 32 bit
-                if (null != wlDir)
-                {
-                    assemblyPath = wlDir.ToString() + "Programs\\" + name;
-                    assemblyPathOld = wlDir.ToString() + "Programs\\" + nameOld;
-                }
-#else
-                string executing = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                var idx = executing.LastIndexOf('\\');
-                if (idx >= 0)
-                {
-                    assemblyPath =  executing.Substring(0, idx+1) + name;
-                    assemblyPathOld =  executing.Substring(0, idx+1) + nameOld;
-                }
-#endif
-                System.Reflection.Assembly waterfallAssembly;
-                try
-                {   // try the new one first
-                    waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPath);
-                }
-                catch (System.Exception)
-                {   // try old WL install (prior to WL 12.49)
-                    waterfallAssembly = System.Reflection.Assembly.LoadFile(assemblyPathOld);
-                }
-                System.Type t = waterfallAssembly.GetType("WriteLog.Waterfall");
-                if (t == null)
-                    throw new System.Exception("Waterfall type not found");
-                waterfall = (Control)System.Activator.CreateInstance(t);
-                iwaterfall = (WriteLog.IWaterfall)waterfall;
-            }
-            catch (System.Exception ex)
-            {   // if WriteLog is not installed, this is "normal successful completion" 
-                if (null != wlDir)
-                    logfile.SendToLog("Xcvr exception " + ex.ToString()); // not normal
-            }
-
-            if (null != waterfall)
-            {   // waterfall loaded. it goes where chartSpectrum was.
-                ((System.ComponentModel.ISupportInitialize)waterfall).BeginInit();
-                waterfall.Location = chartSpectrum.Location;
-                waterfall.Dock = chartSpectrum.Dock;
-                waterfall.Size = chartSpectrum.Size;
-                waterfall.TabIndex = chartSpectrum.TabIndex;
-                waterfall.Name = "waterfall";
-                waterfall.Font = labelWaterfall.Font; // labelWaterfall is placeholder for properties
-                waterfall.BackColor = labelWaterfall.BackColor;
-                waterfall.ForeColor = labelWaterfall.ForeColor;
-                waterfall.Visible = true;
                 iwaterfall.MaxHz = MaxDecodeFrequency;
                 iwaterfall.MinHz = MinDecodeFrequency;
-                iwaterfall.TxFreqHz = mainForm.TxFrequency;
-                iwaterfall.RxFreqHz = mainForm.RxFrequency;
-                iwaterfall.onTxFreqMove = new WriteLog.OnFreqMove((int hz) => { mainForm.TxFrequency = hz; });
-                iwaterfall.onRxFreqMove = new WriteLog.OnFreqMove((int hz) => { mainForm.RxFrequency = hz; });
-                ((System.ComponentModel.ISupportInitialize)waterfall).EndInit();
-                splitContainerMain.Panel2.Controls.Remove(chartSpectrum);
+                myDemod.SetAudioSamplesCallback(null, AUDIO_BUFFER_SAMPLE_COUNT,
+                    AUDIO_BUFFER_SAMPLE_COUNT, iwaterfall.GetAudioProcessor());
+                buttonOptions.Enabled = true;
                 chartSpectrum.Dispose();
                 chartSpectrum = null;
-                splitContainerMain.Panel2.Controls.Add(waterfall);
-                splitContainerMain.Panel2.Controls.SetChildIndex(waterfall, 0);
-                iwaterfall.TimeToFreqPowerOfTwo = 12;
-                myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount, 
-                    iwaterfall.TimeToFreqSampleCount, iwaterfall.GetAudioProcessor());
-
-                var peak = iwaterfall as WriteLog.IPeakRx;
-                if (null != peak)
-                    timerVU.Enabled = true;
-                var annotate = iwaterfall as WriteLog.IAnnotations;
-                if (null != annotate)
-                {
-                    checkBoxAnnotate.Checked = annotate.Visible;
-                    checkBoxAnnotate.Enabled = true;
-                }
             }
+            if (null != annotations)
+            {
+                checkBoxAnnotate.Checked = annotations.Visible;
+                checkBoxAnnotate.Enabled = true;
+            }
+            if (null != peak)
+                timerVU.Enabled = true;
+
             prevSplitter = splitContainerMain.SplitterDistance;
             locationToSave = Location;
             sizeToSave = Size;
-
-#if DEBUG   // test the waterfall's ability to change frequency resolution
-            if (null != iwaterfall)
-            {
-                labelWaterfall.Visible = true;
-                labelWaterfall.Click += new EventHandler((object o, EventArgs ev) =>
-                {
-                    iwaterfall.TimeToFreqPowerOfTwo += 1;
-                    myDemod.SetAudioSamplesCallback(null, iwaterfall.TimeToFreqSampleCount, 
-                        iwaterfall.TimeToFreqSampleCount, iwaterfall.GetAudioProcessor());
-                });
-            }
-#endif
         }
 
         public void SetFixedFont(System.Drawing.Font font)
@@ -177,13 +119,19 @@ namespace DigiRite
                     if (null != iwaterfall)
                     {   //plumb the demodulator's audio stream to the waterfall
                         myDemod.SetAudioSamplesCallback(null,
-                            iwaterfall.TimeToFreqSampleCount,
-                            iwaterfall.TimeToFreqSampleCount,
+                            4096,
+                            4096,
                             iwaterfall.GetAudioProcessor());
                     }
                     DecodeFrequencyRangeChanged(null,null);
                 }
             } }
+
+        public void StoreProperties()
+        {
+            if (null != waterfallManager)
+                waterfallManager.StoreProperties();
+        }
 
         XD.WaveDevicePlayer waveDevicePlayer;
         public XD.WaveDevicePlayer Player { set { 
@@ -349,7 +297,8 @@ namespace DigiRite
                     var tgString = m.TimeTag;
                     if (!String.IsNullOrEmpty(tgString))
                         Int32.TryParse(tgString, out tag);
-                    iwaterfall.AddAnnotation(tag, (int)m.Hz, call.FromCall);
+                    if (null != annotations)
+                        annotations.AddAnnotation(tag, (int)m.Hz, call.FromCall, 0);
                 }
             }
 
@@ -370,7 +319,7 @@ namespace DigiRite
                         iwaterfall.MarkCurrentRaster(tag);
 #if DEBUG
                         int f = (MinDecodeFrequency + MaxDecodeFrequency) / 2;
-                        iwaterfall.AddAnnotation(tag, f, "TEST " + f.ToString());
+                        annotations.AddAnnotation(tag, f, "TEST " + f.ToString(), 0);
 #endif
 
                     }
@@ -407,7 +356,7 @@ namespace DigiRite
                 this.WindowState = FormWindowState.Minimized;
             }
         }
-
+       
         private System.Drawing.Point locationToSave;
         public System.Drawing.Point LocationToSave {
             get { return locationToSave; }
@@ -487,19 +436,26 @@ namespace DigiRite
 
         private void timerVU_Tick(object sender, EventArgs e)
         {
-            var peak = iwaterfall as WriteLog.IPeakRx;
-            if (null != peak)
+            var p = peak;
+            if (null != p)
             {
                 var vu = (labelVUmeter as VerticalBarLabel);
-                vu.Value = peak.GetPeakRxAndReset();
+                vu.Value = p.GetPeakRxAndReset();
             }
         }
 
         private void checkBoxAnnotate_CheckedChanged(object sender, EventArgs e)
         {
-            var annotate = iwaterfall as WriteLog.IAnnotations;
-            if (null != annotate)
-                annotate.Visible = checkBoxAnnotate.Checked;
+            if (null != annotations)
+                annotations.Visible = checkBoxAnnotate.Checked;
         }
+
+        private void buttonOptions_Click(object sender, EventArgs e)
+        {
+            if (waterfallManager != null)
+                waterfallManager.ShowOptionsDialog(this);
+        }
+
     }
+    
 }
