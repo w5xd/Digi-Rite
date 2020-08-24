@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DigiRiteLogger
+﻿namespace DigiRiteLogger
 {
     public interface IDigiRiteLogger
     {
@@ -36,4 +30,11 @@ namespace DigiRiteLogger
         // DigiRite tells the logger what call its trying to work now. and its grid, if known. and serial number, if assigned
         void SetCurrentCallAndGridAndSerial(string call, string grid, uint serialNumber);
     }
+
+    public delegate void ForceLeftRight(short lr);
+    public interface IDigiRiteLoggerInitialize
+    {
+        string SetAutomation(object automate);
+        bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice, ForceLeftRight flr);
+   }
 }

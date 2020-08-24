@@ -72,5 +72,11 @@ namespace DigiRite
         {
             return Program.applicationContext.GetCurrentMode();
         }
+
+        [ComVisible(true)]
+        public void SetLoggerAssemblyName(String s)
+        {
+            Program.applicationContext.SetLoggerAssemblyName(s);
+        }
     }
 }

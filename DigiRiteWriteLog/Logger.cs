@@ -2,12 +2,12 @@
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace DigiRiteLogger
+namespace DigiRiteWriteLog
 {
     /* Implementation of IDigiRiteLogger for calling WriteLog through WriteLog's
      * COM APIs.
      */
-    public class WriteLog : IDigiRiteLogger
+    public class Logger : DigiRiteLogger.IDigiRiteLogger, DigiRiteLogger.IDigiRiteLoggerInitialize
     {
         private int instanceNumber;
         private WriteLogClrTypes.ISingleEntry iWlEntry = null;
@@ -15,7 +15,7 @@ namespace DigiRiteLogger
         private WriteLogClrTypes.IWriteL iWlDoc = null;
         private System.IO.Ports.SerialPort pttPort = null;
 
-        public WriteLog(int instanceNumber)
+        public Logger(int instanceNumber)
         {
             this.instanceNumber = instanceNumber;
         }
@@ -39,7 +39,7 @@ namespace DigiRiteLogger
                     string lpString,
                     string lpFilename);
 
-        public string SetWlEntry(object wl)
+        public string SetAutomation(object wl)
         {
             string labelPttText = "";
             if (pttPort != null)
@@ -132,8 +132,8 @@ namespace DigiRiteLogger
 #endif
         }
 
-        public delegate void ForceLeftRight(short lr);
-        public bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice, ForceLeftRight flr)
+        public bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice,
+            DigiRiteLogger.ForceLeftRight flr)
         {
             var lr = iWlEntry.GetLeftRight();
             if ((lr != 0) && (lr != 1))

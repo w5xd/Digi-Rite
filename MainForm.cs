@@ -76,6 +76,7 @@ namespace DigiRite
 #region Logger customization
 
         private DigiRiteLogger.IDigiRiteLogger logger;
+        public string LoggerAssemblyName  = "DigiRiteWriteLog";
 
         // currentBand is only used to distinguish messages from a CALL
         // that are part of different QSOs because they are on a different band.
@@ -87,10 +88,14 @@ namespace DigiRite
         private short currentBand = 0;
         public DigiMode CurrentMode { get { return digiMode; } }
         public void SetWlEntry(object e)
-        {   // WriteLog is the only logger that calls here.
-            var wl = new DigiRiteLogger.WriteLog(instanceNumber);
-            labelPtt.Text = wl.SetWlEntry(e);
-            logger = wl;
+        {
+            System.Reflection.Assembly loggerAssembly = System.Reflection.Assembly.Load(LoggerAssemblyName);
+            System.Type t = loggerAssembly.GetType(LoggerAssemblyName + ".Logger");
+            var obj = System.Activator.CreateInstance(t, instanceNumber);
+            logger = obj as DigiRiteLogger.IDigiRiteLogger;
+            var init = obj as DigiRiteLogger.IDigiRiteLoggerInitialize;
+            if (null != init)
+                init.SetAutomation(e);
         }
 #endregion
 
@@ -1906,7 +1911,7 @@ namespace DigiRite
                 if (!String.IsNullOrEmpty(myCall))
                     Properties.Settings.Default.CallUsed = myCall;
                 MyCall = myCall.ToUpper().Trim();
-                var wlSetup = logger as DigiRiteLogger.WriteLog;
+                var wlSetup = logger as DigiRiteLogger.IDigiRiteLoggerInitialize;
                 if (null != wlSetup)// we are connected to WriteLog's automation interface
                      return wlSetup.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
                          (short lr) =>

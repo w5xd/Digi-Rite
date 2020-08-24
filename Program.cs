@@ -96,6 +96,8 @@ namespace DigiRite
                     }));
             }
 
+            private string loggerAssemblyName;
+
             public void SetWlEntry(object wl, int instanceNumber)
             {
                 // only do this once
@@ -104,9 +106,16 @@ namespace DigiRite
                     toDispatch.BeginInvoke(new Action<object>((object w) =>
                     {
                         mainForm = new MainForm(instanceNumber);
+                        if (loggerAssemblyName != null)
+                            mainForm.LoggerAssemblyName = loggerAssemblyName;
                         mainForm.SetWlEntry(w);
                     }), wl);
                 }
+            }
+
+            public void SetLoggerAssemblyName(string s)
+            {
+                loggerAssemblyName = s;
             }
 
             public void SendRttyMessage(String toSend)
