@@ -264,6 +264,8 @@ namespace DigiRiteWriteLog
             int dupe = 0;
             mult = 0;
             iWlDupingEntry.ClearEntry();
+            // Order of setting entry fields matters. 
+            iWlDupingEntry.Callsign = fromCall; // multiplier module overwrites entry fields here
             if (DgtlFieldNumber > 0)
                 iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digitalMode);
             if (ReceivedRstFieldNumber > 0) // ClearEntry in WL defaults the RST. clear it out
@@ -274,7 +276,6 @@ namespace DigiRiteWriteLog
                 if (hisGrid != null && !String.IsNullOrEmpty(hisGrid.GridSquare))
                     iWlDupingEntry.SetFieldN((short)GridSquareReceivedFieldNumber, hisGrid.GridSquare);
             }
-            iWlDupingEntry.Callsign = fromCall;
             dupe = iWlDupingEntry.Dupe();
             if (dupe == 0)
             {

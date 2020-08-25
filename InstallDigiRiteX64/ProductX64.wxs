@@ -117,6 +117,9 @@ All other GUIDs must NOT match.
             <Component Id="digiritelogger" Guid="{5A7D483A-2337-4A2E-A627-B29516C407B5}" >
                 <File Source="$(var.LocalBinDir)DigiRiteLogger.dll" Name="DigiRiteLogger.dll" />
             </Component>
+            <Component Id="digiritelogger2" Guid="{FDEDCA5E-0E32-453F-B33E-690944187378}" >
+                <File Source="$(var.LocalBinDir)DigiRiteWriteLog.dll" Name="DigiRiteWriteLog.dll" />
+            </Component>
         </ComponentGroup>
     </Fragment>
 </Wix>

@@ -125,6 +125,9 @@
             <Component Id="digiritelogger" Guid="{73F0FE8E-F436-4331-9E1D-817E7B8978CC}" >
                 <File Source="$(var.LocalBinDir)DigiRiteLogger.dll" Name="DigiRiteLogger.dll" />
             </Component>
+            <Component Id="digiritelogger2" Guid="{3039388A-D33D-4DAC-A938-3AFB03806410}" >
+                <File Source="$(var.LocalBinDir)DigiRiteWriteLog.dll" Name="DigiRiteWriteLog.dll" />
+            </Component>
         </ComponentGroup>
     </Fragment>
 </Wix>
