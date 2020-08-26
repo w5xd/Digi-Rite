@@ -1325,8 +1325,8 @@ namespace DigiRite
 #endregion
 
         private String MyCall {
-            set { 
-                myCall = value.ToUpper().Trim();
+            set {
+                myCall = value != null ? value.ToUpper().Trim() : "";
                 myBaseCall = myCall;
                 if (!String.IsNullOrEmpty(value) && !XDft.Generator.checkCall(myCall, ref myBaseCall))
                     MessageBox.Show("Callsign " + value + " is not a valid callsign for FT8");
