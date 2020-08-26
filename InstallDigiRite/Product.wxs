@@ -79,12 +79,12 @@
                     <Shortcut Id="DigiRiteSC" Name="DigiRite" Directory="ProgramMenuDir" Advertise="yes"/>
                 </File>
                 <!-- CLSID\guid must match Ft8Auto.cs -->
-                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}"   Value="WriteLog.Ft8Auto" Type="string" />
+                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}"   Value="DigiRite.Ft8Auto" Type="string" />
                 <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\LocalServer32"  Value="[INSTALLFOLDER]DigiRite.exe" Type="string" />
-                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\ProgId"  Value="WriteLog.Ft8Auto" Type="string" />
+                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\ProgId"  Value="DigiRite.Ft8Auto" Type="string" />
                 <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\Implemented Categories\{62C8FE65-4EBB-45E7-B440-6E39B2CDBF29}"  Value="" Type="string" />
-                <RegistryValue Root='HKCR' Key='WriteLog.Ft8Auto' Value='WriteLog.Ft8Auto' Type="string"/>
-                <RegistryValue Root='HKCR' Key='WriteLog.Ft8Auto\CLSID' Value='{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}' Type="string"/>
+                <RegistryValue Root='HKCR' Key='DigiRite.Ft8Auto' Value='DigiRite.Ft8Auto' Type="string"/>
+                <RegistryValue Root='HKCR' Key='DigiRite.Ft8Auto\CLSID' Value='{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}' Type="string"/>
             </Component>
             <Component Id="libfftw" Guid="{3C54D613-A0F6-4F2C-884F-2E674CA6F812}" >
                 <File Source="$(var.LocalBinDir)libfftw3f-3.dll" Name="libfftw3f-3.dll" />
@@ -119,7 +119,7 @@
             </Component>
             <Component Id="WriteLogProgId" Guid="{64AFC390-1B1D-4F80-BE72-08516F3DC72C}">
                 <RegistryKey Root="HKLM" Key="Software\W5XD\WriteLog\DigitalProgIds" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="no">
-                    <RegistryValue Action="write" Type="string" Name="DigiRite" Value="WriteLog.Ft8Auto"></RegistryValue>
+                    <RegistryValue Action="write" Type="string" Name="DigiRite" Value="DigiRite.Ft8Auto"></RegistryValue>
                 </RegistryKey>
             </Component>
             <Component Id="digiritelogger" Guid="{73F0FE8E-F436-4331-9E1D-817E7B8978CC}" >
@@ -127,6 +127,9 @@
             </Component>
             <Component Id="digiritelogger2" Guid="{3039388A-D33D-4DAC-A938-3AFB03806410}" >
                 <File Source="$(var.LocalBinDir)DigiRiteWriteLog.dll" Name="DigiRiteWriteLog.dll" />
+            </Component>
+            <Component Id="digiritelogger3" Guid="{DD7608F7-DC79-4095-98C2-8B415A583134}" >
+                <File Source="$(var.LocalBinDir)DigiRiteComLogger.dll" Name="DigiRiteComLogger.dll" />
             </Component>
         </ComponentGroup>
     </Fragment>

@@ -53,7 +53,7 @@ All other GUIDs must NOT match.
                 <Directory Id="DigiRite32">
                     <Component Id="WriteLogProgId" Guid="{BC08F397-F09F-4E73-A5AB-DD3578E38701}" Win64="no">
                         <RegistryKey Root="HKLM" Key="Software\W5XD\WriteLog\DigitalProgIds" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="no">
-                            <RegistryValue Action="write" Type="string" Name="DigiRite" Value="WriteLog.Ft8Auto"></RegistryValue>
+                            <RegistryValue Action="write" Type="string" Name="DigiRite" Value="DigiRite.Ft8Auto"></RegistryValue>
                         </RegistryKey>
                     </Component>
                 </Directory>
@@ -77,12 +77,12 @@ All other GUIDs must NOT match.
                     <Shortcut Id="DigiRiteSC" Name="DigiRite" Directory="ProgramMenuDir" Advertise="yes"/>
                 </File>
                 <!-- CLSID\guid must match Ft8Auto.cs -->
-                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}"   Value="WriteLog.Ft8Auto" Type="string" />
+                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}"   Value="DigiRite.Ft8Auto" Type="string" />
                 <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\LocalServer32"  Value="[INSTALLFOLDER]DigiRite.exe" Type="string" />
-                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\ProgId"  Value="WriteLog.Ft8Auto" Type="string" />
+                <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\ProgId"  Value="DigiRite.Ft8Auto" Type="string" />
                 <RegistryValue Root="HKCR" Key="CLSID\{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}\Implemented Categories\{62C8FE65-4EBB-45E7-B440-6E39B2CDBF29}"  Value="" Type="string" />
-                <RegistryValue Root='HKCR' Key='WriteLog.Ft8Auto' Value='WriteLog.Ft8Auto' Type="string"/>
-                <RegistryValue Root='HKCR' Key='WriteLog.Ft8Auto\CLSID' Value='{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}' Type="string"/>
+                <RegistryValue Root='HKCR' Key='DigiRite.Ft8Auto' Value='DigiRite.Ft8Auto' Type="string"/>
+                <RegistryValue Root='HKCR' Key='DigiRite.Ft8Auto\CLSID' Value='{4CC973B6-9BFB-3E4B-8157-E55774DD50C0}' Type="string"/>
             </Component>
             <Component Id="libfftw" Guid="{F7556D37-B786-4121-AC10-BBEC17344DDD}" >
                 <File Source="$(var.LocalBinDir)libfftw3f-3.dll"  />
@@ -119,6 +119,9 @@ All other GUIDs must NOT match.
             </Component>
             <Component Id="digiritelogger2" Guid="{FDEDCA5E-0E32-453F-B33E-690944187378}" >
                 <File Source="$(var.LocalBinDir)DigiRiteWriteLog.dll" Name="DigiRiteWriteLog.dll" />
+            </Component>
+            <Component Id="digiritelogger3" Guid="{D95BBB84-0B60-4555-82D0-22BFF70A9A67}" >
+                <File Source="$(var.LocalBinDir)DigiRiteComLogger.dll" Name="DigiRiteComLogger.dll" />
             </Component>
         </ComponentGroup>
     </Fragment>

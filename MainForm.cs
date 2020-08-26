@@ -93,9 +93,8 @@ namespace DigiRite
             System.Type t = loggerAssembly.GetType(LoggerAssemblyName + ".Logger");
             var obj = System.Activator.CreateInstance(t, instanceNumber);
             logger = obj as DigiRiteLogger.IDigiRiteLogger;
-            var init = obj as DigiRiteLogger.IDigiRiteLoggerInitialize;
-            if (null != init)
-                init.SetAutomation(e);
+            if (null != logger)
+                logger.SetAutomation(e);
         }
 #endregion
 
@@ -1911,9 +1910,8 @@ namespace DigiRite
                 if (!String.IsNullOrEmpty(myCall))
                     Properties.Settings.Default.CallUsed = myCall;
                 MyCall = myCall.ToUpper().Trim();
-                var wlSetup = logger as DigiRiteLogger.IDigiRiteLoggerInitialize;
-                if (null != wlSetup)// we are connected to WriteLog's automation interface
-                     return wlSetup.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
+                if (null != logger)// we are connected to WriteLog's automation interface
+                     return logger.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
                          (short lr) =>
                          {
                              Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()] = (uint)lr;

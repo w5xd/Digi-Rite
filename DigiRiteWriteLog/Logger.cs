@@ -7,7 +7,7 @@ namespace DigiRiteWriteLog
     /* Implementation of IDigiRiteLogger for calling WriteLog through WriteLog's
      * COM APIs.
      */
-    public class Logger : DigiRiteLogger.IDigiRiteLogger, DigiRiteLogger.IDigiRiteLoggerInitialize
+    public class Logger : DigiRiteLogger.IDigiRiteLogger
     {
         private int instanceNumber;
         private WriteLogClrTypes.ISingleEntry iWlEntry = null;
