@@ -6,6 +6,7 @@ namespace DigiRiteWriteLog
 {
     /* Implementation of IDigiRiteLogger for calling WriteLog through WriteLog's
      * COM APIs.
+     * DigiRite looks for this class named "Logger"
      */
     public class Logger : DigiRiteLogger.IDigiRiteLogger
     {
@@ -259,7 +260,8 @@ namespace DigiRiteWriteLog
             return true;
         }
 
-        public void CheckDupeAndMult(string fromCall, string digitalMode, XDpack77.Pack77Message.Message rm, out bool dupeout, out short mult)
+        public void CheckDupeAndMult(string fromCall, string digitalMode, 
+            XDpack77.Pack77Message.Message rm, out bool dupeout, out short mult)
         {
             int dupe = 0;
             mult = 0;
