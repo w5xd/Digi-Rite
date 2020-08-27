@@ -48,14 +48,10 @@ namespace DigiRiteComLogger
         }
 
         public void ForceRigToUsb()
-        {
-            remoteAdifType.InvokeMember("ForceRigToUsb", bf, null, remoteAdif, new object[0]);
-        }
+        { remoteAdifType.InvokeMember("ForceRigToUsb", bf, null, remoteAdif, new object[0]);}
 
         public short GetCurrentBand()
-        {
-            return (short)remoteAdifType.InvokeMember("GetCurrentBand", bf, null, remoteAdif, new object[0]);
-        }
+        {  return (short)remoteAdifType.InvokeMember("GetCurrentBand", bf, null, remoteAdif, new object[0]); }
 
         public void GetRigFrequency(out double rxKHz, out double txKHz, out bool split)
         {
@@ -100,14 +96,10 @@ namespace DigiRiteComLogger
         }
 
         public void SetCurrentCallAndGridAndSerial(string call, string grid, uint serialNumber)
-        {
-            remoteAdifType.InvokeMember("SetCurrentCallAndGridAndSerial", bf, null, remoteAdif, new object[] { call, grid, serialNumber });
-        }
+        {  remoteAdifType.InvokeMember("SetCurrentCallAndGridAndSerial", bf, null, remoteAdif, new object[] {call, grid, serialNumber}); }
 
         public void SetPtt(bool ptt)
-        {
-            remoteAdifType.InvokeMember("SetPtt", bf, null, remoteAdif, new object[] { ptt });
-        }
+        {  remoteAdifType.InvokeMember("SetPtt", bf, null, remoteAdif, new object[] { ptt });}
 
         public void SetQsoItemsToLog(string call, uint SentSerialNumber, string AdifDate, string AdifTime, string sentGrid, string digitalMode)
         {
@@ -116,17 +108,13 @@ namespace DigiRiteComLogger
         }
 
         public void SetRigFrequency(double rxKHz, double txKHz, bool split)
-        {
-            remoteAdifType.InvokeMember("SetRigFrequency", bf, null, remoteAdif, new object[] { rxKHz, txKHz, split });
-        }
+        { remoteAdifType.InvokeMember("SetRigFrequency", bf, null, remoteAdif, new object[] { rxKHz, txKHz, split });  }
 
         public void SetTransmitFocus()
-        {
-            remoteAdifType.InvokeMember("SetTransmitFocus", bf, null, remoteAdif, new object[0] );
-        }
+        {  remoteAdifType.InvokeMember("SetTransmitFocus", bf, null, remoteAdif, new object[0] );}
 
         public bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice, DigiRiteLogger.ForceLeftRight flr)
-        {
+        {   // the RxInDevice and TxOutDevice are relevant only in this process. This call cannot be forwarded out of process.
             return false;
         }
     }
