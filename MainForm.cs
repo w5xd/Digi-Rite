@@ -1909,7 +1909,8 @@ namespace DigiRite
                 MyCall = logger.CallUsed;
                 if (!String.IsNullOrEmpty(myCall))
                     Properties.Settings.Default.CallUsed = myCall;
-                MyCall = myCall.ToUpper().Trim();
+                else
+                    logger.CallUsed = Properties.Settings.Default.CallUsed;
                 if (null != logger)// we are connected to WriteLog's automation interface
                      return logger.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
                          (short lr) =>
