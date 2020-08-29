@@ -19,6 +19,7 @@ namespace DigiRite
         public bool OnLoad(LogFile logfile, Control chartSpectrum, Label labelWaterfall, Control.ControlCollection collection, MainForm mainForm)
         {
             Control waterfall = null;
+            bool foundWriteLog = false;
             // registry goop to look unconditionally in 32bit registry for WriteLog, whether we are x86 or x64
             Microsoft.Win32.RegistryKey rk32 = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32);
             {
@@ -45,6 +46,7 @@ namespace DigiRite
                     "DigiRite X64 Waterfall"
 #endif
                                 );
+                                foundWriteLog = true;
                             }
                             catch (System.Exception) { } // ignore failure
                         }
@@ -53,6 +55,28 @@ namespace DigiRite
                     rk32.Close();
                 }
             }
+
+            if (!foundWriteLog)
+            {   // second chance look for waterfall install
+                Microsoft.Win32.RegistryKey rkMachineDefault = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Default);
+                if (null != rkMachineDefault)
+                {
+                    Microsoft.Win32.RegistryKey wf = rkMachineDefault.OpenSubKey(@"Software\\DigiRite\\Waterfall");
+                    if (null != wf)
+                    {
+                        object wfDir = wf.GetValue("Directory");
+                        if (null != wfDir)
+                        {
+                            try {
+                                System.IO.Directory.SetCurrentDirectory(wfDir.ToString() );
+                            }  catch (System.Exception) { } // ignore failure
+                        }
+                        wf.Close();
+                    }
+                    rkMachineDefault.Close();
+                }
+            }
+
             try
             {
                 // if WriteLog's DigiRiteWaterfall assembly loads, use it.
