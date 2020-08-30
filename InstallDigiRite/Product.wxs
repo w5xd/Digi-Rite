@@ -52,7 +52,9 @@
 			<ComponentGroupRef Id="ProductComponents" />
             <ComponentRef Id="ProgramMenuDir"/>
         </Feature>
-	</Product>
+        <UIRef Id="WixUI_Minimal" />
+        <WixVariable Id="WixUILicenseRtf" Value="..\License.rtf" />
+    </Product>
 
     <Fragment>
         <Directory Id="TARGETDIR" Name="SourceDir">

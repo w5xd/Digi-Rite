@@ -40,7 +40,9 @@ All other GUIDs must NOT match.
             <ComponentRef Id="ProgramMenuDir"/>
             <ComponentRef Id="WriteLogProgId"/>
         </Feature>
-	</Product>
+        <UIRef Id="WixUI_Minimal" />
+        <WixVariable Id="WixUILicenseRtf" Value="..\License.rtf" />
+    </Product>
 
     <Fragment>
         <Directory Id="TARGETDIR" Name="SourceDir">
