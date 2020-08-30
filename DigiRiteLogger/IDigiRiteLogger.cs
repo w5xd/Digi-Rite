@@ -5,6 +5,7 @@
     {
         string CallUsed { get; set; } // call we are transmitting
         // For a given call and message, return whether it is a dupe and/or a multiplier. mult < 0 means "unknown", ==0 means no, >0 means yes.
+        string GridUsed { set; } // SetQsoItemsToLog below can override, but this is assumed otherwise
         void CheckDupeAndMult(string call, string digitalMode, XDpack77.Pack77Message.Message m, out bool dupe, out short mult);
         // we're about to transmit on our radio.
         void SetTransmitFocus();

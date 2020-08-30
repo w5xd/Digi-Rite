@@ -45,6 +45,20 @@ namespace DigiRiteComLogger
             }
         }
 
+        public string GridUsed
+        {
+            get
+            {
+                return (string)remoteLoggerType.InvokeMember("GridUsed",
+                    System.Reflection.BindingFlags.GetProperty, null, remoteLogger, new object[0]);
+            }
+            set
+            {
+                remoteLoggerType.InvokeMember("GridUsed",
+                    System.Reflection.BindingFlags.SetProperty, null, remoteLogger, new object[] { value });
+            }
+        }
+
         private const System.Reflection.BindingFlags bf = System.Reflection.BindingFlags.InvokeMethod;
 
         public void CheckDupeAndMult(string call, string digitalMode,

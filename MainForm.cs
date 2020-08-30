@@ -1451,7 +1451,10 @@ namespace DigiRite
                 digiMode = sf.digiMode;
                 MyCall = Properties.Settings.Default.CallUsed;
                 if (null != logger)
+                {
                     logger.CallUsed = Properties.Settings.Default.CallUsed;
+                    logger.GridUsed = Properties.Settings.Default.MyGrid;
+                }
                 UserPttToSound = sf.PttToSound;
                 UserVfoSplitToPtt = sf.VfoSplitToPtt;
             }
@@ -1911,6 +1914,7 @@ namespace DigiRite
                     Properties.Settings.Default.CallUsed = myCall;
                 else
                     logger.CallUsed = Properties.Settings.Default.CallUsed;
+                logger.GridUsed = Properties.Settings.Default.MyGrid;
                 if (null != logger)// we are connected to WriteLog's automation interface
                      return logger.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
                          (short lr) =>

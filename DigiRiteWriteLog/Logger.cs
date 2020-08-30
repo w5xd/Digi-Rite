@@ -17,18 +17,15 @@ namespace DigiRiteWriteLog
         private System.IO.Ports.SerialPort pttPort = null;
 
         public Logger(int instanceNumber)
-        {
-            this.instanceNumber = instanceNumber;
-        }
+        { this.instanceNumber = instanceNumber;  }
 
         public string CallUsed
         {
             get { return iWlDoc.CallUsed; }
-            set
-            {
-                WritePrivateProfileString("Configuration", "CallUsed", value, "WriteLog.ini");
-            }
+            set {  WritePrivateProfileString("Configuration", "CallUsed", value, "WriteLog.ini");  }
         }
+
+        public string GridUsed { get; set; } = "";
 
         [DllImport("KERNEL32.DLL", EntryPoint = "WritePrivateProfileStringW",
                    SetLastError = true,
