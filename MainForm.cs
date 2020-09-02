@@ -1381,6 +1381,10 @@ namespace DigiRite
             return float.TryParse(rv.ToString(), out v);
         }
 
+        string TextLabel { get {
+                return String.Format("DigiRite-{0} {1}", instanceNumber, digiMode);
+            } }
+
         private void MainForm_Load(object sender, EventArgs e)
         {
 #if !DEBUG
@@ -1398,7 +1402,7 @@ namespace DigiRite
             }
 #endif
             rxForm = new RcvrForm(this, instanceNumber);
-            this.Text = String.Format("{0}-{1}", this.Text, instanceNumber);
+            this.Text = TextLabel;
 
             ClockLabel cl = new ClockLabel();
             cl.Location = labelClockAnimation.Location;
@@ -1782,6 +1786,7 @@ namespace DigiRite
                     break;
             }
             DECODE_SEPARATOR = String.Format("{0}  ", MESSAGE_SEPARATOR);
+            this.Text = TextLabel;
         }
 
         private void initQsoQueue()
@@ -2661,9 +2666,48 @@ namespace DigiRite
             numericUpDownStreamsPrevious = numericUpDownStreams.Value;
         }
 
+        private void toggleFT4FT8ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            switch (digiMode)
+            {
+                case DigiMode.FT4:
+                    digiMode = DigiMode.FT8;
+                    break;
+                case DigiMode.FT8:
+                    digiMode = DigiMode.FT4;
+                    break;
+            }
+            initQsoQueue();
+            changeDigiMode();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.F8 | Keys.Control))
+            {
+                if (digiMode != DigiMode.FT8)
+                {
+                    digiMode = DigiMode.FT8;
+                    initQsoQueue();
+                    changeDigiMode();
+                }
+                return true;
+            }
+            else if (keyData == (Keys.F4 | Keys.Control))
+            {
+                if (digiMode != DigiMode.FT4)
+                {
+                    digiMode = DigiMode.FT4;
+                    initQsoQueue();
+                    changeDigiMode();
+                }
+                return true;
+            }
+            else return base.ProcessCmdKey(ref msg, keyData);
+        }
 #endregion
 
-#region TX RX frequency
+        #region TX RX frequency
         private void buttonTune_Click(object sender, EventArgs e)
         {
             if (SendInProgress)
@@ -2733,6 +2777,7 @@ namespace DigiRite
             }
         }
 
-#endregion
+        #endregion
+
     }
 }

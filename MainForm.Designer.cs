@@ -108,9 +108,10 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
+            this.toggleFT4FT8ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxConversation = new DigiRite.ConversationListBox();
             this.checkedlbNextToSend = new DigiRite.ToSendListBox();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -778,6 +779,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.setupToolStripMenuItem,
+            this.toggleFT4FT8ToolStripMenuItem,
             this.fontToolStripMenuItem,
             this.abortTxToolStripMenuItem,
             this.exitToolStripMenuItem});
@@ -788,28 +790,28 @@
             // setupToolStripMenuItem
             // 
             this.setupToolStripMenuItem.Name = "setupToolStripMenuItem";
-            this.setupToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.setupToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.setupToolStripMenuItem.Text = "&Setup...";
             this.setupToolStripMenuItem.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.fontToolStripMenuItem.Text = "Font...";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // abortTxToolStripMenuItem
             // 
             this.abortTxToolStripMenuItem.Name = "abortTxToolStripMenuItem";
-            this.abortTxToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.abortTxToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.abortTxToolStripMenuItem.Text = "&Abort Tx";
             this.abortTxToolStripMenuItem.Click += new System.EventHandler(this.buttonAbort_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -1043,6 +1045,18 @@
             this.panelInProgress.Size = new System.Drawing.Size(345, 136);
             this.panelInProgress.TabIndex = 1;
             // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
+            // 
+            // toggleFT4FT8ToolStripMenuItem
+            // 
+            this.toggleFT4FT8ToolStripMenuItem.Name = "toggleFT4FT8ToolStripMenuItem";
+            this.toggleFT4FT8ToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.toggleFT4FT8ToolStripMenuItem.Text = "Toggle FT4/FT8    Ctrl+F4/F8";
+            this.toggleFT4FT8ToolStripMenuItem.Click += new System.EventHandler(this.toggleFT4FT8ToolStripMenuItem_Click);
+            // 
             // listBoxConversation
             // 
             this.listBoxConversation.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -1070,11 +1084,6 @@
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
             // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1085,6 +1094,7 @@
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.menuStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip;
             this.Name = "MainForm";
             this.Text = "DigiRite";
@@ -1216,6 +1226,7 @@
         private System.Windows.Forms.CheckBox checkBoxCalcNextToSend;
         private System.Windows.Forms.Button buttonCQnow;
         private System.Windows.Forms.ToolStripMenuItem numberOfRestartsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toggleFT4FT8ToolStripMenuItem;
     }
 }
 
