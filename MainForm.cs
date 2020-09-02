@@ -1403,7 +1403,6 @@ namespace DigiRite
 #endif
             rxForm = new RcvrForm(this, instanceNumber);
             this.Text = TextLabel;
-
             ClockLabel cl = new ClockLabel();
             cl.Location = labelClockAnimation.Location;
             cl.Size = labelClockAnimation.Size;
@@ -1413,7 +1412,7 @@ namespace DigiRite
             labelClockAnimation = cl;
 
             // Apply color scheme
-            label4.BackColor =
+            labelQsosInProgress.BackColor =
             label5.BackColor =
             label3.BackColor =
             label11.BackColor =
@@ -1719,7 +1718,7 @@ namespace DigiRite
                     }
             }
 #endif
-
+            radioButtonEven.Checked = true;
             finishedLoad = true;
         }
 
@@ -2355,6 +2354,8 @@ namespace DigiRite
                 splitContainerCQ.Panel2Collapsed = radioButtonEven.Checked ^ true;
             }
             qsosPanel.RefreshOnScreen();
+            labelTxOddEven.Text = " TX:" + (radioButtonEven.Checked ? "Even" : "Odd");
+            labelTxOddEven.BackColor = radioButtonEven.Checked ? System.Drawing.Color.LightCyan : System.Drawing.Color.LightYellow;
         }
 
         private void checkedlbNextToSend_ItemCheck(object sender, ItemCheckEventArgs e)
