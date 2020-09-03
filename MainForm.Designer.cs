@@ -282,7 +282,7 @@
             // checkBoxRespondAny
             // 
             this.checkBoxRespondAny.Dock = System.Windows.Forms.DockStyle.Left;
-            this.checkBoxRespondAny.Location = new System.Drawing.Point(186, 0);
+            this.checkBoxRespondAny.Location = new System.Drawing.Point(187, 0);
             this.checkBoxRespondAny.Name = "checkBoxRespondAny";
             this.checkBoxRespondAny.Size = new System.Drawing.Size(54, 24);
             this.checkBoxRespondAny.TabIndex = 3;
@@ -293,7 +293,7 @@
             // checkBoxRespondNonDupe
             // 
             this.checkBoxRespondNonDupe.Dock = System.Windows.Forms.DockStyle.Left;
-            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(109, 0);
+            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(110, 0);
             this.checkBoxRespondNonDupe.Name = "checkBoxRespondNonDupe";
             this.checkBoxRespondNonDupe.Size = new System.Drawing.Size(77, 24);
             this.checkBoxRespondNonDupe.TabIndex = 2;
@@ -304,7 +304,7 @@
             // label14
             // 
             this.label14.Dock = System.Windows.Forms.DockStyle.Left;
-            this.label14.Location = new System.Drawing.Point(46, 0);
+            this.label14.Location = new System.Drawing.Point(47, 0);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(63, 24);
             this.label14.TabIndex = 1;
@@ -316,7 +316,7 @@
             this.label2.Dock = System.Windows.Forms.DockStyle.Left;
             this.label2.Location = new System.Drawing.Point(0, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(46, 24);
+            this.label2.Size = new System.Drawing.Size(47, 24);
             this.label2.TabIndex = 0;
             this.label2.Text = "&To me.";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -328,7 +328,7 @@
             this.labelQsosInProgress.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.labelQsosInProgress.Location = new System.Drawing.Point(0, 0);
             this.labelQsosInProgress.Name = "labelQsosInProgress";
-            this.labelQsosInProgress.Size = new System.Drawing.Size(227, 24);
+            this.labelQsosInProgress.Size = new System.Drawing.Size(276, 24);
             this.labelQsosInProgress.TabIndex = 0;
             this.labelQsosInProgress.Text = "QSO(s) in &Progress";
             this.labelQsosInProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -348,9 +348,9 @@
             this.labelTxOddEven.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.labelTxOddEven.Dock = System.Windows.Forms.DockStyle.Right;
             this.labelTxOddEven.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelTxOddEven.Location = new System.Drawing.Point(227, 0);
+            this.labelTxOddEven.Location = new System.Drawing.Point(276, 0);
             this.labelTxOddEven.Name = "labelTxOddEven";
-            this.labelTxOddEven.Size = new System.Drawing.Size(118, 24);
+            this.labelTxOddEven.Size = new System.Drawing.Size(69, 24);
             this.labelTxOddEven.TabIndex = 1;
             this.labelTxOddEven.Text = "TX: Even";
             this.labelTxOddEven.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
