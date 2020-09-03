@@ -9,6 +9,10 @@ DigiRite is a radio contesting accessory for FT8 messaging. It optionally integr
 The algorithms, source code, look-and-feel of WSJT-X and related programs, and protocol specifications for the modes FSK441, FT8, JT4, JT6M JT9, JT65, JTMS, QRA64, ISCAT, MSK144 are Copyright (C) 2001-2018 by one or more of the following authors: Joseph Taylor, K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo, IV3NWV; Grea Bream, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR; Philip Karn, KA9Q; and other members of the WSJT Development Group.
 </blockquote> 
 
+To find an already-built installer for DigiRite, checkout email reflector at https://groups.io/g/digirite. Several hams build it regularly and some make the msi file available for public download.
+
+DigiRite is designed as a plug-in component supporting FT4 and FT8 and published such that any ham radio logbook program is permitted to use it subject to the software license held by the WSJT-X copyright holders (see https://sourceforge.net/projects/wsjt/). WriteLog is such a logbook program. There is also the Trivial ADIF logbook at http://github.com/w5xd/TrivialAdifLogger. Trivial supports DigiRite, has rig control (courtesy http://github.com/hamlib) and uses ADIF as its native file format. Use your favorite ADIF-capable logbook program with Trivial's ADIF.
+
 If you want to build DigiRite from these sources, its prerequisites are:
 <ul>
 <li>Visual Studio 2017. The Community Edition was used by this author.</li>
