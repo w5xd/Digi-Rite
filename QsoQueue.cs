@@ -91,7 +91,7 @@ namespace DigiRite
                 onUsed(directlyToMe ? Conversation.Origin.TO_ME : Conversation.Origin.TO_OTHER);
                 // What's in the message? an exchange and/or an acknowledgement?
                 bool ack = false;
-                bool hasExchange = ExchangeFromMessage(rm.Pack77Message) != null;
+                bool hasExchange = directlyToMe && ExchangeFromMessage(rm.Pack77Message) != null;
                 if (hasExchange)
                 {
                     XDpack77.Pack77Message.Roger roger = rm.Pack77Message as XDpack77.Pack77Message.Roger;
