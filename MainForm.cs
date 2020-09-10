@@ -76,6 +76,7 @@ namespace DigiRite
 #region Logger customization
 
         private DigiRiteLogger.IDigiRiteLogger logger;
+        public string LoggerAssemblyName  = "DigiRiteWriteLog";
 
         // currentBand is only used to distinguish messages from a CALL
         // that are part of different QSOs because they are on a different band.
@@ -87,10 +88,13 @@ namespace DigiRite
         private short currentBand = 0;
         public DigiMode CurrentMode { get { return digiMode; } }
         public void SetWlEntry(object e)
-        {   // WriteLog is the only logger that calls here.
-            var wl = new DigiRiteLogger.WriteLog(instanceNumber);
-            labelPtt.Text = wl.SetWlEntry(e);
-            logger = wl;
+        {
+            System.Reflection.Assembly loggerAssembly = System.Reflection.Assembly.Load(LoggerAssemblyName);
+            System.Type t = loggerAssembly.GetType(LoggerAssemblyName + ".Logger");
+            var obj = System.Activator.CreateInstance(t, instanceNumber);
+            logger = obj as DigiRiteLogger.IDigiRiteLogger;
+            if (null != logger)
+                logger.SetAutomation(e);
         }
 #endregion
 
@@ -1320,8 +1324,8 @@ namespace DigiRite
 #endregion
 
         private String MyCall {
-            set { 
-                myCall = value.ToUpper().Trim();
+            set {
+                myCall = value != null ? value.ToUpper().Trim() : "";
                 myBaseCall = myCall;
                 if (!String.IsNullOrEmpty(value) && !XDft.Generator.checkCall(myCall, ref myBaseCall))
                     MessageBox.Show("Callsign " + value + " is not a valid callsign for FT8");
@@ -1377,6 +1381,10 @@ namespace DigiRite
             return float.TryParse(rv.ToString(), out v);
         }
 
+        string TextLabel { get {
+                return String.Format("DigiRite-{0} {1}", instanceNumber, digiMode);
+            } }
+
         private void MainForm_Load(object sender, EventArgs e)
         {
 #if !DEBUG
@@ -1394,8 +1402,7 @@ namespace DigiRite
             }
 #endif
             rxForm = new RcvrForm(this, instanceNumber);
-            this.Text = String.Format("{0}-{1}", this.Text, instanceNumber);
-
+            this.Text = TextLabel;
             ClockLabel cl = new ClockLabel();
             cl.Location = labelClockAnimation.Location;
             cl.Size = labelClockAnimation.Size;
@@ -1405,7 +1412,7 @@ namespace DigiRite
             labelClockAnimation = cl;
 
             // Apply color scheme
-            label4.BackColor =
+            labelQsosInProgress.BackColor =
             label5.BackColor =
             label3.BackColor =
             label11.BackColor =
@@ -1447,7 +1454,10 @@ namespace DigiRite
                 digiMode = sf.digiMode;
                 MyCall = Properties.Settings.Default.CallUsed;
                 if (null != logger)
+                {
                     logger.CallUsed = Properties.Settings.Default.CallUsed;
+                    logger.GridUsed = Properties.Settings.Default.MyGrid;
+                }
                 UserPttToSound = sf.PttToSound;
                 UserVfoSplitToPtt = sf.VfoSplitToPtt;
             }
@@ -1708,7 +1718,7 @@ namespace DigiRite
                     }
             }
 #endif
-
+            radioButtonEven.Checked = true;
             finishedLoad = true;
         }
 
@@ -1775,6 +1785,7 @@ namespace DigiRite
                     break;
             }
             DECODE_SEPARATOR = String.Format("{0}  ", MESSAGE_SEPARATOR);
+            this.Text = TextLabel;
         }
 
         private void initQsoQueue()
@@ -1905,10 +1916,11 @@ namespace DigiRite
                 MyCall = logger.CallUsed;
                 if (!String.IsNullOrEmpty(myCall))
                     Properties.Settings.Default.CallUsed = myCall;
-                MyCall = myCall.ToUpper().Trim();
-                var wlSetup = logger as DigiRiteLogger.WriteLog;
-                if (null != wlSetup)// we are connected to WriteLog's automation interface
-                     return wlSetup.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
+                else
+                    logger.CallUsed = Properties.Settings.Default.CallUsed;
+                logger.GridUsed = Properties.Settings.Default.MyGrid;
+                if (null != logger)// we are connected to WriteLog's automation interface
+                     return logger.SetupTxAndRxDeviceIndicies(ref SetupMaySelectDevices, ref RxInDevice, ref TxOutDevice,
                          (short lr) =>
                          {
                              Properties.Settings.Default["AudioInputChannel_" + instanceNumber.ToString()] = (uint)lr;
@@ -2342,6 +2354,8 @@ namespace DigiRite
                 splitContainerCQ.Panel2Collapsed = radioButtonEven.Checked ^ true;
             }
             qsosPanel.RefreshOnScreen();
+            labelTxOddEven.Text = " TX:" + (radioButtonEven.Checked ? "Even" : "Odd");
+            labelTxOddEven.BackColor = radioButtonEven.Checked ? System.Drawing.Color.LightCyan : System.Drawing.Color.LightYellow;
         }
 
         private void checkedlbNextToSend_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -2653,9 +2667,48 @@ namespace DigiRite
             numericUpDownStreamsPrevious = numericUpDownStreams.Value;
         }
 
+        private void toggleFT4FT8ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            switch (digiMode)
+            {
+                case DigiMode.FT4:
+                    digiMode = DigiMode.FT8;
+                    break;
+                case DigiMode.FT8:
+                    digiMode = DigiMode.FT4;
+                    break;
+            }
+            initQsoQueue();
+            changeDigiMode();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.F8 | Keys.Control))
+            {
+                if (digiMode != DigiMode.FT8)
+                {
+                    digiMode = DigiMode.FT8;
+                    initQsoQueue();
+                    changeDigiMode();
+                }
+                return true;
+            }
+            else if (keyData == (Keys.F4 | Keys.Control))
+            {
+                if (digiMode != DigiMode.FT4)
+                {
+                    digiMode = DigiMode.FT4;
+                    initQsoQueue();
+                    changeDigiMode();
+                }
+                return true;
+            }
+            else return base.ProcessCmdKey(ref msg, keyData);
+        }
 #endregion
 
-#region TX RX frequency
+        #region TX RX frequency
         private void buttonTune_Click(object sender, EventArgs e)
         {
             if (SendInProgress)
@@ -2725,6 +2778,7 @@ namespace DigiRite
             }
         }
 
-#endregion
+        #endregion
+
     }
 }

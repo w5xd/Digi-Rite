@@ -2,12 +2,13 @@
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace DigiRiteLogger
+namespace DigiRiteWriteLog
 {
     /* Implementation of IDigiRiteLogger for calling WriteLog through WriteLog's
      * COM APIs.
+     * DigiRite looks for this class named "Logger"
      */
-    public class WriteLog : IDigiRiteLogger
+    public class Logger : DigiRiteLogger.IDigiRiteLogger
     {
         private int instanceNumber;
         private WriteLogClrTypes.ISingleEntry iWlEntry = null;
@@ -15,19 +16,16 @@ namespace DigiRiteLogger
         private WriteLogClrTypes.IWriteL iWlDoc = null;
         private System.IO.Ports.SerialPort pttPort = null;
 
-        public WriteLog(int instanceNumber)
-        {
-            this.instanceNumber = instanceNumber;
-        }
+        public Logger(int instanceNumber)
+        { this.instanceNumber = instanceNumber;  }
 
         public string CallUsed
         {
             get { return iWlDoc.CallUsed; }
-            set
-            {
-                WritePrivateProfileString("Configuration", "CallUsed", value, "WriteLog.ini");
-            }
+            set {  WritePrivateProfileString("Configuration", "CallUsed", value, "WriteLog.ini");  }
         }
+
+        public string GridUsed { get; set; } = "";
 
         [DllImport("KERNEL32.DLL", EntryPoint = "WritePrivateProfileStringW",
                    SetLastError = true,
@@ -39,7 +37,7 @@ namespace DigiRiteLogger
                     string lpString,
                     string lpFilename);
 
-        public string SetWlEntry(object wl)
+        public string SetAutomation(object wl)
         {
             string labelPttText = "";
             if (pttPort != null)
@@ -132,8 +130,8 @@ namespace DigiRiteLogger
 #endif
         }
 
-        public delegate void ForceLeftRight(short lr);
-        public bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice, ForceLeftRight flr)
+        public bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice,
+            DigiRiteLogger.ForceLeftRight flr)
         {
             var lr = iWlEntry.GetLeftRight();
             if ((lr != 0) && (lr != 1))
@@ -259,11 +257,14 @@ namespace DigiRiteLogger
             return true;
         }
 
-        public void CheckDupeAndMult(string fromCall, string digitalMode, XDpack77.Pack77Message.Message rm, out bool dupeout, out short mult)
+        public void CheckDupeAndMult(string fromCall, string digitalMode, 
+            XDpack77.Pack77Message.Message rm, out bool dupeout, out short mult)
         {
             int dupe = 0;
             mult = 0;
             iWlDupingEntry.ClearEntry();
+            // Order of setting entry fields matters. 
+            iWlDupingEntry.Callsign = fromCall; // multiplier module overwrites entry fields here
             if (DgtlFieldNumber > 0)
                 iWlDupingEntry.SetFieldN((short)DgtlFieldNumber, digitalMode);
             if (ReceivedRstFieldNumber > 0) // ClearEntry in WL defaults the RST. clear it out
@@ -274,7 +275,6 @@ namespace DigiRiteLogger
                 if (hisGrid != null && !String.IsNullOrEmpty(hisGrid.GridSquare))
                     iWlDupingEntry.SetFieldN((short)GridSquareReceivedFieldNumber, hisGrid.GridSquare);
             }
-            iWlDupingEntry.Callsign = fromCall;
             dupe = iWlDupingEntry.Dupe();
             if (dupe == 0)
             {

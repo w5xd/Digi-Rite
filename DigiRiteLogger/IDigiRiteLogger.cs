@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DigiRiteLogger
+﻿namespace DigiRiteLogger
 {
+    public delegate void ForceLeftRight(short lr);
     public interface IDigiRiteLogger
     {
         string CallUsed { get; set; } // call we are transmitting
         // For a given call and message, return whether it is a dupe and/or a multiplier. mult < 0 means "unknown", ==0 means no, >0 means yes.
+        string GridUsed { set; } // SetQsoItemsToLog below can override, but this is assumed otherwise
         void CheckDupeAndMult(string call, string digitalMode, XDpack77.Pack77Message.Message m, out bool dupe, out short mult);
         // we're about to transmit on our radio.
         void SetTransmitFocus();
@@ -35,5 +31,7 @@ namespace DigiRiteLogger
         void LogGridSquareQso(string sentRst, string receivedGrid, string receivedDbReport);
         // DigiRite tells the logger what call its trying to work now. and its grid, if known. and serial number, if assigned
         void SetCurrentCallAndGridAndSerial(string call, string grid, uint serialNumber);
+        string SetAutomation(object automate);
+        bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice, ForceLeftRight flr);
     }
 }

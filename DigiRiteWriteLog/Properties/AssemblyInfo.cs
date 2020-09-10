@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DigiRiteLogger")]
+[assembly: AssemblyTitle("DigiRiteWriteLog")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("WriteLog Contesting Software LLC")]
-[assembly: AssemblyProduct("DigiRite")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("DigiRiteWriteLog")]
 [assembly: AssemblyCopyright("Copyright © 2020 WriteLog Contesting Software, LLC")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,5 +20,5 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("23b67ec2-ac1e-4849-b431-231641e3d85b")]
+[assembly: Guid("e04846f6-56b4-4a3e-8e13-59718ea0b3f3")]
 

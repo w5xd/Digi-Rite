@@ -2,7 +2,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>DigiRite Readme 2.2.2.7</title>
+    <title>DigiRite Readme 2.2.2.11</title>
 </head>
 <body>
     <p>
@@ -28,15 +28,16 @@
         IV3NWV; Greg Beam, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR;
         Philip Karn, KA9Q; and other members of the WSJT Development Group.
     </blockquote>
+    <h2>Logbook dependencies</h2>
+    DigiRite will run stand alone but that mode puts up a nastygram every time you run it, and is useful only for brief tests because it won't log any QSOs. Any logbook is permitted to incorporate DigiRite subject to the 
+    license restrictions on <a href='https://sourceforge.net/projects/wsjt/'>WSJT-X</a>.
+    <a href='http://writelog.com'>WriteLog</a> is one such logbook.
+    Or try the free <a href='http://github.com/w5xd/TrivialAdifLogger'>Trivial ADIF Logger</a>.
     <h2>Installation</h2>
-    You may install DigiRite regardless of whether WriteLog is installed. It
-    integrates with both the unlimited
-    and <a href='http://writelog.com/demo'>demo versions</a> of WriteLog. The order
-    you install them does not matter.
-    You may run DigiRite stand alone (<i>i.e.</i> without WriteLog)
-    but DigiRite has no dupe checking, logbook, nor rig control! Stand alone mode
-    is useful only for restricted testing.
-    The Demo WriteLog version of WriteLog supports two of the
+    DigiRite integrates with both the unlimited
+    and <a href='http://writelog.com/demo'>demo versions</a> of WriteLog and with <a href='http://github.com/w5xd/TrivialAdifLogger'>
+    Trivial ADIF Logger</a>.
+    The Demo version of WriteLog supports two of the
     77-bit contest packing methods: ARRL Field Day and ARRL Round Up.
     DigiRite will find and use the WriteLog unlimited version waterfall
     component.
@@ -8195,6 +8196,12 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         the entries in DigiRite's Conversation History window. The conversation log file is
         erased and started over every time you restart DigiRite.
     </p>
+    2.2.2.11
+    <ul>
+        <li>Fix failure to show a rover received in a new grid as not a dupe.</li>
+        <li>Simplify logger interface.</li>
+        <li>Add quick switch between FT4/FT8 using File menu or Ctrl+F4/F8 keys</li>
+    </ul>
     2.2.2.7
     <ul>
         <li>Fix failure in previous version to honor the "Hold" detection when calling a station on her transmit frequency.</li>

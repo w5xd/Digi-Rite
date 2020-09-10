@@ -23,7 +23,7 @@ namespace DigiRite
         ** replace the installed one when invoked from WriteLog 
         */
         Guid("4CC973B6-9BFB-3E4B-8157-E55774DD50C0"), 
-        ProgId("WriteLog.Ft8Auto")  
+        ProgId("DigiRite.Ft8Auto")  
         /* For reference: 
         ** WriteLog uses the registry key HKEY_LOCAL_MACHINE\SOFTWARE\W5XD\WriteLog\DigitalProductIds
         ** (on 64b Windows, do the drill with WOW6432Node)
@@ -71,6 +71,12 @@ namespace DigiRite
         public string GetCurrentMode()
         {
             return Program.applicationContext.GetCurrentMode();
+        }
+
+        [ComVisible(true)]
+        public void SetLoggerAssemblyName(String s)
+        {
+            Program.applicationContext.SetLoggerAssemblyName(s);
         }
     }
 }

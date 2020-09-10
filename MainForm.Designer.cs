@@ -45,7 +45,9 @@
             this.checkBoxRespondNonDupe = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
+            this.labelQsosInProgress = new System.Windows.Forms.Label();
+            this.panelQsosInProgress = new System.Windows.Forms.Panel();
+            this.labelTxOddEven = new System.Windows.Forms.Label();
             this.checkBoxInProgress = new System.Windows.Forms.CheckBox();
             this.labelInProgress = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -85,6 +87,7 @@
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toggleFT4FT8ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.abortTxToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -108,12 +111,13 @@
             this.label11 = new System.Windows.Forms.Label();
             this.splitContainerCenter = new System.Windows.Forms.SplitContainer();
             this.panelInProgress = new System.Windows.Forms.Panel();
+            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             this.listBoxConversation = new DigiRite.ConversationListBox();
             this.checkedlbNextToSend = new DigiRite.ToSendListBox();
-            this.timerCleanup = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFrequency)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
+            this.panelQsosInProgress.SuspendLayout();
             this.panel6.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRxFrequency)).BeginInit();
@@ -278,7 +282,7 @@
             // checkBoxRespondAny
             // 
             this.checkBoxRespondAny.Dock = System.Windows.Forms.DockStyle.Left;
-            this.checkBoxRespondAny.Location = new System.Drawing.Point(186, 0);
+            this.checkBoxRespondAny.Location = new System.Drawing.Point(187, 0);
             this.checkBoxRespondAny.Name = "checkBoxRespondAny";
             this.checkBoxRespondAny.Size = new System.Drawing.Size(54, 24);
             this.checkBoxRespondAny.TabIndex = 3;
@@ -289,7 +293,7 @@
             // checkBoxRespondNonDupe
             // 
             this.checkBoxRespondNonDupe.Dock = System.Windows.Forms.DockStyle.Left;
-            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(109, 0);
+            this.checkBoxRespondNonDupe.Location = new System.Drawing.Point(110, 0);
             this.checkBoxRespondNonDupe.Name = "checkBoxRespondNonDupe";
             this.checkBoxRespondNonDupe.Size = new System.Drawing.Size(77, 24);
             this.checkBoxRespondNonDupe.TabIndex = 2;
@@ -300,7 +304,7 @@
             // label14
             // 
             this.label14.Dock = System.Windows.Forms.DockStyle.Left;
-            this.label14.Location = new System.Drawing.Point(46, 0);
+            this.label14.Location = new System.Drawing.Point(47, 0);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(63, 24);
             this.label14.TabIndex = 1;
@@ -312,22 +316,44 @@
             this.label2.Dock = System.Windows.Forms.DockStyle.Left;
             this.label2.Location = new System.Drawing.Point(0, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(46, 24);
+            this.label2.Size = new System.Drawing.Size(47, 24);
             this.label2.TabIndex = 0;
             this.label2.Text = "&To me.";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // label4
+            // labelQsosInProgress
             // 
-            this.label4.BackColor = System.Drawing.SystemColors.Control;
-            this.label4.Dock = System.Windows.Forms.DockStyle.Top;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.label4.Location = new System.Drawing.Point(0, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(345, 24);
-            this.label4.TabIndex = 0;
-            this.label4.Text = "QSO(s) in &Progress. L or R click";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelQsosInProgress.BackColor = System.Drawing.SystemColors.Control;
+            this.labelQsosInProgress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelQsosInProgress.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.labelQsosInProgress.Location = new System.Drawing.Point(0, 0);
+            this.labelQsosInProgress.Name = "labelQsosInProgress";
+            this.labelQsosInProgress.Size = new System.Drawing.Size(276, 24);
+            this.labelQsosInProgress.TabIndex = 0;
+            this.labelQsosInProgress.Text = "QSO(s) in &Progress";
+            this.labelQsosInProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panelQsosInProgress
+            // 
+            this.panelQsosInProgress.Controls.Add(this.labelQsosInProgress);
+            this.panelQsosInProgress.Controls.Add(this.labelTxOddEven);
+            this.panelQsosInProgress.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelQsosInProgress.Location = new System.Drawing.Point(0, 0);
+            this.panelQsosInProgress.Name = "panelQsosInProgress";
+            this.panelQsosInProgress.Size = new System.Drawing.Size(345, 24);
+            this.panelQsosInProgress.TabIndex = 2;
+            // 
+            // labelTxOddEven
+            // 
+            this.labelTxOddEven.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.labelTxOddEven.Dock = System.Windows.Forms.DockStyle.Right;
+            this.labelTxOddEven.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelTxOddEven.Location = new System.Drawing.Point(276, 0);
+            this.labelTxOddEven.Name = "labelTxOddEven";
+            this.labelTxOddEven.Size = new System.Drawing.Size(69, 24);
+            this.labelTxOddEven.TabIndex = 1;
+            this.labelTxOddEven.Text = "TX: Even";
+            this.labelTxOddEven.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // checkBoxInProgress
             // 
@@ -743,12 +769,10 @@
             // radioButtonEven
             // 
             this.radioButtonEven.AutoSize = true;
-            this.radioButtonEven.Checked = true;
             this.radioButtonEven.Location = new System.Drawing.Point(7, 17);
             this.radioButtonEven.Name = "radioButtonEven";
             this.radioButtonEven.Size = new System.Drawing.Size(49, 17);
             this.radioButtonEven.TabIndex = 0;
-            this.radioButtonEven.TabStop = true;
             this.radioButtonEven.Text = "even";
             this.radioButtonEven.UseVisualStyleBackColor = true;
             this.radioButtonEven.CheckedChanged += new System.EventHandler(this.radioOddEven_CheckedChanged);
@@ -778,6 +802,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.setupToolStripMenuItem,
+            this.toggleFT4FT8ToolStripMenuItem,
             this.fontToolStripMenuItem,
             this.abortTxToolStripMenuItem,
             this.exitToolStripMenuItem});
@@ -788,28 +813,35 @@
             // setupToolStripMenuItem
             // 
             this.setupToolStripMenuItem.Name = "setupToolStripMenuItem";
-            this.setupToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.setupToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.setupToolStripMenuItem.Text = "&Setup...";
             this.setupToolStripMenuItem.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
+            // 
+            // toggleFT4FT8ToolStripMenuItem
+            // 
+            this.toggleFT4FT8ToolStripMenuItem.Name = "toggleFT4FT8ToolStripMenuItem";
+            this.toggleFT4FT8ToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.toggleFT4FT8ToolStripMenuItem.Text = "Toggle FT4/FT8    Ctrl+F4/F8";
+            this.toggleFT4FT8ToolStripMenuItem.Click += new System.EventHandler(this.toggleFT4FT8ToolStripMenuItem_Click);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.fontToolStripMenuItem.Text = "Font...";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // abortTxToolStripMenuItem
             // 
             this.abortTxToolStripMenuItem.Name = "abortTxToolStripMenuItem";
-            this.abortTxToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.abortTxToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.abortTxToolStripMenuItem.Text = "&Abort Tx";
             this.abortTxToolStripMenuItem.Click += new System.EventHandler(this.buttonAbort_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -1020,7 +1052,7 @@
             // 
             this.splitContainerCenter.Panel1.BackColor = System.Drawing.SystemColors.Window;
             this.splitContainerCenter.Panel1.Controls.Add(this.panelInProgress);
-            this.splitContainerCenter.Panel1.Controls.Add(this.label4);
+            this.splitContainerCenter.Panel1.Controls.Add(this.panelQsosInProgress);
             this.splitContainerCenter.Panel1.Font = new System.Drawing.Font("Lucida Console", 9F);
             // 
             // splitContainerCenter.Panel2
@@ -1035,6 +1067,7 @@
             // 
             // panelInProgress
             // 
+            this.panelInProgress.BackColor = System.Drawing.SystemColors.Window;
             this.panelInProgress.Controls.Add(this.labelInProgress);
             this.panelInProgress.Controls.Add(this.checkBoxInProgress);
             this.panelInProgress.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1042,6 +1075,11 @@
             this.panelInProgress.Name = "panelInProgress";
             this.panelInProgress.Size = new System.Drawing.Size(345, 136);
             this.panelInProgress.TabIndex = 1;
+            // 
+            // timerCleanup
+            // 
+            this.timerCleanup.Interval = 10000;
+            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
             // 
             // listBoxConversation
             // 
@@ -1070,11 +1108,6 @@
             this.checkedlbNextToSend.TabIndex = 1;
             this.checkedlbNextToSend.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedlbNextToSend_ItemCheck);
             // 
-            // timerCleanup
-            // 
-            this.timerCleanup.Interval = 10000;
-            this.timerCleanup.Tick += new System.EventHandler(this.timerCleanup_Tick);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1085,6 +1118,7 @@
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.menuStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip;
             this.Name = "MainForm";
             this.Text = "DigiRite";
@@ -1096,6 +1130,7 @@
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panel5.ResumeLayout(false);
+            this.panelQsosInProgress.ResumeLayout(false);
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
             this.panel3.ResumeLayout(false);
@@ -1143,7 +1178,8 @@
         private System.Windows.Forms.Timer timerFt8Clock;
         private System.Windows.Forms.Timer timerSpectrum;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label labelQsosInProgress;
+        private System.Windows.Forms.Panel panelQsosInProgress;
         private System.Windows.Forms.CheckBox checkBoxAutoXmit;
         private System.Windows.Forms.CheckBox checkBoxRespondNonDupe;
         private System.Windows.Forms.Panel panel3;
@@ -1216,6 +1252,8 @@
         private System.Windows.Forms.CheckBox checkBoxCalcNextToSend;
         private System.Windows.Forms.Button buttonCQnow;
         private System.Windows.Forms.ToolStripMenuItem numberOfRestartsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toggleFT4FT8ToolStripMenuItem;
+        private System.Windows.Forms.Label labelTxOddEven;
     }
 }
 
