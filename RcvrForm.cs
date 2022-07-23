@@ -341,9 +341,12 @@ namespace DigiRite
             if (e.Button == MouseButtons.Right)
             {
                 var item = listBoxReceived.IndexFromPoint(e.Location);
-                contextMenuStripOnReceived.Items[1].Enabled = item != ListBox.NoMatches;
-                listBoxReceived.SelectedIndex = item;
-                listBoxReceivedSelectedItem = listBoxReceived.Items[item];
+                if (item != ListBox.NoMatches)
+                {
+                    contextMenuStripOnReceived.Items[1].Enabled = true;
+                    listBoxReceivedSelectedItem = listBoxReceived.Items[item];
+                    listBoxReceived.SelectedIndex = item;
+                }
                 contextMenuStripOnReceived.Show(this, new System.Drawing.Point(e.X, e.Y));//place the menu at the pointer position
             }
         }
