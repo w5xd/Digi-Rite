@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("WriteLog Contesting Software LLC")]
 [assembly: AssemblyProduct("DigiRite")]
-[assembly: AssemblyCopyright("Copyright © 2020 WriteLog Contesting Software, LLC")]
+[assembly: AssemblyCopyright("Copyright © 2022 WriteLog Contesting Software, LLC")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
