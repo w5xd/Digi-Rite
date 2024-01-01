@@ -28,7 +28,7 @@ namespace DigiRite
 #elif BUILD_X64
             "     (X64 build)" +
 #endif
-                "\r\nCopyright (c) 2020 WriteLog Contesting Software, LLC\r\n\r\n" +
+                "\r\nCopyright (c) 2024 WriteLog Contesting Software, LLC\r\n\r\n" +
                 "This program is based on wsjtx-2.2.2 which is licensed software.\r\n" +
                 "See the file COPYING.\r\n\r\n" +
 
