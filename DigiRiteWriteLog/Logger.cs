@@ -115,19 +115,27 @@ namespace DigiRiteWriteLog
             }
             if (GridSquareReceivedFieldNumber <= 0)
                 GridSquareReceivedFieldNumber = appWriteLogGrid;
-            string[] titles = qsoc.GetColumnTitles();
-            for (int i = 0; i < titles.Length; i++)
+
+            for (int trycount = 0 ; trycount < 3 ; trycount += 1 )
             {
-                if (titles[i].ToUpper().IndexOf("DGTL") >= 0)
+                string[] titles = qsoc.GetColumnTitles();
+                for (int i = 0; i < titles.Length; i++)
                 {
-                    DgtlFieldNumber = i + 1;
-                    break;
+                    if (titles[i].ToUpper().IndexOf("DGTL") >= 0)
+                    {
+                        DgtlFieldNumber = i + 1;
+                        break;
+                    }
                 }
-            }
 #if DEBUG
-            if (DgtlFieldNumber > 0)
-                iWlEntry.SetFieldN((short)DgtlFieldNumber, "FT8");
+                if (DgtlFieldNumber > 0)
+                    iWlEntry.SetFieldN((short)DgtlFieldNumber, "FT8");
 #endif
+                if (null != titles && titles.Length > 0)
+                    break;
+                if (MessageBox.Show("Failed to get column titles. Try again?", "DigiRite logging to WriteLog", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    break;
+            }
         }
 
         public bool SetupTxAndRxDeviceIndicies(ref bool SetupMaySelectDevices, ref uint RxInDevice, ref uint TxOutDevice,
