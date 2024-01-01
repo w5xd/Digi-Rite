@@ -18,7 +18,7 @@
 !!
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define VersionNumber = 202.2.11.0 ?>
+    <?define VersionNumber = 202.2.12.0 ?>
     <!--The numbering convention depends on the number of the WSJTX build DigiRite is derived from. Call that number A.B.C.
         For DigiRite, this installer version number is AB.C.D.0 where AB is 100 times A plus B, and D is the
         build number for DigiRite.-->
