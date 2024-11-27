@@ -18,10 +18,11 @@
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
     <?define VersionNumber = 206.0.1.0 ?>
+    <?define BuildersName = PUT YOUR NAME HERE?>
     <!--The numbering convention depends on the number of the WSJTX build DigiRite is derived from. Call that number A.B.C.
         For DigiRite, this installer version number is AB.C.D.0 where AB is 100 times A plus B, and D is the
         build number for DigiRite.-->
-    <Package Manufacturer="builders name here" Name="DigiRite open source" Version="$(var.VersionNumber)" UpgradeCode="ac196bff-3463-4788-8638-d730254967f4" Language="1033" InstallerVersion="200">
+    <Package Manufacturer="$(var.BuildersName)" Name="DigiRite open source" Version="$(var.VersionNumber)" UpgradeCode="ac196bff-3463-4788-8638-d730254967f4" Language="1033" InstallerVersion="200">
 		
 
         <!--We have AllowSameVersionUpgrades="yes" so that the x86 and x64 installers of DigiRite can replace each other if their versions match.
@@ -90,6 +91,7 @@
             </Component>
             <Component Id="XDwsjt" Guid="{E948C6AF-9D2E-4297-8227-E4CF73673E14}">
                 <File Id="XDwsjtFT.dll" Source="$(var.LocalBinDir)XDwsjtFT.dll" Name="XDwsjtFT.dll" />
+                <File Id="XDwsjt.dll" Source="$(var.LocalBinDir)XDwsjt.dll" Name="XDwsjt.dll"/>
             </Component>
             <Component Id="XDft8" Guid="{6EC1A5C5-0E79-4EDB-AD1E-B9A6AE338F65}">
                 <File Id="XDft.dll" Source="$(var.LocalBinDir)XDft.dll" Name="XDft.dll" />
