@@ -21,9 +21,9 @@ All other GUIDs must NOT match.
             <UpgradeVersion Property="WRITELOGBUILDFOUND" Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="01.01.35" IncludeMaximum="no" OnlyDetect="no" />
         </Upgrade>
 
-        <PropertyRef Id="WIX_IS_NETFRAMEWORK_462_OR_LATER_INSTALLED" />
+        <PropertyRef Id="WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED" />
         <Launch Condition="VersionNT &gt;= 601" Message="This application requires Windows 7 or later" />
-        <Launch Condition="Installed OR WIX_IS_NETFRAMEWORK_462_OR_LATER_INSTALLED" Message="This application requires .NET Framework 4.6.2. Please install the .NET Framework then run this installer again." />
+        <Launch Condition="Installed OR WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED" Message="This application requires .NET Framework 4.7.2. Please install the .NET Framework then run this installer again." />
         <MediaTemplate EmbedCab="yes" />
 
         <Feature Id="ProductFeature" Title="DigiRite" Level="1">
