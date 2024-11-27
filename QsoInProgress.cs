@@ -233,7 +233,7 @@ namespace DigiRite
 
         // if the message is to our same CALL...
         public bool AddMessageOnMatch(XDpack77.Pack77Message.ReceivedMessage rm, 
-            bool directlyToMe, string callsQsled)
+            bool directlyToMe, CallQsled callQsled)
         {
             if (null == qsoSequencer)
                 return false;
@@ -244,11 +244,15 @@ namespace DigiRite
                     CanAcceptAckNotToMe = true;
                     CyclesSinceMessagedToMe = 0;
                 }
+                else if (callQsled == CallQsled.IsMe)
+                {
+                    CyclesSinceMessagedToMe = 0;
+                }
                 else
                 {
                     if (!messagedThisCycle)
                     {
-                        if (String.IsNullOrEmpty(callsQsled))
+                        if (callQsled == CallQsled.None)
                         {
                             // if he sends multiple messages in the same cycle...
                             // ...then we need to "hold" only if this is the only one
@@ -266,7 +270,7 @@ namespace DigiRite
                         else
                         {
                             holdingForAnotherQso = false;
-                            if (messagedLastCycle && !IsLogged && callsQsled == "ALL")
+                            if (messagedLastCycle && !IsLogged)
                                 return true;
                         }
                     }

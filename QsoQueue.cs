@@ -37,10 +37,10 @@ namespace DigiRite
         public interface IQsoQueueCallBacks
         {
             string GetExchangeMessage(QsoInProgress q, bool addAck);
-            string GetAckMessage(QsoInProgress q, bool ofAnAck);
+            string GetQslMessage(QsoInProgress q, bool ofAnAck);
             void SendMessage(string toSend, QsoInProgress q, QsoSequencer.MessageSent ms);
             void LogQso(QsoInProgress q);
-            void SendOnLoggedAck(QsoInProgress q, QsoSequencer.MessageSent ms);
+            void SendOnLoggedQsl(QsoInProgress q, QsoSequencer.MessageSent ms);
         };
 
         // connect the QsoQueue with QsoInProgress on callbacks from the QsoSequencer
@@ -51,13 +51,13 @@ namespace DigiRite
 
             public void LogQso()  
                 {  qsoQueue.logQso(qso);   }
-            public void SendAck(bool ofAnAck, QsoSequencer.MessageSent ms)  
-                { qsoQueue.sendAck(qso, ofAnAck, ms);  }
+            public void SendQsl(bool ofAnAck, QsoSequencer.MessageSent ms)  
+                { qsoQueue.sendQsl(qso, ofAnAck, ms);  }
             public void SendExchange(bool withAck, QsoSequencer.MessageSent ms)  
                 {  
                     qsoQueue.sendExchange(qso, withAck, ms); 
                 }
-            public void SendOnLoggedAck(QsoSequencer.MessageSent ms) {  qsoQueue.callbacks.SendOnLoggedAck(qso, ms);} 
+            public void SendOnLoggedQsl(QsoSequencer.MessageSent ms) {  qsoQueue.callbacks.SendOnLoggedQsl(qso, ms);} 
             public override String ToString()         
                 { return qso.ToString(); }
 
@@ -75,7 +75,7 @@ namespace DigiRite
 
         // call here every for every incoming message that might be relevant to us
         public override void MessageForMycall(RecentMessage recentMessage,  
-            bool directlyToMe, string callQsled, short band,
+            bool directlyToMe, CallQsled callQsled, short band,
             bool autoStart, IsConversationMessage onUsed)
         {
             XDpack77.Pack77Message.ReceivedMessage rm = recentMessage.Message;
@@ -100,16 +100,14 @@ namespace DigiRite
                 }
                 if (!hasExchange && !ack) // but if no exchange, allow QSL to also set ack
                 {   // if the message can QSO prior, see if can apply to us
-                        if ((String.Equals("ALL", callQsled) && inProgress.CanAcceptAckNotToMe) || 
-                            String.Equals(myCall,callQsled)  || 
-                            String.Equals(myBaseCall, callQsled))
+                        if ((callQsled == CallQsled.ImplyAll && inProgress.CanAcceptAckNotToMe) || callQsled == CallQsled.IsMe)
                             ack = true;
                 }
 
                 if (hasExchange)
                     sequencer.OnReceivedExchange(ack);
                 else if (ack)
-                    sequencer.OnReceivedAck(directlyToMe);
+                    sequencer.OnReceivedQsl(directlyToMe || callQsled == CallQsled.IsMe);
                 else 
                     sequencer.OnReceivedWrongExchange();
             } else if (autoStart && directlyToMe)
@@ -169,11 +167,11 @@ namespace DigiRite
             }
         }
 
-        private void sendAck(QsoInProgress q, bool ofAnAck, QsoSequencer.MessageSent ms) /* ofAnAck can be used to send CQ*/
-        {  callbacks.SendMessage(ackMessage(q,ofAnAck), q, ms); }
+        private void sendQsl(QsoInProgress q, bool ofAnAck, QsoSequencer.MessageSent ms) /* ofAnAck can be used to send CQ*/
+        {  callbacks.SendMessage(qslMessage(q,ofAnAck), q, ms); }
 
-        private string ackMessage(QsoInProgress q, bool ofAnAck)
-        { return callbacks.GetAckMessage(q, ofAnAck); }
+        private string qslMessage(QsoInProgress q, bool ofAnAck)
+        { return callbacks.GetQslMessage(q, ofAnAck); }
     }
 
     class QsoQueueGridSquare : QsoQueue

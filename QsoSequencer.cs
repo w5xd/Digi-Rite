@@ -9,9 +9,9 @@
         public interface IQsoSequencerCallbacks
         {
              void SendExchange(bool withAck, MessageSent ms);
-             void SendAck(bool ofAnAck, MessageSent ms);
+             void SendQsl(bool ofAnAck, MessageSent ms);
              void LogQso();
-             void SendOnLoggedAck(MessageSent ms);
+             void SendOnLoggedQsl(MessageSent ms);
         }
 
         private bool haveLogged = false; // only invoke the LogQso callback once
@@ -90,7 +90,7 @@
             else
             {   // if they do, then ack this one
                 bool prevLogged = haveLoggedExchange; // redundant exchanges received only log once
-                qsoSequencerCallbacks.SendAck(false,  () => {
+                qsoSequencerCallbacks.SendQsl(false,  () => {
                         HaveSentAck = true; 
                         if (!prevLogged)
                             LogQso();}
@@ -108,7 +108,7 @@
             State = 4;
         }
 
-        public void OnReceivedAck(bool directlyToMe)
+        public void OnReceivedQsl(bool directlyToMe)
         {
             deferredToEndOfReceive = null;
             System.Action toDo = () =>
@@ -119,7 +119,7 @@
                     if (!haveLoggedExchange)
                     {   // we only ack the ack once
                         if (!HaveSentAck)
-                            qsoSequencerCallbacks.SendAck(true,
+                            qsoSequencerCallbacks.SendQsl(true,
                                 () =>
                                 {
                                     HaveSentAck = true;
@@ -128,12 +128,12 @@
                         else
                         {
                             AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                            qsoSequencerCallbacks.SendOnLoggedAck(null);
+                            qsoSequencerCallbacks.SendOnLoggedQsl(null);
                             LogQso();
                         }
                     }
                     else if (AckMoreAcks > 0)
-                        qsoSequencerCallbacks.SendAck(true,
+                        qsoSequencerCallbacks.SendQsl(true,
                             () => { AckMoreAcks -= 1; });
                 }
                 else if (WrongExchangeCount > 0)
@@ -142,7 +142,7 @@
                     if (!haveLogged)
                         AckMoreAcks = MAXIMUM_ACK_OF_ACK;
                     if (AckMoreAcks > 0)
-                        qsoSequencerCallbacks.SendAck(true,
+                        qsoSequencerCallbacks.SendQsl(true,
                             () =>
                             {
                                 AckMoreAcks -= 1;
@@ -171,7 +171,7 @@
                 qsoSequencerCallbacks.SendExchange(false, () => { HaveSentExchange = true; WrongExchangeCount += 1;});
                 return;
             }
-            qsoSequencerCallbacks.SendAck(false, () => { if (!haveLogged) LogQso(); });
+            qsoSequencerCallbacks.SendQsl(false, () => { if (!haveLogged) LogQso(); });
         }
     }
 }

@@ -5,6 +5,7 @@ namespace DigiRite
 {
     public delegate void IsConversationMessage(Conversation.Origin reason);
 
+    public   enum CallQsled { None, ImplyAll, IsMe };
     public interface IQsoQueue
     {
         string MyCall { set; }
@@ -12,7 +13,7 @@ namespace DigiRite
         void OnCycleBeginning(int cycleNumber);
         bool InitiateQso(RecentMessage rm, short band, bool onHisFrequency, System.Action onUsed=null);
         void MessageForMycall(RecentMessage recentMessage,
-                    bool directlyToMe, string callQsled, short band,
+                    bool directlyToMe, CallQsled callQsled, short band,
                     bool autoStart, IsConversationMessage onUsed);
    }
 

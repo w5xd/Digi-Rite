@@ -8,9 +8,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("DigiRite")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("WriteLog Contesting Software LLC")]
 [assembly: AssemblyProduct("DigiRite")]
-[assembly: AssemblyCopyright("Copyright © 2022 WriteLog Contesting Software, LLC")]
+[assembly: AssemblyCopyright("Copyright © 2024 Wayne Wright, W5XD")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
