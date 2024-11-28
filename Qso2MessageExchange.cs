@@ -177,9 +177,8 @@ namespace DigiRite
         {
             deferredToEndOfReceive = null;
             XDpack77.Pack77Message.Exchange exc = msg as XDpack77.Pack77Message.Exchange;
-            bool firstMessageAssumeGridAck = false;
             if (!amLeaderSet)
-                firstMessageAssumeGridAck = amLeader = directlyToMe;
+                amLeader = directlyToMe;
             amLeaderSet = true;
             XDpack77.Pack77Message.Roger roger = msg as XDpack77.Pack77Message.Roger;
             bool msgHasR = (null != roger) && (roger.Roger);
@@ -194,8 +193,8 @@ namespace DigiRite
                     haveGrid = true;
                     if (msgHasR)
                         haveAckOfGrid = true;
-                    else if (!firstMessageAssumeGridAck)
-                        eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid && directlyToMe, () =>
+                    else 
+                        eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid, () =>
                             { haveSentGrid = true; });
                 }
                 else if (directlyToMe)
@@ -240,14 +239,25 @@ namespace DigiRite
                 else if (!haveGrid)
                     eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid, () =>
                         { haveSentGrid = true; });
-                else if (haveAckOfGrid && haveAckOfReport)
-                    LogQso();
+                else if (directlyToMe && haveAckOfGrid && haveAckOfReport)
+                {
+                    eToSend = () =>
+                    {
+                        if (!haveLoggedGrid || !haveLoggedReport)
+                        {
+                            LogQso();
+                            cb.SendOnLoggedQsl(null);
+                        }
+                    };
+                }
             }
             bool isMe = callQsled == CallQsled.IsMe || directlyToMe;
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             // is this message a QSL to end the QSO?
             if (callQsled != CallQsled.None)
             {
+                if (haveReceivedWrongExchange)
+                    return;
                 Action toDoOnAck = () =>
                 {
                     lastSent = null;
@@ -286,7 +296,13 @@ namespace DigiRite
                 eToSend();
                 return;
             }
-            OnReceivedNothing(); // didn't get what I wanted
+            /* In the (unlikely) possibility I got a message directly to me but could do nothing with it,
+             * I assume the other guy is not going to multi-stream multiple messages directly to me in the
+             * same cycle and I know that OnReceivedNothing() will not be called at the end of this cycle
+             * because I did get this message I am processing now, so behave as if I got nothing.
+             */
+            if (isMe)   
+                OnReceivedNothing();
         }
 
         private Action deferredToEndOfReceive;
