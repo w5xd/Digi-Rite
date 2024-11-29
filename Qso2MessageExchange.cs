@@ -117,21 +117,16 @@ namespace DigiRite
             void SendQsl(QsoSequencer.MessageSent ms);
             void SendOnLoggedQsl(QsoSequencer.MessageSent ms);
         }
-        private const uint MAXIMUM_ACK_OF_ACK = 3;
+        private const int MAXIMUM_ACK_OF_ACK = 3;
         private bool haveGrid  = false;
         private bool haveReport  = false;
         private bool haveLoggedGrid = false;
         private bool haveLoggedReport = false;
-        private bool amLeader = false;
-        private bool amLeaderSet = false;
         private bool haveSentReport = false;
         private bool haveSentGrid = false;
         private bool haveReceivedWrongExchange = false;
-        private bool haveAckOfGrid = false; // compiler correctly says we never read this
         private string ackOfAckGrid;
-        private bool haveAckOfReport = false;
-        private uint AckMoreAcks = 0;
-        private bool onLoggedAckEnabled = false;
+        private int AckMoreAcks = 0;
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
         private ExchangeSent lastSent;
@@ -177,9 +172,6 @@ namespace DigiRite
         {
             deferredToEndOfReceive = null;
             XDpack77.Pack77Message.Exchange exc = msg as XDpack77.Pack77Message.Exchange;
-            if (!amLeaderSet)
-                amLeader = directlyToMe;
-            amLeaderSet = true;
             XDpack77.Pack77Message.Roger roger = msg as XDpack77.Pack77Message.Roger;
             bool msgHasR = (null != roger) && (roger.Roger);
             ExchangeSent eToSend = null;
@@ -191,10 +183,8 @@ namespace DigiRite
                 if (!String.IsNullOrEmpty(gs))
                 {   // received a grid
                     haveGrid = true;
-                    if (msgHasR)
-                        haveAckOfGrid = true;
-                    else 
-                        eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid, () =>
+                    if (!msgHasR)
+                        eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid & haveReport, () =>
                             { haveSentGrid = true; });
                 }
                 else if (directlyToMe)
@@ -202,10 +192,8 @@ namespace DigiRite
                     if (rp > XDpack77.Pack77Message.Message.NO_DB)
                     {   // received a dB report
                         haveReport = true;
-                        if (msgHasR && haveSentReport)
-                            haveAckOfReport = true;
-                        else
-                            eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
+                        if (!msgHasR)
+                            eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
                                 { haveSentReport = true; });
                     }
                     else if (null == msg as XDpack77.Pack77Message.StandardMessage)
@@ -219,15 +207,7 @@ namespace DigiRite
                 }
                 if (eToSend == null)
                 {
-                    if (!haveAckOfReport)
-                        eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
-                            { haveSentReport = true; });
-                    /*  This is asymmetrical because we assume they have our grid already on their first grid transmission,
-                     *  even if they don't send an R with their grid.
-                     *   else if (!haveAckOfGrid)
-                         eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid, () =>
-                             { haveSentGrid = true; }); */
-                    else if (haveReport && haveGrid)
+                    if (haveReport && haveGrid)
                         eToSend = () => cb.SendQsl(null);
                 }
             }
@@ -239,7 +219,7 @@ namespace DigiRite
                 else if (!haveGrid)
                     eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid, () =>
                         { haveSentGrid = true; });
-                else if (directlyToMe && haveAckOfGrid && haveAckOfReport)
+                else if (directlyToMe && haveSentReport)
                 {
                     eToSend = () =>
                     {
@@ -261,25 +241,23 @@ namespace DigiRite
                 Action toDoOnAck = () =>
                 {
                     lastSent = null;
-                    if ((haveReport || (isMe && haveGrid)))
+                    if (AckMoreAcks >= 0 && directlyToMe && !String.IsNullOrEmpty(ackOfAckGrid) && String.Equals(qsl.QslText, ackOfAckGrid))
+                    {   // only repeat this if they send exact same message
+                        AckMoreAcks -= 1;
+                        if (AckMoreAcks >= 0)
+                            cb.SendQsl(null);
+                        return;
+                    }
+                    if (AckMoreAcks == 0 && (haveReport || (isMe && haveGrid)))
                     {
                         LogQso();
-                        ackOfAckGrid = qsl.QslText; // see if they repeat exact message
-                        AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                        QsoSequencer.MessageSent asTransmitted = () => { onLoggedAckEnabled = true; };
+                        ackOfAckGrid = qsl.QslText; // see if they repeat exact message                        
+                        QsoSequencer.MessageSent asTransmitted = () => 
+                            {  AckMoreAcks = MAXIMUM_ACK_OF_ACK - 1; };
                         if (!haveReport || !haveGrid)
                             cb.SendQsl(asTransmitted); // He terminated the QSO by sending us a QSL, but we were not finished.
                         else
                             cb.SendOnLoggedQsl(asTransmitted);
-                        return;
-                    }
-                    if (AckMoreAcks > 0 && directlyToMe && String.Equals(qsl.QslText, ackOfAckGrid))
-                    {   // only repeat this if they send exact same message
-                        AckMoreAcks -= 1;
-                        if (onLoggedAckEnabled)
-                            cb.SendOnLoggedQsl(null);
-                        else
-                            cb.SendQsl(null);
                         return;
                     }
                 };
