@@ -124,6 +124,7 @@ namespace DigiRite
         private bool haveLoggedReport = false;
         private bool haveSentReport = false;
         private bool haveSentGrid = false;
+        private bool haveReceivedQsl = false;
         private bool haveReceivedWrongExchange = false;
         private string ackOfAckGrid;
         private int AckMoreAcks = 0;
@@ -183,7 +184,7 @@ namespace DigiRite
                 if (!String.IsNullOrEmpty(gs))
                 {   // received a grid
                     haveGrid = true;
-                    if (!msgHasR)
+                    if (!msgHasR && !directlyToMe && !haveReceivedQsl)
                         eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid & haveReport, () =>
                             { haveSentGrid = true; });
                 }
@@ -192,7 +193,7 @@ namespace DigiRite
                     if (rp > XDpack77.Pack77Message.Message.NO_DB)
                     {   // received a dB report
                         haveReport = true;
-                        if (!msgHasR)
+                        if (!msgHasR && !haveReceivedQsl)
                             eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
                                 { haveSentReport = true; });
                     }
@@ -214,10 +215,10 @@ namespace DigiRite
             if (eToSend == null && !haveReceivedWrongExchange)
             {
                 if (!haveReport)
-                    eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
+                    eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
                         { haveSentReport = true; });
                 else if (!haveGrid)
-                    eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid, () =>
+                    eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveReport & haveGrid, () =>
                         { haveSentGrid = true; });
                 else if (directlyToMe && haveSentReport)
                 {
@@ -231,10 +232,12 @@ namespace DigiRite
                     };
                 }
             }
+            if (msgHasR)
+                haveReceivedQsl = true;
             bool isMe = callQsled == CallQsled.IsMe || directlyToMe;
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             // is this message a QSL to end the QSO?
-            if (callQsled != CallQsled.None)
+            if (callQsled != CallQsled.None || haveReceivedQsl)
             {
                 if (haveReceivedWrongExchange)
                     return;
@@ -261,6 +264,7 @@ namespace DigiRite
                         return;
                     }
                 };
+                haveReceivedQsl = true;
                 // do it now? or wait to see if multi-streaming partner sends a message directlyToMe
                 if (isMe)
                     toDoOnAck();
