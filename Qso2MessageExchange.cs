@@ -262,7 +262,7 @@ namespace DigiRite
                         ackOfAckGrid = qsl.QslText; // see if they repeat exact message                        
                         QsoSequencer.MessageSent asTransmitted = () => 
                             {  AckMoreAcks = MAXIMUM_ACK_OF_ACK - 1; };
-                        if (!haveReport || !haveGrid)
+                        if (!haveReport || !haveGrid || msgHasR)
                             cb.SendQsl(asTransmitted); // He terminated the QSO by sending us a QSL, but we were not finished.
                         else
                             cb.SendOnLoggedQsl(asTransmitted);
