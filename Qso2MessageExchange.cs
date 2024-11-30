@@ -193,6 +193,11 @@ namespace DigiRite
                     if (rp > XDpack77.Pack77Message.Message.NO_DB)
                     {   // received a dB report
                         haveReport = true;
+                        if (!haveSentReport)
+                        {
+                            msgHasR = false; // if I receive a report with an R, but have never sent one, ignore the R
+                            haveReceivedQsl = false;
+                        }
                         if (!msgHasR && !haveReceivedQsl)
                             eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
                                 { haveSentReport = true; });
