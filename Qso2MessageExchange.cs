@@ -126,7 +126,7 @@ namespace DigiRite
         private bool haveSentGrid = false;
         private bool haveReceivedQsl = false;
         private bool haveReceivedWrongExchange = false;
-        private string ackOfAckGrid;
+        private string qslTextReceived;
         private int AckMoreAcks = 0;
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
@@ -176,6 +176,10 @@ namespace DigiRite
             XDpack77.Pack77Message.Roger roger = msg as XDpack77.Pack77Message.Roger;
             bool msgHasR = (null != roger) && (roger.Roger);
             ExchangeSent eToSend = null;
+            QsoSequencer.MessageSent asTransmitted = () =>
+            {
+                AckMoreAcks = MAXIMUM_ACK_OF_ACK - 1;
+            };
             if (null != exc)
             {
                 string gs = exc.GridSquare;
@@ -201,6 +205,8 @@ namespace DigiRite
                         if (!msgHasR && !haveReceivedQsl)
                             eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
                                 { haveSentReport = true; });
+                        if (msgHasR)
+                            haveReceivedQsl = true;
                     }
                     else if (null == msg as XDpack77.Pack77Message.StandardMessage)
                     {   // message has an exchange, but for some contest we don't know about
@@ -214,7 +220,7 @@ namespace DigiRite
                 if (eToSend == null)
                 {
                     if (haveReport && haveGrid)
-                        eToSend = () => cb.SendQsl(null);
+                        eToSend = () => cb.SendQsl(asTransmitted);
                 }
             }
             if (eToSend == null && !haveReceivedWrongExchange)
@@ -232,15 +238,14 @@ namespace DigiRite
                         if (!haveLoggedGrid || !haveLoggedReport)
                         {
                             LogQso();
-                            cb.SendOnLoggedQsl(null);
+                            cb.SendOnLoggedQsl(asTransmitted);
                         }
                     };
                 }
             }
-            if (msgHasR)
-                haveReceivedQsl = true;
             bool isMe = callQsled == CallQsled.IsMe || directlyToMe;
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
+            bool qslTextMatchesLastTime = !String.IsNullOrEmpty(qslTextReceived) && String.Equals(qsl.QslText, qslTextReceived);
             // is this message a QSL to end the QSO?
             if (callQsled != CallQsled.None || haveReceivedQsl)
             {
@@ -249,7 +254,7 @@ namespace DigiRite
                 Action toDoOnAck = () =>
                 {
                     lastSent = null;
-                    if (AckMoreAcks >= 0 && directlyToMe && !String.IsNullOrEmpty(ackOfAckGrid) && String.Equals(qsl.QslText, ackOfAckGrid))
+                    if (AckMoreAcks >= 0 && directlyToMe && qslTextMatchesLastTime)
                     {   // only repeat this if they send exact same message
                         AckMoreAcks -= 1;
                         if (AckMoreAcks >= 0)
@@ -259,22 +264,25 @@ namespace DigiRite
                     if (AckMoreAcks == 0 && (haveReport || (isMe && haveGrid)))
                     {
                         LogQso();
-                        ackOfAckGrid = qsl.QslText; // see if they repeat exact message                        
-                        QsoSequencer.MessageSent asTransmitted = () => 
-                            {  AckMoreAcks = MAXIMUM_ACK_OF_ACK - 1; };
                         if (!haveReport || !haveGrid || msgHasR)
                             cb.SendQsl(asTransmitted); // He terminated the QSO by sending us a QSL, but we were not finished.
                         else
+                        {
+                            AckMoreAcks = 1;
                             cb.SendOnLoggedQsl(asTransmitted);
+                        }
                         return;
                     }
+                    else if (directlyToMe && qslTextMatchesLastTime)
+                        cb.SendQsl(asTransmitted);
                 };
-                haveReceivedQsl = true;
                 // do it now? or wait to see if multi-streaming partner sends a message directlyToMe
                 if (isMe)
                     toDoOnAck();
                 else
                     deferredToEndOfReceive = toDoOnAck;
+                qslTextReceived = qsl.QslText; // see if they repeat exact message                        
+                haveReceivedQsl = true;
                 return;
             }
             if (eToSend != null)

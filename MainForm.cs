@@ -36,6 +36,7 @@ namespace DigiRite
         private LogFile logFile;
         private LogFile conversationLogFile;
         private bool sendInProgress = false;
+        private bool autoXmitTimedOut = false;
         private bool SendInProgress {
             get { return sendInProgress; }
             set { sendInProgress = value;
@@ -326,7 +327,11 @@ namespace DigiRite
                         bool directlyToMe = (toCall != null) && ((toCall == myCall) || (toCall == myBaseCall));
 
                         if (directlyToMe)
+                        {
                             watchDogTime = DateTime.UtcNow;
+                            if (autoXmitTimedOut)
+                                checkBoxAutoXmit.Checked = true;
+                        }
 
                         short mult = 0;
                         bool dupe = false;
@@ -2107,7 +2112,11 @@ namespace DigiRite
             inClockTick = true;
             var nowutc = DateTime.UtcNow;
             if ((nowutc - watchDogTime).TotalMinutes > MAX_UNANSWERED_MINUTES)
-                checkBoxAutoXmit.Checked = false;
+            {
+                bool statusWas = checkBoxAutoXmit.Checked;
+                checkBoxAutoXmit.Checked = false; // order important with next:
+                autoXmitTimedOut = statusWas; // order of these two important!
+            }
             OneAtATime(new OneAtATimeDel(() =>
             {
                 try
@@ -2383,7 +2392,9 @@ namespace DigiRite
         private void checkBoxAutoXmit_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxAutoXmit.Checked)
-                    watchDogTime = DateTime.UtcNow;
+                watchDogTime = DateTime.UtcNow;
+            else
+                autoXmitTimedOut = false;
             for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
                 checkedlbNextToSend.SetItemChecked(i, checkBoxAutoXmit.Checked);
         }
