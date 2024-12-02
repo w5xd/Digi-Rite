@@ -225,12 +225,12 @@ namespace DigiRite
             }
             if (eToSend == null && !haveReceivedWrongExchange)
             {
-                if (!haveReport)
-                    eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
-                        { haveSentReport = true; });
-                else if (!haveGrid)
+                if (!haveGrid)
                     eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveReport & haveGrid, () =>
                         { haveSentGrid = true; });
+                else if (!haveReport)
+                    eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
+                        { haveSentReport = true; });
                 else if (directlyToMe && haveSentReport)
                 {
                     eToSend = () =>
