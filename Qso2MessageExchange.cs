@@ -203,7 +203,7 @@ namespace DigiRite
                             haveReceivedQsl = false;
                         }
                         if (!msgHasR && !haveReceivedQsl)
-                            eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
+                            eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
                                 { haveSentReport = true; });
                         if (msgHasR)
                             haveReceivedQsl = true;
@@ -229,7 +229,7 @@ namespace DigiRite
                     eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveReport & haveGrid, () =>
                         { haveSentGrid = true; });
                 else if (!haveReport)
-                    eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport & haveGrid, () =>
+                    eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
                         { haveSentReport = true; });
                 else if (directlyToMe && haveSentReport)
                 {
