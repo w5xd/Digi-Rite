@@ -2113,7 +2113,7 @@ namespace DigiRite
             var nowutc = DateTime.UtcNow;
             if ((nowutc - watchDogTime).TotalMinutes > MAX_UNANSWERED_MINUTES)
             {
-                bool statusWas = checkBoxAutoXmit.Checked;
+                bool statusWas = checkBoxAutoXmit.Checked | autoXmitTimedOut;
                 checkBoxAutoXmit.Checked = false; // order important with next:
                 autoXmitTimedOut = statusWas; // order of these two important!
             }
