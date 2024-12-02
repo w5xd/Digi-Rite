@@ -2117,6 +2117,8 @@ namespace DigiRite
                 checkBoxAutoXmit.Checked = false; // order important with next:
                 autoXmitTimedOut = statusWas; // order of these two important!
             }
+            else
+                autoXmitTimedOut = false;
             OneAtATime(new OneAtATimeDel(() =>
             {
                 try

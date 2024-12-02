@@ -125,6 +125,7 @@ namespace DigiRite
         private bool haveSentReport = false;
         private bool haveSentGrid = false;
         private bool haveReceivedQsl = false;
+        private bool haveReceivedDirectlyToMe = false;
         private bool haveReceivedWrongExchange = false;
         private string qslTextReceived;
         private int AckMoreAcks = 0;
@@ -194,6 +195,7 @@ namespace DigiRite
                 }
                 else if (directlyToMe)
                 {
+                    haveReceivedDirectlyToMe = true;
                     if (rp > XDpack77.Pack77Message.Message.NO_DB)
                     {   // received a dB report
                         haveReport = true;
@@ -247,7 +249,7 @@ namespace DigiRite
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
             bool qslTextMatchesLastTime = !String.IsNullOrEmpty(qslTextReceived) && String.Equals(qsl.QslText, qslTextReceived);
             // is this message a QSL to end the QSO?
-            if (callQsled != CallQsled.None || haveReceivedQsl)
+            if (haveReceivedDirectlyToMe && (callQsled != CallQsled.None || haveReceivedQsl))
             {
                 if (haveReceivedWrongExchange)
                     return;
