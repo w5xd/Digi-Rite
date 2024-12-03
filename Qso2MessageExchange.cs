@@ -127,6 +127,7 @@ namespace DigiRite
         private bool haveReceivedQsl = false;
         private bool haveReceivedDirectlyToMe = false;
         private bool haveReceivedWrongExchange = false;
+        private bool haveQsledReport = false;
         private string qslTextReceived;
         private int AckMoreAcks = 0;
         private IQsoSequencerCallbacks cb;
@@ -180,6 +181,7 @@ namespace DigiRite
             QsoSequencer.MessageSent asTransmitted = () =>
             {
                 AckMoreAcks = MAXIMUM_ACK_OF_ACK - 1;
+                haveQsledReport = true;
             };
             if (null != exc)
             {
@@ -206,7 +208,7 @@ namespace DigiRite
                         }
                         if (!msgHasR && !haveReceivedQsl)
                             eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
-                                { haveSentReport = true; });
+                                { haveSentReport = true; haveQsledReport = haveReport; });
                         if (msgHasR)
                             haveReceivedQsl = true;
                     }
@@ -266,7 +268,7 @@ namespace DigiRite
                     if (AckMoreAcks == 0 && (haveReport || (isMe && haveGrid)))
                     {
                         LogQso();
-                        if (!haveReport || !haveGrid || msgHasR)
+                        if (!haveQsledReport)
                             cb.SendQsl(asTransmitted); // He terminated the QSO by sending us a QSL, but we were not finished.
                         else
                         {
