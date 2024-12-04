@@ -1,0 +1,256 @@
+00:00:37 000030  -3  0.5 2405 ~  CX5ABZ JI0NRN PM96                     
+00:00:38 000030   4  0.3 2503 ~  <BI1RFV> R5AF/0 RR73                   
+00:00:38 000030   4  0.3 2503 ~  CQ R5AF/0 AB12                   
+00:00:38 000030   4  0.3 2503 ~  T0YK RR73; W5XD <R5AF/0> -05                 
+00:00:38 000030   0  0.3 1508 ~  WY0V WB4NLD EM66                       
+00:00:38 000030   6  0.2 1257 ~  CX2CW KE4GFE -14                       
+00:00:38 000030  -1  0.2 1210 ~  VE6CV W4WHQ EM95                       
+00:00:39 000030  17  0.4 1742 ~  CQ KF9UG EN71                          
+00:00:39 000030  -9  0.5 2245 ~  W0WP JH0BBA RR73                       
+00:00:41 000030  -7  0.8 2104 ~  JI1RXQ KB7RUQ R+01                     
+00:00:42 000030 -16  1.7  702 ~  KO4ZHL PU1MIL -13                      
+00:00:44 000030  -7  0.2 1254 ~  <...> PD1VMH RN82                      
+00:00:44 TX: <R5AF/0> W5XD CM97
+00:00:51 000045  21  0.1 1858 ~  <R5AF/0> W5XD CM97                     
+00:01:08 000100  -8  0.2 2066 ~  BI1RFV YB9FAO -10                      
+00:01:09 000100   4  0.3 2504 ~  W5XD <R5AF/0> R-05                      
+00:01:09 000100  20  0.2 1254 ~  CX2CW KJ7OER DN17                      
+00:01:09 000100  18  0.4 1742 ~  <W6/UT5UF> KF9UG EN71                  
+00:01:09 000100  -9  0.2  344 ~  CX2CW AC9HP EM69                       
+00:01:09 000100  10  0.5 1204 ~  CX2CW JN1XVA PM95                      
+00:01:09 000100 -10  0.3 1082 ~  CX2CW JJ0WAJ PM96                      
+00:01:11 000100   1  0.3 2405 ~  CX2CW JI0NRN PM96                      
+00:01:14 000100 -11  1.1  703 ~  KO4ZHL PU1MIL -09                      
+00:01:14 TX: <R5AF/0> W5XD R+04
+00:01:14 000100   1  0.2 1210 ~  VE6CV W4WHQ R-08                       
+00:01:22 000115  21  0.1 1858 ~  <R5AF/0> W5XD R+04                     
+00:01:38 000130  20  0.4 1742 ~  <W6/UT5UF> KF9UG R+03                  
+00:01:39 000130   2  0.3 2504 ~  W5XD RR73; KF0RIQ <R5AF/0> -18         
+00:01:39 000130   1  0.3 1507 ~  WY0V WB4NLD R-16                       
+00:01:39 000130  -5  0.5 2245 ~  BH4SCF JH0BBA +01                      
+00:01:40 000130 -18  0.1  998 ~  CQ KQ6RN DM13                          
+00:01:42 000130  -3  0.3 1857 ~  CQ WA1TFF FN41                         
+00:01:44 TX: <R5AF/0> W5XD R+04
+00:02:07 000200   1  0.3 1507 ~  WY0V WB4NLD R-18                       
+00:02:09 000200   3  0.3 2502 ~  KF0RIQ <R5AF/0> -18                    
+00:02:09 000200  14  0.3  881 ~  ZL1RPC K9OW EN43                       
+00:02:09 000200  14  0.2 1253 ~  CX2CW KJ7OER DN17                      
+00:02:09 000200   2  0.3 1507 ~  WY0V WB4NLD R-18                       
+00:02:09 000200  15  0.2 1133 ~  CQ W4WFC EM75                          
+00:02:09 000200   2  0.5 2404 ~  CX2CW JI0NRN PM96                      
+00:02:09 000200   7  0.2  367 ~  AG7GB K4GNE FM17                       
+00:02:09 000200  11  0.4 1958 ~  KN6FDB N1SFE +14                       
+00:02:09 000200  21  0.4 1742 ~  W6/UT5UF <...> 73                      
+00:02:09 000200  -3  0.5 2245 ~  BH4SCF JH0BBA RR73                     
+00:02:09 000200  -2  0.3 1913 ~  KC9IVQ KO6AVA CM96                     
+00:02:09 000200   2  0.3 2121 ~  YB9FAO N4ZZ R-16                       
+00:02:09 000200  -1  0.7  546 ~  CQ PU5GER GG53                         
+00:02:09 000200 -16 -0.5  998 ~  CQ KQ6RN DM13                          
+00:02:10 000200  -7  0.2  947 ~  AG7GB N0FXQ EM92                       
+00:02:10 000200   8  0.4 1368 ~  W0WP JG1IPZ PM96                       
+00:02:11 000200 -15  0.3 1082 ~  W0WP JJ0WAJ PM96                       
+00:02:11 000200 -19  0.4 1666 ~  HI3A CE6TYN FF30                       
+00:02:11 000200 -17  0.3 2234 ~  W0WP JA6IRK PM53                       
+00:02:11 000200   2  0.2 1259 ~  CX2CW KE4GFE -14                       
+00:02:12 000200 -11  0.9  701 ~  KO4ZHL PU1MIL -10                      
+00:02:13 000200   7  0.5 1205 ~  CX2CW JN1XVA PM95                      
+00:02:14 000200   1  0.2 1209 ~  VE6CV W4WHQ 73                         
+00:02:14 000200   1  0.9 2474 ~  AG7GB KD2KVN FN20                      
+00:02:14 000200 -10  1.2 1554 ~  CQ CX4BAN GF15                         
+00:02:14 TX: R5AF/0 <W5XD> 73
+00:02:15 000200 -14  0.2 2450 ~  9Y4DG KV1RTL DN40                      
+00:02:22 000215  24  0.1 1858 ~  R5AF/0 <W5XD> 73                       
+00:02:38 000230  24  0.3 2009 ~  AG7GB VE3IXU EN93                      
+00:02:38 000230   7  0.2 1367 ~  W0WP JG1IPZ R-06                       
+00:02:38 000230  11  0.4 1957 ~  KN6FDB N1SFE RR73                      
+00:02:39 000230  -3  0.2 1066 ~  W0WP W4WHQ EM95                        
+00:02:39 000230  18  0.4 1742 ~  CQ KF9UG EN71                          
+00:02:39 000230   3  0.9 2474 ~  AG7GB KD2KVN R-01                      
+00:02:40 000230  -3  0.3 2502 ~  <W5XD> R5AF/0 RR73                     
+00:02:40 000230  -5  0.8 2101 ~  YD1NAV KB7RUQ RR73                     
+00:02:40 000230 -12  0.2  343 ~  CX2CW AC9HP EM69                       
+00:02:40 000230 -12  0.9  703 ~  KO4ZHL PU1MIL -15                      
+00:02:40 000230 -16  0.2 2451 ~  9Y4DG KV1RTL R-11                      
+00:02:41 000230  -1  1.7 1420 ~  9Y4DG N7DRT DN40                       
+00:02:42 000230 -19  0.3 1424 ~  K1DC KF6JXM R-24                       
+00:02:43 000230 -23  0.1  608 ~  CQ VK4GP QG62                          
+00:02:43 000230   4  0.5 1205 ~  ND0TS JN1XVA PM95                      
+00:02:44 TX: CQ W5XD CM97
+00:02:53 000245  20  0.1 1858 ~  CQ W5XD CM97                           
+00:03:09 000300  17  0.4 1742 ~  W0WP KF9UG EN71                        
+00:03:09 000300  20  0.3 2008 ~  AG7GB VE3IXU R+06                      
+00:03:09 000300   6  0.2 1367 ~  W0WP JG1IPZ 73                         
+00:03:09 000300  -3  0.7  546 ~  WD8OQS PU5GER -11                      
+00:03:09 000300 -15  0.2 2288 ~  <W6/UT5UF> JA6IRK PM53                 
+00:03:09 000300  -1  0.3 2502 ~  CQ R5AF/0                              
+00:03:09 000300  12  0.3 2121 ~  CQ N4ZZ EM66                           
+00:03:10 000300  -3  0.8 2101 ~  YB9FAO KB7RUQ R-04                     
+00:03:10 000300   5  0.2 1872 ~  W0WP JA7FLI -06                        
+00:03:11 000300 -16  0.3 1082 ~  KN6FDB JJ0WAJ PM96                     
+00:03:11 000300 -15  0.3 1658 ~  VE6CV VK3AWA QF31                      
+00:03:12 000300   9  0.1  409 ~  AG7GB JA7RPC QM07                      
+00:03:13 000300   7  0.2 1252 ~  CQ KJ7OER DN17                         
+00:03:13 000300 -14  0.2 1903 ~  W0WP BI4JJO OM86                       
+00:03:14 000300 -15  0.2 1566 ~  W0WP KM6GUO CM98                       
+00:03:14 TX: CQ W5XD CM97
+00:03:38 000330  10  0.2  880 ~  HI3A K9OW EN43                         
+00:03:38 000330   6  0.2 1829 ~  W5XD JA7FLI -13                        
+00:03:38 000330  15  0.3 2121 ~  JG3LDN N4ZZ -18                        
+00:03:39 000330  -2  0.7  545 ~  WD8OQS PU5GER RR73                     
+00:03:39 000330 -16  0.2 2287 ~  W5XD JA6IRK PM53                       
+00:03:40 000330 -15  0.3 1250 ~  CQ W6YW DM03                           
+00:03:40 000330  -4  0.3  702 ~  CQ DX PU1MIL GG77                      
+00:03:41 000330  -3  0.9 2472 ~  AG7GB KD2KVN 73                        
+00:03:42 000330 -15  0.3 1657 ~  VE6CV VK3AWA R-10                      
+00:03:43 000330 -11  0.1 1784 ~  JG1IPZ K7HTM DN22                      
+00:03:44 TX: JA7FLI W5XD R+06
+ 
+73,
+Ed W5XD
+ 
+From: Wayne, W5XD <w5xd@writelog.com>
+Sent: Monday, 25 November, 2024 15:46
+To: ed@w0yk.com; 'Don AA5AU' <aa5au@bellsouth.net>
+Subject: Re: New FT Challenge #Contest
+ 
+Bring up DR.
+Under its "Help" menu is an entry "View Log"
+They get very large. I prefer you find the example in it and copy/paste a page or two both before and after the message in question.
+Wayne
+On 11/25/2024 23:36, ed@w0yk.com wrote:
+    Long past the time to get a screenshot.  Where is the DR log file?
+     
+    73,
+    Ed W5XD
+     
+    From: Wayne, W5XD <w5xd@writelog.com>
+    Sent: Monday, 25 November, 2024 15:29
+    To: ed@w0yk.com; 'Don AA5AU' <aa5au@bellsouth.net>
+    Subject: Re: New FT Challenge #Contest
+     
+    Can you send me a screen shot or a digirite log file containing the message in question?
+    At this point I am not certain I know what is happening nor whether DR needs to be updated to a new WSJTX source. (It is possible that DR itself is the only issue.)
+    Wayne
+    On 11/25/2024 19:30, ed@w0yk.com wrote:
+        It took me a while to track this down.  Apparently, the double-exchange I described below is a Fox/Hound feature and uses the “Type 0.1” message described in the attached QEX article.  I’ve gotten at least two of these messages from a QSO partner in the last week of testing and DigiRite ignores the message and re-sends its prior message.  User intervention with an alternate message is required to complete the QSO.  I don’t know which WSJT-X version this feature was implemented in, but it surfaced in the past year or two, long after the last DigiRite update.
+         
+        I also don’t know if updating DigiRite with the latest WSJT-X engine would fix the issue anyway.  Maybe you have to do something external to the engine?
+         
+        But there are other reasons to periodically update the DigiRite engine.  There have been significant improvements in the decoding algorithm, for example.
+         
+        Would you be willing to “silently” update the DigiRite source with the latest 2.7.0 engine and Don can make the executable and post on rttycontesting.com?  That would be very valuable even if you aren’t able to fix the “Type 0.1” message response.
+         
+        73,
+        Ed W5XD
+         
+        From: Wayne, W5XD <w5xd@writelog.com>
+        Sent: Wednesday, 20 November, 2024 15:45
+        To: ed@w0yk.com; 'Don AA5AU' <aa5au@bellsouth.net>
+        Subject: Re: New FT Challenge #Contest
+         
+        Yeah, getting 'JT complaining about me is not my favorite passtime. But I might take a look anyway.
+        I see they have published the sources to WSJTX 2.7.0. Does that have the feature you're looking for?
+        Unless they have purposely done something to the sources to make them hard for me to reverse engineer since the last time I did it, its likely to be as easy to update DigiRite as it was to build it the first time. I am definitely not promising to pick it up again, but it would save me some trouble if you already know about that feature and that version.
+        Wayne
+        On 11/20/2024 19:24, ed@w0yk.com wrote:
+            Logged 100 QSOs on 10m and 15m so far.  All looks fine with the FT Challenge module.  Will report back after the bands die.
+             
+            Unfortunately, though, DigiRite doesn’t handle the “dual exchanges”  (my term, don’t know what it is called).  This is where the QSO partner sends “W5XD -04, W5XD RR73”.  DigiRite just repeats the prior message it sent.  If I’m paying attention, I can click the appropriate alternate next message to work-around.
+             
+            Even though DigiRite has not kept up with WSJT-X updates, I still find DigiRite to be far superior to any other FT alternative.  And, everyone I know that uses DigiRite, says the same thing.  When I show it to somebody for the first time, they quickly realize how much better the UI is.
+             
+            73,
+            Ed W5XD
+             
+            From: ed@w0yk.com <ed@w0yk.com>
+            Sent: Wednesday, 20 November, 2024 09:27
+            To: 'Don AA5AU' <aa5au@bellsouth.net>; 'Wayne, W5XD' <w5xd@writelog.com>
+            Subject: RE: New FT Challenge #Contest
+             
+            Also installed fine for me on two networked PCs.  Am running SO2R on 10m and 15m.  Will report back at end of day.
+             
+            73,
+            Ed W5XD
+             
+            From: Don AA5AU <aa5au@bellsouth.net>
+            Sent: Wednesday, 20 November, 2024 07:07
+            To: Wayne, W5XD <w5xd@writelog.com>; Ed W5XD <ed@w0yk.com>
+            Subject: Re: New FT Challenge #Contest
+             
+            This one installed fine.
+             
+            73, Don AA5AU
+             
+            On Wednesday, November 20, 2024 at 08:59:56 AM CST, Don AA5AU <aa5au@bellsouth.net> wrote:
+             
+             
+            I got it too. Sorry, was preoccupied yesterday and didn't check mail. Hopefully can test this tonight.
+             
+            73, Don AA5AU
+             
+            On Wednesday, November 20, 2024 at 08:03:38 AM CST, Ed W5XD <ed@w0yk.com> wrote:
+             
+             
+            Got this, so no need to send, Don.
+             
+            73,
+            Ed W5XD
+             
+             
+            -------- Original message --------
+            From: "Wayne, W5XD" <w5xd@writelog.com>
+            Date: 11/20/24 05:13 (GMT-08:00)
+            To: Ed W5XD <ed@w0yk.com>, AA5AU <aa5au@bellsouth.net>
+            Subject: Re: New FT Challenge #Contest
+             
+                To the WriteLog Beta test team.
+                Beta test 12.85C is available.
+                    https://writelog.com/Downloads/wl1285Cmsiupg-48xEz3Ly.exe
+                This beta update adds a contest module for the rule changes for the newly-named FT-Challenge contest.
+                Wayne 
+            One more difference between the FT Challenge module and the WW DIGI: The new module omits 160m as a valid band.
+            On 11/20/2024 08:56, Ed W5XD wrote:
+                Don, I did not receive the 12.85C Beta email.  Would you please forward to me? I will run SO2R on 10 and 15 all day
+                with it.  Thanks.
+                 
+                73,
+                Ed W5XD
+                 
+                 
+                -------- Original message --------
+                From: "Wayne, W5XD" <w5xd@writelog.com>
+                Date: 11/19/24 18:53 (GMT-08:00)
+                To: ed@w0yk.com, AA5AU <aa5au@bellsouth.net>
+                Subject: Re: New FT Challenge #Contest
+                 
+                FYI:
+                I just send a notification to the WL beta test list that today' WL12.85C
+                beta version has a module to support the FT Challenge.
+                I haven't heard anyone regarding anything in this beta yet, so I send a
+                separate email to you two in case it went to SPAM.
+                To repeat: the WriteLog FT Challenge module is ONLY in beta at this
+                point. Please don't announce it anywhere else.
+                Wayne
+                On 11/17/2024 05:18, ed@w0yk.com wrote:
+                > On 8-9 December 2024, the FT Challenge will take place for the first time, replacing the FT Roundup which ran from 2018-2023.  A highlight of this new contest is that it uses the standard daily FT exchange of Grid Square and SNR, with distance-based scoring.  Because the exchange is identical, contesters and non-contesters can freely and seamlessly work any station they decode in the FT sub-bands without concern if they are “in the contest” or not.
+                >
+                > Distance-based scoring is similar to that for WW Digi where one base QSO point is earned for each QSO, and distance-based points are added for each 3,000 km between the QSO partners.  Multipliers are per-band based on the 2-character Grid Field.  A worked station is only scored once per band, regardless of whether FT4 or FT8 was used.
+                >
+                > In situations where a Grid Square is not received, no distance points are earned, but the base QSO point is scored.  This can happen if a station calls in with Tx2 (SNR message) instead of Tx1 (Grid message) and the Grid Square is not received.
+                >
+                > Most any FT software can be used due to the standard exchange definition.  After the contest, export an ADIF log file and submit it to the FT Challenge Log Submittal webpage, https://ft-challenge.contesting.com/ftcsubmitlog.php .  The following software development teams are considering enhanced support for FT Challenge, i.e., a unique FT Challenge contest module.  Their efforts may not all be ready for the 2024 event.  We will provide updates in future posts over the next 3 weeks.
+                > • WSJT-X
+                > • MSHV
+                > • JTDX
+                > • N1MM+
+                > • WriteLog
+                > • N3FJP
+                >
+                > Some contest loggers may already provide enhanced support.  For example, WriteLog’s WW Digi contest module can be used in conjunction with DigiRite, configured for “Grid Square & dB report”, rather than just “Grid Square”.  Both sent and received SNRs are transferred to the WriteLog log window.  Real-time score is computed with the exception that QSOs without a received Grid are currently scored as zero points (WW Digi rules) vs. the one-point credit in the FT Challenge rules.  However, new band-mults are highlighted in yellow in DigiRite.  To submit a log, use File/Export Copy to create an ADIF which can be submitted to the Log Upload webpage above. (The Cabrillo log file in the WW Digi contest module does not include the required SNR fields.)
+                >
+                > Rules are posted on the FT Challenge website: https://www.rttycontesting.com/ft-challenge/ .  We hope everyone will enjoy this new FT contest.
+                >
+                > 73,
+                > Don, AA5AU
+                > Ed, W5XD
+                >

@@ -1,6 +1,7 @@
 *~
 *.swp
 *.bak
+*.log
 .vs/
 bin/
 obj/

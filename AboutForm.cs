@@ -28,17 +28,18 @@ namespace DigiRite
 #elif BUILD_X64
             "     (X64 build)" +
 #endif
-                "\r\nCopyright (c) 2020 WriteLog Contesting Software, LLC\r\n\r\n" +
-                "This program is based on wsjtx-2.2.2 which is licensed software.\r\n" +
+                "\r\nCopyright (c) 2024 Wayne Wright, W5XD\r\n\r\n" +
+                "This program is based on wsjtx-2.6.0 which is licensed software.\r\n" +
                 "See the file COPYING.\r\n\r\n" +
 
 "The algorithms, source code, look-and-feel of WSJT-X and related" +
-" programs, and protocol specifications for the modes FSK441, FT8, JT4," +
-" JT6M, JT9, JT65, JTMS, QRA64, ISCAT, MSK144 are Copyright (C)" +
-" 2001-2020 by one or more of the following authors: Joseph Taylor," +
+" programs, and protocol specifications for the modes FSK441, FST4, FT8, JT4," +
+" JT6M, JT9, JT65, JTMS, QRA64, Q65, MSK144 are Copyright (C)" +
+" 2001-2022 by one or more of the following authors: Joseph Taylor," +
 " K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo," +
 " IV3NWV; Greg Beam, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR;" +
-" Philip Karn, KA9Q; and other members of the WSJT Development Group.\r\n\r\n"  ;
+" Philip Karn, KA9Q; Chester Fennell, KG4IYS; Uwe Risse, DG2YCB;" +
+" and other members of the WSJT Development Group.\r\n\r\n"  ;
 
             BackColor = CustomColors.CommonBackgroundColor;
             textBoxIntro.BackColor = CustomColors.TxBackgroundColor;

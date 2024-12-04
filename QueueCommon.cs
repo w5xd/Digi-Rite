@@ -61,7 +61,7 @@ namespace DigiRite
         }
 
         // interface method present but we don't implement. pass it down to subclass
-        public abstract void MessageForMycall(RecentMessage recentMessage, bool directlyToMe, string callQsled, 
+        public abstract void MessageForMycall(RecentMessage recentMessage, bool directlyToMe, CallQsled callQsled,
             short band, bool autoStart, IsConversationMessage onUsed);
 
         protected abstract void StartQso(QsoInProgress qp);

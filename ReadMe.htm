@@ -2,7 +2,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>DigiRite Readme 2.2.2.11</title>
+    <title>DigiRite Readme 2.6.0.10</title>
 </head>
 <body>
     <p>
@@ -13,20 +13,22 @@
         the terms of the GPL.
     </p>
     <h2>License</h2>
-    <p>DigiRite is Copyright (c) 2020 by WriteLog Contesting Software, LLC</p>
+    <p>DigiRite is Copyright (c) 2024 by Wayne Wright, W5XD</p>
     <p>
         DigiRite may be copied per the restrictions of the GPL in the file <a href="COPYING">COPYING</a>.
         The source code to this program may be found at
         <a href="http://github.com/w5xd/Digi-Rite">http://github.com/w5xd/Digi-Rite</a>.
     </p>
     <blockquote>
-        The algorithms, source code, look-and-feel of WSJT-X and related
-        programs, and protocol specifications for the modes FSK441, FT8, JT4,
-        JT6M, JT9, JT65, JTMS, QRA64, ISCAT, MSK144 are Copyright (C)
-        2001-2020 by one or more of the following authors: Joseph Taylor,
-        K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo,
-        IV3NWV; Greg Beam, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR;
-        Philip Karn, KA9Q; and other members of the WSJT Development Group.
+The algorithms, source code, look-and-feel of WSJT-X and related
+ programs, and protocol specifications for the modes FSK441, FST4, FT8, JT4,
+ JT6M, JT9, JT65, JTMS, QRA64, Q65, MSK144 are Copyright (C)
+ 2001-2022 by one or more of the following authors: Joseph Taylor,
+ K1JT; Bill Somerville, G4WJS; Steven Franke, K9AN; Nico Palermo,
+ IV3NWV; Greg Beam, KI7MT; Michael Black, W9MDB; Edson Pereira, PY2SDR;
+ Philip Karn, KA9Q; Chester Fennell, KG4IYS; Uwe Risse, DG2YCB;
+ and other members of the WSJT Development Group.
+        
     </blockquote>
     <h2>Logbook dependencies</h2>
     DigiRite will run stand alone but that mode puts up a nastygram every time you run it, and is useful only for brief tests because it won't log any QSOs. Any logbook is permitted to incorporate DigiRite subject to the 
@@ -5492,7 +5494,7 @@ xYkPpr93pOqVSP+NG7cbnf3+/oM/eyWXNF1ZWdm+fTsxooNHSnK3ryxOfDzq3R++I99+yCf4l+Ig
     <h3>Automation</h3>
     <p>
         DigiRite does the most automation with that center check box,
-        Automatic sequence" turned <b>on</b>, and, if you're
+        Automatic sequence" turned on, and, if you're
         new to this, that is the recommended place to start (of course
         assuming you have already correctly filled in the Setup
         screen above.) Turn
@@ -8196,6 +8198,11 @@ zD6gMQIx8zg7+39otDYZU/I29AAAAABJRU5ErkJggg==" />
         the entries in DigiRite's Conversation History window. The conversation log file is
         erased and started over every time you restart DigiRite.
     </p>
+     2.6.0.10
+    <ul>
+        <li>Fix failure to handle received message of the form <code>W0YK RR73; W5XD <R5AF/0> -05</code>
+        <li>Update the sequencing for Grid Square & Db Report exchange.
+        <li/>When the Automatic Sequence is timed out for lack of receiving responses, but followed later by a message directly to me, it is automatically turned back on.</ul>
     2.2.2.11
     <ul>
         <li>Fix failure to show a rover received in a new grid as not a dupe.</li>

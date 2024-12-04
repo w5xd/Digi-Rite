@@ -80,8 +80,20 @@ namespace DigiRite
             try
             {
                 // if WriteLog's DigiRiteWaterfall assembly loads, use it.
-                System.Reflection.Assembly waterfallAssembly = System.Reflection.Assembly.Load(
-                    "WriteLogWaterfallDigiRite, Version=12.0.52.5, Culture=neutral, PublicKeyToken=e34bde9f0678e8b6");
+                string version = "12.0.52.5";
+                try
+                {
+                    var hklm64 = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32);
+                    var key = hklm64.OpenSubKey(@"SOFTWARE\W5XD\Writelog");
+                    var asRead = (string)key.GetValue("WaterfallVersion");
+                    if (null != asRead && asRead.Any())
+                        version = asRead;
+                }
+                catch (System.Exception)
+                { } // just continue if can't read registry
+                var LoadString = String.Format("WriteLogWaterfallDigiRite, Version={0}, Culture=neutral, PublicKeyToken=e34bde9f0678e8b6", 
+                    version);
+                System.Reflection.Assembly waterfallAssembly = System.Reflection.Assembly.Load(LoadString);
                 System.Type t = waterfallAssembly.GetType("WriteLog.WaterfallFactory");
                 if (t == null)
                     throw new System.Exception("WaterfallFactory type not found");

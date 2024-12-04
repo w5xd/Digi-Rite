@@ -1,7 +1,7 @@
 # Digi-Rite
 Digital mode implementation for FT8.
 
-Copyright (c) 2020 by WriteLog Contesting Software, LLC
+Copyright (c) 2024 by Wayne Wright, W5XD
 
 DigiRite is a radio contesting accessory for FT8 messaging. It optionally integrates with WriteLog, but also can run stand alone. It is published open source. Other contest logging program authors are free to use DigiRite's sources to build their own integrated FT8 solution under the terms of the <a href='COPYING'>GPL</a>.
 
@@ -15,7 +15,7 @@ DigiRite is designed as a plug-in component supporting FT4 and FT8 and published
 
 If you want to build DigiRite from these sources, its prerequisites are:
 <ul>
-<li>Visual Studio 2017. The Community Edition was used by this author.</li>
+<li>Visual Studio 2022. The Community Edition was used by this author.</li>
 <li>Use VS to build the solution in submodule Digi-XDft/XDft.sln. Build all the configurations and platforms that you also want for this DigiRite build. That XDft solution, in turn, requires the next item on this list:</li>
 <li>A build of the git repo at https://github.com/w5xd/Digi-XDwsjt. 
   That repo needs various third party components to build (see its <a href='https://github.com/w5xd/Digi-XDwsjt'>git repo</a>), or, alternatively,

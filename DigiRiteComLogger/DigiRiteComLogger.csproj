@@ -9,61 +9,61 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DigiRiteComLogger</RootNamespace>
     <AssemblyName>DigiRiteComLogger</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-        <DebugSymbols>true</DebugSymbols>
-        <OutputPath>bin\x86\Debug\</OutputPath>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-        <DebugType>full</DebugType>
-        <PlatformTarget>x86</PlatformTarget>
-        <ErrorReport>prompt</ErrorReport>
-        <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-        <Prefer32Bit>true</Prefer32Bit>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-        <OutputPath>bin\x86\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-        <Optimize>true</Optimize>
-        <DebugType>pdbonly</DebugType>
-        <PlatformTarget>x86</PlatformTarget>
-        <ErrorReport>prompt</ErrorReport>
-        <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-        <Prefer32Bit>true</Prefer32Bit>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-        <DebugSymbols>true</DebugSymbols>
-        <OutputPath>bin\x64\Debug\</OutputPath>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-        <DebugType>full</DebugType>
-        <PlatformTarget>x64</PlatformTarget>
-        <ErrorReport>prompt</ErrorReport>
-        <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-        <Prefer32Bit>true</Prefer32Bit>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-        <OutputPath>bin\x64\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-        <Optimize>true</Optimize>
-        <DebugType>pdbonly</DebugType>
-        <PlatformTarget>x64</PlatformTarget>
-        <ErrorReport>prompt</ErrorReport>
-        <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-        <Prefer32Bit>true</Prefer32Bit>
-    </PropertyGroup>
-
-    <PropertyGroup Label="UserMacros" Condition="'$(Platform)' == 'x64'">
-        <CopyArchitecture>x64</CopyArchitecture>
-    </PropertyGroup>
-    <PropertyGroup Label="UserMacros" Condition="'$(Platform)' == 'x86'">
-        <CopyArchitecture>Win32</CopyArchitecture>
-    </PropertyGroup>
-    <PropertyGroup Label="UserMacros">
-        <XDftSdkDir>$(ProjectDir)..\Digi-XDft\$(CopyArchitecture)\$(Configuration)\</XDftSdkDir>
-    </PropertyGroup>
-    <ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)' == 'x64'">
+    <CopyArchitecture>x64</CopyArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)' == 'x86'">
+    <CopyArchitecture>Win32</CopyArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros">
+    <XDftSdkDir>$(ProjectDir)..\Digi-XDft\$(CopyArchitecture)\$(Configuration)\</XDftSdkDir>
+  </PropertyGroup>
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -73,9 +73,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="XDpack77Message">
-        <HintPath>$(XDftSdkDir)XDpack77Message.dll</HintPath>
+      <HintPath>$(XDftSdkDir)XDpack77Message.dll</HintPath>
     </Reference>
-</ItemGroup>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyVersionInfo.cs">
       <Link>Properties\AssemblyVersionInfo.cs</Link>
@@ -90,7 +90,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-    <PropertyGroup>
-        <PostBuildEvent>copy "$(TargetPath)" "$(SolutionDir)bin\$(PlatformName)\$(ConfigurationName)\"</PostBuildEvent>
-    </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "$(SolutionDir)bin\$(PlatformName)\$(ConfigurationName)\"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -14,10 +14,10 @@ namespace DigiRite
         public interface IQsoQueueCallBacks
         {
             string GetExchangeMessage(QsoInProgress q, bool addAck, ExchangeTypes exc);
-            string GetAckMessage(QsoInProgress q, bool ofAnAck);
+            string GetQslMessage(QsoInProgress q, bool ofAnAck);
             void SendMessage(string toSend, QsoInProgress q, QsoSequencer.MessageSent ms);
             void LogQso(QsoInProgress q);
-            void SendOnLoggedAck(QsoInProgress q, QsoSequencer.MessageSent ms);
+            void SendOnLoggedQsl(QsoInProgress q, QsoSequencer.MessageSent ms);
         };
 
         protected IQsoQueueCallBacks callbacks;
@@ -26,7 +26,7 @@ namespace DigiRite
         {  callbacks = cb;   }
 
         public override void MessageForMycall(RecentMessage recentMessage, 
-            bool directlyToMe, string callQsled, 
+            bool directlyToMe, CallQsled callQsled,
             short band, bool autoStart, IsConversationMessage onUsed)
         {
             XDpack77.Pack77Message.ReceivedMessage rm = recentMessage.Message;
@@ -39,7 +39,7 @@ namespace DigiRite
             {
                 // we have an ongoing QSO for this message
                 onUsed(Conversation.Origin.TO_ME);
-                ((Qso2MessageSequencer)(inProgress.Sequencer)).OnReceived(directlyToMe, rm.Pack77Message);
+                ((Qso2MessageSequencer)(inProgress.Sequencer)).OnReceived(directlyToMe, callQsled, rm.Pack77Message);
             }  else if (autoStart && directlyToMe)
             {
                 onUsed(Conversation.Origin.TO_ME);
@@ -59,11 +59,11 @@ namespace DigiRite
             { qsoQueue = queue; qso = q; }
             public void LogQso()
             { qsoQueue.LogQso(qso); }
-            public void SendAck(QsoSequencer.MessageSent ms)
-            { qsoQueue.SendAck(qso, ms); }
+            public void SendQsl(QsoSequencer.MessageSent ms)
+            { qsoQueue.SendQsl(qso, ms); }
             public void SendExchange(ExchangeTypes ext, bool withAck, QsoSequencer.MessageSent ms)
             { qsoQueue.SendExchange(qso, ext, withAck, ms); }
-            public void SendOnLoggedAck(QsoSequencer.MessageSent ms) { qsoQueue.callbacks.SendOnLoggedAck(qso, ms); } 
+            public void SendOnLoggedQsl(QsoSequencer.MessageSent ms) { qsoQueue.callbacks.SendOnLoggedQsl(qso, ms); } 
             public override String ToString()
             { return qso.ToString(); }
 
@@ -82,7 +82,7 @@ namespace DigiRite
             XDpack77.Pack77Message.ToFromCall toFromCall = q.Message.Pack77Message as XDpack77.Pack77Message.ToFromCall;
             if (null != toFromCall)
                 directlyToMe = isMe(toFromCall.ToCall);
-            qs.OnReceived(directlyToMe, q.Message.Pack77Message);
+            qs.OnReceived(directlyToMe, CallQsled.None, q.Message.Pack77Message);
         }
 
         public void SendExchange(QsoInProgress q, ExchangeTypes exc, bool withAck, QsoSequencer.MessageSent ms)
@@ -102,8 +102,8 @@ namespace DigiRite
             }
         }
 
-        public void SendAck(QsoInProgress q, QsoSequencer.MessageSent ms)
-        { callbacks.SendMessage(callbacks.GetAckMessage(q, false), q, ms);  }
+        public void SendQsl(QsoInProgress q, QsoSequencer.MessageSent ms)
+        { callbacks.SendMessage(callbacks.GetQslMessage(q, false), q, ms);  }
     }
     #endregion
 
@@ -114,24 +114,22 @@ namespace DigiRite
         {
             void SendExchange(ExchangeTypes exc, bool withAck, QsoSequencer.MessageSent ms);
             void LogQso();
-            void SendAck(QsoSequencer.MessageSent ms);
-            void SendOnLoggedAck(QsoSequencer.MessageSent ms);
+            void SendQsl(QsoSequencer.MessageSent ms);
+            void SendOnLoggedQsl(QsoSequencer.MessageSent ms);
         }
-        private const uint MAXIMUM_ACK_OF_ACK = 3;
+        private const int MAXIMUM_ACK_OF_ACK = 3;
         private bool haveGrid  = false;
         private bool haveReport  = false;
         private bool haveLoggedGrid = false;
         private bool haveLoggedReport = false;
-        private bool amLeader = false;
-        private bool amLeaderSet = false;
         private bool haveSentReport = false;
         private bool haveSentGrid = false;
+        private bool haveReceivedQsl = false;
+        private bool haveReceivedDirectlyToMe = false;
         private bool haveReceivedWrongExchange = false;
-        private bool haveAckOfGrid = false; // compiler correctly says we never read this
-        private string ackOfAckGrid;
-        private bool haveAckOfReport = false;
-        private uint AckMoreAcks = 0;
-        private bool onLoggedAckEnabled = false;
+        private bool haveQsledReport = false;
+        private string qslTextReceived;
+        private int AckMoreAcks = 0;
         private IQsoSequencerCallbacks cb;
         private delegate void ExchangeSent();
         private ExchangeSent lastSent;
@@ -164,16 +162,28 @@ namespace DigiRite
         }
 
         public delegate bool IsMe(string c);
-        public void OnReceived(bool directlyToMe, XDpack77.Pack77Message.Message msg)
+
+        private void LogQso()
+        {
+            if (haveLoggedReport != haveReport || haveLoggedGrid != haveGrid)
+                cb.LogQso();
+            haveLoggedReport |= haveReport;
+            haveLoggedGrid |= haveGrid;
+        }
+
+        public void OnReceived(bool directlyToMe, CallQsled callQsled, XDpack77.Pack77Message.Message msg)
         {
             deferredToEndOfReceive = null;
             XDpack77.Pack77Message.Exchange exc = msg as XDpack77.Pack77Message.Exchange;
-            if (!amLeaderSet)
-                amLeader = directlyToMe;
-            amLeaderSet = true;
             XDpack77.Pack77Message.Roger roger = msg as XDpack77.Pack77Message.Roger;
-            bool ack = (null != roger) && (roger.Roger);
-            if (null != exc && (!haveGrid || directlyToMe))
+            bool msgHasR = (null != roger) && (roger.Roger);
+            ExchangeSent eToSend = null;
+            QsoSequencer.MessageSent asTransmitted = () =>
+            {
+                AckMoreAcks = MAXIMUM_ACK_OF_ACK - 1;
+                haveQsledReport = true;
+            };
+            if (null != exc)
             {
                 string gs = exc.GridSquare;
                 int rp = exc.SignaldB;
@@ -181,120 +191,132 @@ namespace DigiRite
                 if (!String.IsNullOrEmpty(gs))
                 {   // received a grid
                     haveGrid = true;
-                    ExchangeSent es;
-                    if (ack)
-                        haveAckOfGrid = true;
-                    if (amLeader || ack)
-                        es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () => { haveSentReport = true; });
-                    else
-                        es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, directlyToMe && haveGrid, () => { haveSentGrid = true; });
-                    lastSent = es;
-                    es();
-                    return;
+                    if (!msgHasR && !directlyToMe && !haveReceivedQsl)
+                        eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveGrid & haveReport, () =>
+                            { haveSentGrid = true; });
                 }
-                else if (rp > XDpack77.Pack77Message.Message.NO_DB)
-                {   // received a dB report
-                    haveReport = true;
-                    lastSent = null;
-                    if (ack && haveSentReport)
-                        haveAckOfReport = true;
-                    if (haveAckOfReport)
-                    {
-                        ExchangeSent es = () => cb.SendAck(() =>
+                else if (directlyToMe)
+                {
+                    haveReceivedDirectlyToMe = true;
+                    if (rp > XDpack77.Pack77Message.Message.NO_DB)
+                    {   // received a dB report
+                        haveReport = true;
+                        if (!haveSentReport)
                         {
-                            if (!haveLoggedReport)
-                            {
-                                haveLoggedReport = true;
-                                if (haveGrid)
-                                    haveLoggedGrid = true;
-                                cb.LogQso();
-                            }
-                        });
-                        lastSent = es;
-                        es();
+                            msgHasR = false; // if I receive a report with an R, but have never sent one, ignore the R
+                            haveReceivedQsl = false;
+                        }
+                        if (!msgHasR && !haveReceivedQsl)
+                            eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
+                                { haveSentReport = true; haveQsledReport = haveReport; });
+                        if (msgHasR)
+                            haveReceivedQsl = true;
                     }
-                    else
-                    {
-                        ExchangeSent es = () => cb.SendExchange(ExchangeTypes.DB_REPORT, true, () => { haveSentReport = true; });
-                        lastSent = es;
-                        es();
-                    }
-                    return;
-                }
-                else if (null == msg as XDpack77.Pack77Message.StandardMessage)
-                {   // message has an exchange, but for some contest we don't know about
-                    if (!haveReceivedWrongExchange)
-                    {
+                    else if (null == msg as XDpack77.Pack77Message.StandardMessage)
+                    {   // message has an exchange, but for some contest we don't know about
                         haveReceivedWrongExchange = true;
-                        cb.LogQso();
+                        LogQso();
+                        cb.SendQsl(null); // send a 73, log it, and get going
+                        lastSent = null;
+                        return;
                     }
-                    cb.SendAck(null); // send a 73, log it, and get going
-                    lastSent = null;
-                    return;
+                }
+                if (eToSend == null)
+                {
+                    if (haveReport && haveGrid)
+                        eToSend = () => cb.SendQsl(asTransmitted);
                 }
             }
-            if (!haveReceivedWrongExchange && !haveGrid && !haveReport)
+            if (eToSend == null && !haveReceivedWrongExchange)
             {
-                ExchangeSent es = null;
-                if (haveSentGrid)
-                    es = () => cb.SendExchange( ExchangeTypes.DB_REPORT , false, () => { haveSentReport = true; });
-                else
-                    es = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, false, () => { haveSentGrid = true; });
-                lastSent = es;
-                es();
-                return;
+                if (!haveGrid)
+                    eToSend = () => cb.SendExchange(ExchangeTypes.GRID_SQUARE, haveReport & haveGrid, () =>
+                        { haveSentGrid = true; });
+                else if (!haveReport)
+                    eToSend = () => cb.SendExchange(ExchangeTypes.DB_REPORT, haveReport, () =>
+                        { haveSentReport = true; });
+                else if (directlyToMe && haveSentReport)
+                {
+                    eToSend = () =>
+                    {
+                        if (!haveLoggedGrid || !haveLoggedReport)
+                        {
+                            LogQso();
+                            cb.SendOnLoggedQsl(asTransmitted);
+                        }
+                    };
+                }
             }
+            bool isMe = callQsled == CallQsled.IsMe || directlyToMe;
             XDpack77.Pack77Message.QSL qsl = msg as XDpack77.Pack77Message.QSL;
-            if ((qsl != null) && String.Equals(qsl.CallQSLed, "ALL") || directlyToMe)
+            bool qslTextMatchesLastTime = !String.IsNullOrEmpty(qslTextReceived) && String.Equals(qsl.QslText, qslTextReceived);
+            // is this message a QSL to end the QSO?
+            if (haveReceivedDirectlyToMe && (callQsled != CallQsled.None || haveReceivedQsl))
             {
-                // what we need to do
+                if (haveReceivedWrongExchange)
+                    return;
                 Action toDoOnAck = () =>
                 {
-                    if (!haveLoggedGrid && (haveReport || (directlyToMe && haveGrid)))
-                    {
-                        haveLoggedGrid = true;
-                        if (haveReport)
-                            haveLoggedReport = true;
-                        lastSent = null;
-                        cb.LogQso();
-                        ackOfAckGrid = qsl.QslText; // see if they repeat exact message
-                        AckMoreAcks = MAXIMUM_ACK_OF_ACK;
-                        cb.SendOnLoggedAck(() =>
-                        { onLoggedAckEnabled = true; });
-                        return;
-                    }
-                    if (AckMoreAcks > 0 && directlyToMe && String.Equals(qsl.QslText, ackOfAckGrid))
+                    lastSent = null;
+                    if (AckMoreAcks >= 0 && directlyToMe && qslTextMatchesLastTime)
                     {   // only repeat this if they send exact same message
-                        lastSent = null;
                         AckMoreAcks -= 1;
-                        if (onLoggedAckEnabled)
-                            cb.SendOnLoggedAck(null);
-                        else
-                            cb.SendAck(null);
+                        if (AckMoreAcks >= 0)
+                            cb.SendQsl(null);
                         return;
                     }
+                    if (AckMoreAcks == 0 && (haveReport || (isMe && haveGrid)))
+                    {
+                        LogQso();
+                        if (!haveQsledReport)
+                            cb.SendQsl(asTransmitted); // He terminated the QSO by sending us a QSL, but we were not finished.
+                        else
+                        {
+                            AckMoreAcks = 1;
+                            cb.SendOnLoggedQsl(asTransmitted);
+                        }
+                        return;
+                    }
+                    else if (directlyToMe && qslTextMatchesLastTime)
+                        cb.SendQsl(asTransmitted);
                 };
-                // do it now? or see if multi-streaming partner sends a message directlyToMe
-                if (directlyToMe)
+                // do it now? or wait to see if multi-streaming partner sends a message directlyToMe
+                if (isMe)
                     toDoOnAck();
                 else
                     deferredToEndOfReceive = toDoOnAck;
+                qslTextReceived = qsl.QslText; // see if they repeat exact message                        
+                haveReceivedQsl = true;
                 return;
             }
-            OnReceivedNothing(); // didn't get what I wanted
+            if (eToSend != null)
+            {
+                lastSent = eToSend;
+                eToSend();
+                return;
+            }
+            /* In the (unlikely) possibility I got a message directly to me but could do nothing with it,
+             * I assume the other guy is not going to multi-stream multiple messages directly to me in the
+             * same cycle and I know that OnReceivedNothing() will not be called at the end of this cycle
+             * because I did get this message I am processing now, so behave as if I got nothing.
+             */
+            if (isMe)   
+                OnReceivedNothing();
         }
 
         private Action deferredToEndOfReceive;
         public void OnReceiveCycleEnd(bool messagedThisCycle, bool onHold)
         {
-            if (!messagedThisCycle)
+            if (null != deferredToEndOfReceive)
+            {
+                deferredToEndOfReceive();
+                deferredToEndOfReceive = null;
+            }
+            else if (!messagedThisCycle)
             {
                 if (!IsFinished && !onHold)
                     OnReceivedNothing();
             }
-            else if (null != deferredToEndOfReceive)
-                deferredToEndOfReceive();
-            deferredToEndOfReceive = null;
         }
         private bool OnReceivedNothing()
         {

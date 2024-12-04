@@ -36,6 +36,7 @@ namespace DigiRite
         private LogFile logFile;
         private LogFile conversationLogFile;
         private bool sendInProgress = false;
+        private bool autoXmitTimedOut = false;
         private bool SendInProgress {
             get { return sendInProgress; }
             set { sendInProgress = value;
@@ -326,7 +327,11 @@ namespace DigiRite
                         bool directlyToMe = (toCall != null) && ((toCall == myCall) || (toCall == myBaseCall));
 
                         if (directlyToMe)
+                        {
                             watchDogTime = DateTime.UtcNow;
+                            if (autoXmitTimedOut)
+                                checkBoxAutoXmit.Checked = true;
+                        }
 
                         short mult = 0;
                         bool dupe = false;
@@ -340,9 +345,17 @@ namespace DigiRite
 
                         bool isConversation = false;
                         string callQsled = (rm.Pack77Message as XDpack77.Pack77Message.QSL)?.CallQSLed;
+                        CallQsled qsled = CallQsled.None;
+                        if (callQsled != null)
+                        {
+                            if ((callQsled == myCall) || (callQsled == myBaseCall))
+                                qsled = CallQsled.IsMe;
+                            else if (callQsled == "ALL")
+                                qsled = CallQsled.ImplyAll;
+                        }
                         if (!String.IsNullOrEmpty(toCall))
                             qsoQueue.MessageForMycall(recentMessage, directlyToMe,
-                                    callQsled, currentBand,
+                                    qsled, currentBand,
                                     checkBoxRespondAny.Checked || (checkBoxRespondNonDupe.Checked && !dupe),
                                     new IsConversationMessage((Conversation.Origin origin) =>
                                         {   // qsoQueue liked this message. log it
@@ -695,7 +708,7 @@ namespace DigiRite
                             int msecToTruncate = toSend.Millisecond + 100 * cyclePosTenths; // how late we are
                             msecToTruncate -= SHIFT_OUTGOING_LATER_MSEC; // full itones don't last a full 15 seconds in FT8
                             int itonesToLose = msecToTruncate / 160;
-                            if (itonesToLose > 0)
+                            if (itonesToLose > 0 && itonesToLose < itones.Length)
                             {
                                 int[] truncated = new int[itones.Length - itonesToLose];
                                 Array.Copy(itones, itonesToLose, truncated, 0, truncated.Length);
@@ -1113,7 +1126,7 @@ namespace DigiRite
                 addAck ? "R " : "", MyGrid4);
         }
 
-        private string GetAckMessage(QsoInProgress q, bool ofAnAck, int whichAck)
+        private string GetQslMessage(QsoInProgress q, bool ofAnAck, int whichAck)
         {
             // this one does non standard calls backwards from above. 
             // The standard call is the one that gets hashed.
@@ -1131,15 +1144,15 @@ namespace DigiRite
                 DefaultAcknowledgements[whichAck];
         }
 
-        public string GetAckMessage(QsoInProgress q, bool ofAnAck)
-        {  return GetAckMessage(q, ofAnAck, q.AckMessage); }
+        public string GetQslMessage(QsoInProgress q, bool ofAnAck)
+        {  return GetQslMessage(q, ofAnAck, q.AckMessage); }
 
-        public void SendOnLoggedAck(QsoInProgress q, QsoSequencer.MessageSent ms)
+        public void SendOnLoggedQsl(QsoInProgress q, QsoSequencer.MessageSent ms)
         {
             int which = comboBoxOnLoggedMessage.SelectedIndex;
             if (which <= 0) // none
                 return;
-            var toSend = GetAckMessage(q, true, which - 1);
+            var toSend = GetQslMessage(q, true, which - 1);
             SendMessage(toSend, q, ms);
         }
 
@@ -1216,7 +1229,7 @@ namespace DigiRite
 
             for (int i = 0; i < DefaultAcknowledgements.Length; i++)
             {
-                msg = GetAckMessage(q, false, i);
+                msg = GetQslMessage(q, false, i);
                 listBoxAlternatives.Items.Add(new QueuedToSendListItem(msg, q));
             }
 
@@ -1820,8 +1833,8 @@ namespace DigiRite
 
                 case ExchangeTypes.DB_REPORT:
                     qsoQueue = new QsoQueue(qsosPanel, this, (XDpack77.Pack77Message.Message m) => {
-                        var sm = m as XDpack77.Pack77Message.StandardMessage;
-                        return (null != sm) && sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB;
+                        var sm = m as XDpack77.Pack77Message.Exchange;
+                        return  (null != sm) && ( sm.SignaldB > XDpack77.Pack77Message.Message.NO_DB);
                     });
                     break;
             }
@@ -2099,7 +2112,13 @@ namespace DigiRite
             inClockTick = true;
             var nowutc = DateTime.UtcNow;
             if ((nowutc - watchDogTime).TotalMinutes > MAX_UNANSWERED_MINUTES)
-                checkBoxAutoXmit.Checked = false;
+            {
+                bool statusWas = checkBoxAutoXmit.Checked | autoXmitTimedOut;
+                checkBoxAutoXmit.Checked = false; // order important with next:
+                autoXmitTimedOut = statusWas; // order of these two important!
+            }
+            else
+                autoXmitTimedOut = false;
             OneAtATime(new OneAtATimeDel(() =>
             {
                 try
@@ -2375,7 +2394,9 @@ namespace DigiRite
         private void checkBoxAutoXmit_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxAutoXmit.Checked)
-                    watchDogTime = DateTime.UtcNow;
+                watchDogTime = DateTime.UtcNow;
+            else
+                autoXmitTimedOut = false;
             for (int i = 0; i < checkedlbNextToSend.Items.Count; i++)
                 checkedlbNextToSend.SetItemChecked(i, checkBoxAutoXmit.Checked);
         }
